@@ -1,0 +1,134 @@
+﻿@page "/services"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Services
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IServiceApiService ServiceApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<PageTitle>Hizmetler</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Hizmetler</h2>
+            <AuthorizeView Roles="Business">
+                <RadzenButton Text="Yeni Hizmet" ButtonStyle="ButtonStyle.Success" 
+                            Click="ShowCreateDialog" Icon="add" />
+            </AuthorizeView>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="text-center">
+                <RadzenLoader />
+                <p>Yükleniyor...</p>
+            </div>
+        }
+        else if (services.Any())
+        {
+            <RadzenDataGrid Data="@services" 
+                           TItem="ServiceDto" 
+                           AllowPaging="true" 
+                           AllowSorting="true"
+                           PageSize="10">
+                <Columns>
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="Name" Title="Hizmet Adı" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="BusinessName" Title="İşletme" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="Price" Title="Fiyat" Format="C" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="DurationMinutes" Title="Süre (dk)" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="IsActive" Title="Aktif" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Title="İşlemler" Width="150px">
+                        <Template Context="service">
+                            <AuthorizeView Roles="Business">
+                                <RadzenButton Text="Düzenle" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" 
+                                            Click="@(args => ShowEditDialog(service))" Icon="edit" />
+                                <RadzenButton Text="Sil" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                            Click="@(args => DeleteService(service.Id))" Icon="delete" class="ms-1" />
+                            </AuthorizeView>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <p>Henüz hizmet bulunmamaktadır.</p>
+            </div>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<ServiceDto> services = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadServices();
+    }
+
+    private async Task LoadServices()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await ServiceApiService.GetAllServicesAsync();
+        if (response.Success)
+        {
+            services = response.Data ?? new List<ServiceDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            services = new List<ServiceDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateServiceDialog>("Yeni Hizmet",
+            new Dictionary<string, object>() { { "isEdit", false } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadServices();
+        }
+    }
+    private async Task ShowEditDialog(ServiceDto service)
+    {
+        var result = await DialogService.OpenAsync<CreateServiceDialog>("Hizmet Düzenle",
+            new Dictionary<string, object>() { { "isEdit", true }, { "ServiceId", service.Id }, { "BusinessId", service.BusinessId } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadServices();
+        }
+    }
+
+    private async Task DeleteService(int serviceId)
+    {
+        var result = await DialogService.Confirm("Bu hizmeti silmek istediğinize emin misiniz?", "Hizmet Sil", new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+        if (result.HasValue && result.Value)
+        {
+            var response = await ServiceApiService.DeleteServiceAsync(serviceId);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Hizmet başarıyla silindi.");
+                await LoadServices();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+    }
+}

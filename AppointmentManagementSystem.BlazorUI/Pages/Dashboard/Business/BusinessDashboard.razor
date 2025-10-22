@@ -1,0 +1,73 @@
+﻿@page "/dashboard/business"
+@attribute [Authorize(Roles = "Business")]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>İşletme Dashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>İşletme Dashboard</h1>
+            <p>Hoş geldiniz, @businessName!</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Randevular</h5>
+                    <p class="card-text">Tüm randevuları yönetin.</p>
+                    <RadzenButton Text="Randevuları Görüntüle" ButtonStyle="ButtonStyle.Primary" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Hizmetler</h5>
+                    <p class="card-text">Hizmetleri yönetin.</p>
+                    <RadzenButton Text="Hizmetleri Yönet" ButtonStyle="ButtonStyle.Success" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Çalışanlar</h5>
+                    <p class="card-text">Çalışanları yönetin.</p>
+                    <RadzenButton Text="Çalışanları Yönet" ButtonStyle="ButtonStyle.Info" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">İstatistikler</h5>
+                    <p class="card-text">İşletme istatistiklerini görüntüleyin.</p>
+                    <RadzenButton Text="İstatistikleri Gör" ButtonStyle="ButtonStyle.Warning" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string businessName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            businessName = user.FindFirst("name")?.Value ?? user.Identity.Name ?? "";
+        }
+    }
+}

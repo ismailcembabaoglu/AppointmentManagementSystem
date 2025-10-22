@@ -1,0 +1,125 @@
+﻿@page "/dashboard"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Dashboard</PageTitle>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="24px">
+    <div>
+        <h1>Dashboard</h1>
+        <RadzenText TextStyle="TextStyle.H3">Hoş geldiniz, @userName!</RadzenText>
+    </div>
+
+    <RadzenCard>
+        @if (userRole == "Customer")
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                <RadzenRow>
+                    <RadzenColumn Col="12">
+                        <RadzenAlert AlertStyle="AlertStyle.Info" Title="Müşteri Paneli">
+                            Randevularınızı buradan yönetebilirsiniz.
+                        </RadzenAlert>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <RadzenIcon Icon="calendar_today" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Randevularım</h5>
+                            <RadzenText>Geçmiş ve aktif randevular</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                            <RadzenIcon Icon="add_circle" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Yeni Randevu</h5>
+                            <RadzenText>Yeni randevu oluştur</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+                            <RadzenIcon Icon="person" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Profilim</h5>
+                            <RadzenText>Profil bilgileri</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+                            <RadzenIcon Icon="notifications" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Bildirimler</h5>
+                            <RadzenText>Randevu hatırlatmaları</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        }
+        else if (userRole == "Business")
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                <RadzenRow>
+                    <RadzenColumn Col="12">
+                        <RadzenAlert AlertStyle="AlertStyle.Success" Title="İşletme Paneli">
+                            İşletmenizi ve randevularınızı buradan yönetebilirsiniz.
+                        </RadzenAlert>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <RadzenIcon Icon="event" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Randevular</h5>
+                            <RadzenText>Tüm randevuları yönet</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                            <RadzenIcon Icon="work" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Hizmetler</h5>
+                            <RadzenText>Hizmetleri yönet</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+                            <RadzenIcon Icon="group" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">Çalışanlar</h5>
+                            <RadzenText>Çalışanları yönet</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+
+                    <RadzenColumn Col="6" Md="3">
+                        <RadzenCard class="dashboard-card text-center" Style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+                            <RadzenIcon Icon="bar_chart" Style="font-size: 2rem;" />
+                            <h5 class="mt-2">İstatistikler</h5>
+                            <RadzenText>İşletme istatistikleri</RadzenText>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        }
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private string userName = "";
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userName = user.FindFirst("name")?.Value ?? user.Identity.Name ?? "";
+            userRole = user.FindFirst("role")?.Value ?? user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+        }
+    }
+}

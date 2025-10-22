@@ -1,0 +1,353 @@
+﻿@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IAppointmentApiService AppointmentApiService
+@inject IBusinessApiService BusinessApiService
+@inject IServiceApiService ServiceApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenCard Style="min-width: 500px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <h3>Yeni Randevu</h3>
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <!-- İşletme Seçimi -->
+            <div>
+                <RadzenLabel Text="İşletme *" />
+                @if (businessesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else
+                {
+                    <RadzenDropDown @bind-Value="selectedBusinessId" 
+                                  Data="businesses" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="İşletme seçin"
+                                  Change="@(args => OnBusinessChanged())" />
+                }
+                @if (!string.IsNullOrEmpty(businessError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessError</RadzenText>
+                }
+            </div>
+
+            <!-- Hizmet Seçimi -->
+            <div>
+                <RadzenLabel Text="Hizmet *" />
+                @if (servicesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else if (services.Any())
+                {
+                    <RadzenDropDown @bind-Value="appointmentDto.ServiceId" 
+                                  Data="services" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="Hizmet seçin"
+                                  Change="@(args => OnServiceChanged())" />
+                    @if (selectedService != null)
+                    {
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                @if (selectedService.Price.HasValue)
+                                {
+                                    <span>@selectedService.Price.Value.ToString("C") - </span>
+                                }
+                                <span>@selectedService.DurationMinutes dk</span>
+                            </small>
+                        </div>
+                    }
+                }
+                else if (selectedBusinessId > 0)
+                {
+                    <div class="alert alert-info small">
+                        Bu işletmede henüz hizmet tanımlanmamış.
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(serviceError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@serviceError</RadzenText>
+                }
+            </div>
+
+            <!-- Çalışan Seçimi (Opsiyonel) -->
+            <div>
+                <RadzenLabel Text="Çalışan (Opsiyonel)" />
+                @if (employeesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else if (employees.Any())
+                {
+                    <RadzenDropDown @bind-Value="appointmentDto.EmployeeId" 
+                                  Data="employees" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="Çalışan seçin (opsiyonel)" 
+                                  AllowClear="true" />
+                }
+                else if (selectedBusinessId > 0)
+                {
+                    <div class="alert alert-info small">
+                        Bu işletmede henüz çalışan tanımlanmamış.
+                    </div>
+                }
+            </div>
+
+            <!-- Tarih ve Saat -->
+            <RadzenRow>
+                <RadzenColumn Col="6">
+                    <div>
+                        <RadzenLabel Text="Tarih *" />
+                        <RadzenDatePicker @bind-Value="appointmentDto.AppointmentDate" 
+                                        DateFormat="dd.MM.yyyy" 
+                                        Placeholder="Tarih seçin" />
+                        @if (!string.IsNullOrEmpty(dateError))
+                        {
+                            <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@dateError</RadzenText>
+                        }
+                    </div>
+                </RadzenColumn>
+                <RadzenColumn Col="6">
+                    <div>
+                        <RadzenLabel Text="Saat *" />
+                        <RadzenTimeSpanPicker @bind-Value="appointmentDto.StartTime" 
+                                        Format="HH:mm" 
+                                        Placeholder="Saat seçin" />
+                        @if (!string.IsNullOrEmpty(timeError))
+                        {
+                            <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@timeError</RadzenText>
+                        }
+                    </div>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <!-- Notlar -->
+            <div>
+                <RadzenLabel Text="Notlar" />
+                <RadzenTextArea @bind-Value="appointmentDto.Notes" Rows="3" Placeholder="Ek notlar (opsiyonel)" />
+            </div>
+        </RadzenStack>
+
+        <!-- Toplam Süre ve Fiyat -->
+        @if (selectedService != null)
+        {
+            <RadzenCard Style="background-color: #f8f9fa;">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>Toplam Süre:</strong> @selectedService.DurationMinutes dk
+                    </div>
+                    @if (selectedService.Price.HasValue)
+                    {
+                        <div>
+                            <strong>Toplam Fiyat:</strong> @selectedService.Price.Value.ToString("C")
+                        </div>
+                    }
+                </div>
+            </RadzenCard>
+        }
+
+        <div class="d-flex justify-content-end gap-2">
+            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
+            <RadzenButton Text="Randevu Oluştur" 
+                        ButtonStyle="ButtonStyle.Primary" 
+                        Click="Save" 
+                        Disabled="isSaving" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public int CustomerId { get; set; } = 0;
+
+    [Parameter]
+    public int? PreselectedBusinessId { get; set; } = null;
+
+    private CreateAppointmentDto appointmentDto = new();
+    private List<BusinessDto> businesses = new();
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private int selectedBusinessId = 0;
+    private ServiceDto? selectedService = null;
+    
+    private bool businessesLoading = true;
+    private bool servicesLoading = false;
+    private bool employeesLoading = false;
+    private bool isSaving = false;
+    
+    // Validation errors
+    private string businessError = "";
+    private string serviceError = "";
+    private string dateError = "";
+    private string timeError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        appointmentDto.CustomerId = CustomerId;
+        appointmentDto.AppointmentDate = DateTime.Today.AddDays(1); // Varsayılan olarak yarın
+        appointmentDto.StartTime = new TimeSpan(10, 0, 0); // Varsayılan saat 10:00
+        
+        await LoadBusinesses();
+        
+        if (PreselectedBusinessId.HasValue && PreselectedBusinessId.Value > 0)
+        {
+            selectedBusinessId = PreselectedBusinessId.Value;
+            await OnBusinessChanged();
+        }
+    }
+
+    private async Task LoadBusinesses()
+    {
+        businessesLoading = true;
+        var response = await BusinessApiService.GetAllBusinessesAsync();
+        if (response.Success)
+        {
+            businesses = response.Data ?? new List<BusinessDto>();
+        }
+        businessesLoading = false;
+    }
+
+    private async Task OnBusinessChanged()
+    {
+        if (selectedBusinessId > 0)
+        {
+            appointmentDto.BusinessId = selectedBusinessId;
+            
+            // Hizmetleri yükle
+            await LoadServices();
+            
+            // Çalışanları yükle
+            await LoadEmployees();
+        }
+        else
+        {
+            services.Clear();
+            employees.Clear();
+            appointmentDto.ServiceId = 0;
+            appointmentDto.EmployeeId = null;
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task LoadServices()
+    {
+        servicesLoading = true;
+        services.Clear();
+        selectedService = null;
+        appointmentDto.ServiceId = 0;
+        
+        var response = await ServiceApiService.GetAllServicesAsync(selectedBusinessId);
+        if (response.Success)
+        {
+            services = response.Data ?? new List<ServiceDto>();
+        }
+        servicesLoading = false;
+    }
+
+    private async Task LoadEmployees()
+    {
+        employeesLoading = true;
+        employees.Clear();
+        appointmentDto.EmployeeId = null;
+        
+        var response = await EmployeeApiService.GetAllEmployeesAsync(selectedBusinessId);
+        if (response.Success)
+        {
+            employees = response.Data ?? new List<EmployeeDto>();
+        }
+        employeesLoading = false;
+    }
+
+    private async Task OnServiceChanged()
+    {
+        selectedService = services.FirstOrDefault(s => s.Id == appointmentDto.ServiceId);
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await AppointmentApiService.CreateAppointmentAsync(appointmentDto);
+            
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu başarıyla oluşturuldu.");
+                DialogService.Close(true);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        businessError = "";
+        serviceError = "";
+        dateError = "";
+        timeError = "";
+
+        bool isValid = true;
+
+        if (selectedBusinessId <= 0)
+        {
+            businessError = "İşletme seçimi gereklidir.";
+            isValid = false;
+        }
+
+        if (appointmentDto.ServiceId <= 0)
+        {
+            serviceError = "Hizmet seçimi gereklidir.";
+            isValid = false;
+        }
+
+        if (appointmentDto.AppointmentDate == default(DateTime))
+        {
+            dateError = "Tarih seçimi gereklidir.";
+            isValid = false;
+        }
+        else if (appointmentDto.AppointmentDate < DateTime.Today)
+        {
+            dateError = "Geçmiş tarih seçilemez.";
+            isValid = false;
+        }
+
+        if (appointmentDto.StartTime == default(TimeSpan))
+        {
+            timeError = "Saat seçimi gereklidir.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}

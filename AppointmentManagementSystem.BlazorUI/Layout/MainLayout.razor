@@ -1,0 +1,147 @@
+﻿@inherits LayoutComponentBase
+@using AppointmentManagementSystem.BlazorUI.Components
+@using AppointmentManagementSystem.BlazorUI.Services.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+
+<RadzenLayout>
+    <RadzenHeader Style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 60px;">
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                    <RadzenColumn>
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <RadzenButton Text="" Icon="menu" ButtonStyle="ButtonStyle.Light"
+                                          Click="ToggleSidebar" Size="ButtonSize.Large" />
+                        </RadzenRow>
+                    </RadzenColumn>
+                    <RadzenColumn class="text-end">
+                        @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+                        {
+                            <RadzenButton Text="@GetShortName(currentUser.Identity.Name)"
+                                          ButtonStyle="ButtonStyle.Primary"
+                                          Icon="person"
+                                          Click="@(args => DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } }))"
+                                          Size="ButtonSize.Small" />
+                        }
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenHeader>
+    <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
+        <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
+            <RadzenPanelMenu Style="flex: 1; background: transparent; border: none;">
+                <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard">
+                    <RadzenPanelMenuItem Text="Genel Dashboard" Path="dashboard" Icon="dashboard" />
+
+                    <AuthorizeView Roles="Customer">
+                        <RadzenPanelMenuItem Text="Müşteri Paneli" Path="dashboard/customer" Icon="person" />
+                        <RadzenPanelMenuItem Text="Randevularım" Path="appointments" Icon="event" />
+                    </AuthorizeView>
+
+                    <AuthorizeView Roles="Business">
+                        <RadzenPanelMenuItem Text="İşletme Paneli" Path="dashboard/business" Icon="business" />
+                        <RadzenPanelMenuItem Text="Hizmetler" Path="services" Icon="work" />
+                        <RadzenPanelMenuItem Text="Çalışanlar" Path="employees" Icon="group" />
+                        <RadzenPanelMenuItem Text="Randevular" Path="appointments" Icon="event" />
+                    </AuthorizeView>
+                </RadzenPanelMenuItem>
+
+                <!-- Yeni menü öğeleri -->
+                <RadzenPanelMenuItem Text="Kategoriler" Path="categories" Icon="category" />
+                <RadzenPanelMenuItem Text="İşletmeler" Path="businesses" Icon="store" />
+            </RadzenPanelMenu>
+
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 16px;">
+                <RadzenCard Style="background: rgba(255,255,255,0.1); border: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="text-white small" style="font-size: 0.75rem;">Hoş geldiniz</div>
+                            <div class="text-white fw-bold text-truncate" style="font-size: 0.85rem;">
+                                @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+                                {
+                                    @currentUser.Identity.Name
+                                }
+                                else
+                                {
+                                    <span>Misafir</span>
+                                }
+                            </div>
+                        </div>
+                        @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+                        {
+                            <RadzenButton Text="" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                          Click="Logout" Icon="exit_to_app" Title="Çıkış Yap" />
+                        }
+                        else
+                        {
+                            <RadzenButton Text="Giriş" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small"
+                                          Click="Logout" Icon="login" />
+                        }
+                    </div>
+                </RadzenCard>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenSidebar>
+    <RadzenBody Style="padding: 16px;">
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+
+    <RadzenFooter Style="background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 16px;">
+        <RadzenRow>
+            <RadzenColumn>
+                <div class="text-center text-muted">
+                    <RadzenText TextStyle="TextStyle.Body2" Size="TextStyleSize.Small">
+                        © 2024 Appointment Management System
+                    </RadzenText>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenFooter>
+</RadzenLayout>
+
+
+<RadzenDialog />
+<RadzenNotification />
+<RadzenTooltip />
+
+@code {
+    private bool sidebarVisible = true;
+    private ClaimsPrincipal? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        currentUser = authState.User;
+    }
+
+    private void ToggleSidebar()
+    {
+        sidebarVisible = !sidebarVisible;
+    }
+
+    private async Task Logout()
+    {
+        if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            await customProvider.MarkUserAsLoggedOut();
+        }
+        Navigation.NavigateTo("/login");
+    }
+
+    private string GetShortName(string? fullName)
+    {
+        if (string.IsNullOrEmpty(fullName))
+            return "K";
+
+        var names = fullName.Split(' ');
+        return names.Length > 0 ? names[0].Substring(0, 1) : fullName.Substring(0, 1);
+    }
+}

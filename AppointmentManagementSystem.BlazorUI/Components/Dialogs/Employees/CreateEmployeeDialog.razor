@@ -1,0 +1,203 @@
+﻿@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IEmployeeApiService EmployeeApiService
+@inject IBusinessApiService BusinessApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenCard Style="min-width: 400px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <h3>@(isEdit ? "Çalışan Düzenle" : "Yeni Çalışan")</h3>
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <div>
+                <RadzenLabel Text="Ad Soyad *" />
+                <RadzenTextBox @bind-Value="employeeDto.Name" Placeholder="Çalışan adını girin" />
+                @if (!string.IsNullOrEmpty(nameError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@nameError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="Uzmanlık" />
+                <RadzenTextBox @bind-Value="employeeDto.Specialization" Placeholder="Uzmanlık alanı" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="Açıklama" />
+                <RadzenTextArea @bind-Value="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="İşletme *" />
+                @if (businessesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else
+                {
+                    <RadzenDropDown @bind-Value="employeeDto.BusinessId" 
+                                  Data="businesses" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="İşletme seçin" />
+                }
+                @if (!string.IsNullOrEmpty(businessError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenCheckBox @bind-Value="employeeDto.IsActive" />
+                <RadzenLabel Text="Aktif" class="ms-2" />
+            </div>
+        </RadzenStack>
+
+        <div class="d-flex justify-content-end gap-2">
+            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
+            <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
+                        ButtonStyle="ButtonStyle.Primary" 
+                        Click="Save" 
+                        Disabled="isSaving" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public bool isEdit { get; set; } = false;
+
+    [Parameter]
+    public int EmployeeId { get; set; } = 0;
+
+    [Parameter]
+    public int? PreselectedBusinessId { get; set; } = null;
+
+    private CreateEmployeeDto employeeDto = new();
+    private List<BusinessDto> businesses = new();
+    private bool businessesLoading = true;
+    private bool isSaving = false;
+    
+    // Validation errors
+    private string nameError = "";
+    private string businessError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinesses();
+        
+        if (PreselectedBusinessId.HasValue && PreselectedBusinessId.Value > 0)
+        {
+            employeeDto.BusinessId = PreselectedBusinessId.Value;
+        }
+        
+        employeeDto.IsActive = true;
+        
+        if (isEdit && EmployeeId > 0)
+        {
+            await LoadEmployeeForEdit();
+        }
+    }
+
+    private async Task LoadBusinesses()
+    {
+        businessesLoading = true;
+        var response = await BusinessApiService.GetAllBusinessesAsync();
+        if (response.Success)
+        {
+            businesses = response.Data ?? new List<BusinessDto>();
+        }
+        businessesLoading = false;
+    }
+
+    private async Task LoadEmployeeForEdit()
+    {
+        var response = await EmployeeApiService.GetEmployeeByIdAsync(EmployeeId);
+        if (response.Success && response.Data != null)
+        {
+            var employee = response.Data;
+            employeeDto = new CreateEmployeeDto
+            {
+                Name = employee.Name,
+                Specialization = employee.Specialization,
+                Description = employee.Description,
+                BusinessId = employee.BusinessId,
+                IsActive = employee.IsActive
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse<EmployeeDto> response;
+            
+            if (isEdit)
+            {
+                response = await EmployeeApiService.UpdateEmployeeAsync(EmployeeId, employeeDto);
+            }
+            else
+            {
+                response = await EmployeeApiService.CreateEmployeeAsync(employeeDto);
+            }
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
+                    isEdit ? "Çalışan başarıyla güncellendi." : "Çalışan başarıyla oluşturuldu.");
+                DialogService.Close(true);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        nameError = "";
+        businessError = "";
+
+        bool isValid = true;
+
+        if (string.IsNullOrWhiteSpace(employeeDto.Name))
+        {
+            nameError = "Çalışan adı gereklidir.";
+            isValid = false;
+        }
+
+        if (employeeDto.BusinessId <= 0)
+        {
+            businessError = "İşletme seçimi gereklidir.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}

@@ -1,0 +1,213 @@
+﻿@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IServiceApiService ServiceApiService
+@inject IBusinessApiService BusinessApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenCard Style="min-width: 400px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <h3>@(isEdit ? "Hizmet Düzenle" : "Yeni Hizmet")</h3>
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <div>
+                <RadzenLabel Text="Hizmet Adı *" />
+                <RadzenTextBox @bind-Value="serviceDto.Name" Placeholder="Hizmet adını girin" />
+                @if (!string.IsNullOrEmpty(nameError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@nameError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="Açıklama" />
+                <RadzenTextArea @bind-Value="serviceDto.Description" Rows="3" Placeholder="Hizmet açıklaması" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="Fiyat" />
+                <RadzenNumeric @bind-Value="serviceDto.Price" Currency="true" Placeholder="Fiyat (opsiyonel)" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="Süre (dakika) *" />
+                <RadzenNumeric @bind-Value="serviceDto.DurationMinutes" Placeholder="Süre" Min="1" Max="1440" />
+                @if (!string.IsNullOrEmpty(durationError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@durationError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="İşletme *" />
+                @if (businessesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else
+                {
+                    <RadzenDropDown @bind-Value="serviceDto.BusinessId" 
+                                  Data="businesses" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="İşletme seçin" />
+                }
+                @if (!string.IsNullOrEmpty(businessError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessError</RadzenText>
+                }
+            </div>
+        </RadzenStack>
+
+        <div class="d-flex justify-content-end gap-2">
+            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
+            <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
+                        ButtonStyle="ButtonStyle.Primary" 
+                        Click="Save" 
+                        Disabled="isSaving" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public bool isEdit { get; set; } = false;
+
+    [Parameter]
+    public int ServiceId { get; set; } = 0;
+
+    [Parameter]
+    public int? PreselectedBusinessId { get; set; } = null;
+
+    private CreateServiceDto serviceDto = new();
+    private List<BusinessDto> businesses = new();
+    private bool businessesLoading = true;
+    private bool isSaving = false;
+    
+    // Validation errors
+    private string nameError = "";
+    private string durationError = "";
+    private string businessError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinesses();
+        
+        if (PreselectedBusinessId.HasValue && PreselectedBusinessId.Value > 0)
+        {
+            serviceDto.BusinessId = PreselectedBusinessId.Value;
+        }
+        
+        if (isEdit && ServiceId > 0)
+        {
+            await LoadServiceForEdit();
+        }
+    }
+
+    private async Task LoadBusinesses()
+    {
+        businessesLoading = true;
+        var response = await BusinessApiService.GetAllBusinessesAsync();
+        if (response.Success)
+        {
+            businesses = response.Data ?? new List<BusinessDto>();
+        }
+        businessesLoading = false;
+    }
+
+    private async Task LoadServiceForEdit()
+    {
+        var response = await ServiceApiService.GetServiceByIdAsync(ServiceId);
+        if (response.Success && response.Data != null)
+        {
+            var service = response.Data;
+            serviceDto = new CreateServiceDto
+            {
+                Name = service.Name,
+                Description = service.Description,
+                Price = service.Price,
+                DurationMinutes = service.DurationMinutes,
+                BusinessId = service.BusinessId
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse<ServiceDto> response;
+            
+            if (isEdit)
+            {
+                response = await ServiceApiService.UpdateServiceAsync(ServiceId, serviceDto);
+            }
+            else
+            {
+                response = await ServiceApiService.CreateServiceAsync(serviceDto);
+            }
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
+                    isEdit ? "Hizmet başarıyla güncellendi." : "Hizmet başarıyla oluşturuldu.");
+                DialogService.Close(true);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        nameError = "";
+        durationError = "";
+        businessError = "";
+
+        bool isValid = true;
+
+        if (string.IsNullOrWhiteSpace(serviceDto.Name))
+        {
+            nameError = "Hizmet adı gereklidir.";
+            isValid = false;
+        }
+
+        if (serviceDto.DurationMinutes <= 0)
+        {
+            durationError = "Süre gereklidir.";
+            isValid = false;
+        }
+
+        if (serviceDto.BusinessId <= 0)
+        {
+            businessError = "İşletme seçimi gereklidir.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}

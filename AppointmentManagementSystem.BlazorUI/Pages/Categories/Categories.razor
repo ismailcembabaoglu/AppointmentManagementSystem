@@ -1,0 +1,89 @@
+﻿@page "/categories"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject ICategoryApiService CategoryApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Kategoriler</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Kategoriler</h2>
+        </div>
+        
+        @if (isLoading)
+        {
+            <div class="text-center">
+                <RadzenLoader />
+                <p>Yükleniyor...</p>
+            </div>
+        }
+        else if (categories.Any())
+        {
+            <RadzenDataGrid Data="@categories" 
+                           TItem="CategoryDto" 
+                           AllowPaging="true" 
+                           AllowSorting="true"
+                           PageSize="10">
+                <Columns>
+                    <RadzenDataGridColumn TItem="CategoryDto" Property="Id" Title="ID" Width="80px" />
+                    <RadzenDataGridColumn TItem="CategoryDto" Property="Name" Title="Kategori Adı" />
+                    <RadzenDataGridColumn TItem="CategoryDto" Property="Description" Title="Açıklama" />
+                    <RadzenDataGridColumn TItem="CategoryDto" Property="BusinessCount" Title="İşletme Sayısı" Width="150px" />
+                    <RadzenDataGridColumn TItem="CategoryDto" Title="İşlemler" Width="120px">
+                        <Template Context="category">
+                            <RadzenButton Text="İşletmeler" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" 
+                                        Click="@(args => ViewBusinesses(category.Id))" Icon="business" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <p>Henüz kategori bulunmamaktadır.</p>
+            </div>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<CategoryDto> categories = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await CategoryApiService.GetAllCategoriesAsync();
+        if (response.Success)
+        {
+            categories = response.Data ?? new List<CategoryDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            categories = new List<CategoryDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void ViewBusinesses(int categoryId)
+    {
+        // İşletmeler sayfasına yönlendir
+        Navigation.NavigateTo($"/categories/{categoryId}/businesses");
+    }
+}

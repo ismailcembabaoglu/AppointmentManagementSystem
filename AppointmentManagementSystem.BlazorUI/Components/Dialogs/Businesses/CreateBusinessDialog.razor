@@ -1,0 +1,222 @@
+﻿@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject ICategoryApiService CategoryApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenCard Style="min-width: 400px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <h3>@(isEdit ? "İşletme Düzenle" : "Yeni İşletme")</h3>
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <div>
+                <RadzenLabel Text="İşletme Adı *" />
+                <RadzenTextBox @bind-Value="businessDto.Name" Placeholder="İşletme adını girin" />
+                @if (!string.IsNullOrEmpty(nameError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@nameError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="Kategori *" />
+                @if (categoriesLoading)
+                {
+                    <RadzenLoader Size="LoaderSize.Small" />
+                }
+                else
+                {
+                    <RadzenDropDown @bind-Value="businessDto.CategoryId" 
+                                  Data="categories" 
+                                  TextProperty="Name" 
+                                  ValueProperty="Id" 
+                                  Placeholder="Kategori seçin" />
+                }
+                @if (!string.IsNullOrEmpty(categoryError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@categoryError</RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="Açıklama" />
+                <RadzenTextArea @bind-Value="businessDto.Description" Rows="3" Placeholder="İşletme açıklaması" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="Adres" />
+                <RadzenTextBox @bind-Value="businessDto.Address" Placeholder="Adres" />
+            </div>
+
+            <RadzenRow>
+                <RadzenColumn Col="6">
+                    <div>
+                        <RadzenLabel Text="Şehir" />
+                        <RadzenTextBox @bind-Value="businessDto.City" Placeholder="Şehir" />
+                    </div>
+                </RadzenColumn>
+                <RadzenColumn Col="6">
+                    <div>
+                        <RadzenLabel Text="İlçe" />
+                        <RadzenTextBox @bind-Value="businessDto.District" Placeholder="İlçe" />
+                    </div>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <div>
+                <RadzenLabel Text="Telefon" />
+                <RadzenTextBox @bind-Value="businessDto.Phone" Placeholder="Telefon numarası" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="E-posta" />
+                <RadzenTextBox @bind-Value="businessDto.Email" Placeholder="E-posta adresi" />
+            </div>
+
+            <div>
+                <RadzenLabel Text="Web Sitesi" />
+                <RadzenTextBox @bind-Value="businessDto.Website" Placeholder="Web sitesi" />
+            </div>
+        </RadzenStack>
+
+        <div class="d-flex justify-content-end gap-2">
+            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
+            <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
+                        ButtonStyle="ButtonStyle.Primary" 
+                        Click="Save" 
+                        Disabled="isSaving" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public bool isEdit { get; set; } = false;
+
+    [Parameter]
+    public int BusinessId { get; set; } = 0;
+
+    private CreateBusinessDto businessDto = new();
+    private List<CategoryDto> categories = new();
+    private bool categoriesLoading = true;
+    private bool isSaving = false;
+    
+    // Validation errors
+    private string nameError = "";
+    private string categoryError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        
+        if (isEdit && BusinessId > 0)
+        {
+            await LoadBusinessForEdit();
+        }
+    }
+
+    private async Task LoadCategories()
+    {
+        categoriesLoading = true;
+        var response = await CategoryApiService.GetAllCategoriesAsync();
+        if (response.Success)
+        {
+            categories = response.Data ?? new List<CategoryDto>();
+        }
+        categoriesLoading = false;
+    }
+
+    private async Task LoadBusinessForEdit()
+    {
+        var response = await BusinessApiService.GetBusinessByIdAsync(BusinessId);
+        if (response.Success && response.Data != null)
+        {
+            var business = response.Data;
+            businessDto = new CreateBusinessDto
+            {
+                Name = business.Name,
+                CategoryId = business.CategoryId,
+                Description = business.Description,
+                Address = business.Address,
+                City = business.City,
+                District = business.District,
+                Phone = business.Phone,
+                Email = business.Email,
+                Website = business.Website
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse<BusinessDto> response;
+            
+            if (isEdit)
+            {
+                response = await BusinessApiService.UpdateBusinessAsync(BusinessId, businessDto);
+            }
+            else
+            {
+                response = await BusinessApiService.CreateBusinessAsync(businessDto);
+            }
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
+                    isEdit ? "İşletme başarıyla güncellendi." : "İşletme başarıyla oluşturuldu.");
+                DialogService.Close(true);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        nameError = "";
+        categoryError = "";
+
+        bool isValid = true;
+
+        if (string.IsNullOrWhiteSpace(businessDto.Name))
+        {
+            nameError = "İşletme adı gereklidir.";
+            isValid = false;
+        }
+
+        if (businessDto.CategoryId <= 0)
+        {
+            categoryError = "Kategori seçimi gereklidir.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}

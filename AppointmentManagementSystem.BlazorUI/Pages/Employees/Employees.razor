@@ -1,0 +1,134 @@
+﻿@page "/employees"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Employees
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IEmployeeApiService EmployeeApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<PageTitle>Çalışanlar</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Çalışanlar</h2>
+            <AuthorizeView Roles="Business">
+                <RadzenButton Text="Yeni Çalışan" ButtonStyle="ButtonStyle.Success" 
+                            Click="ShowCreateDialog" Icon="add" />
+            </AuthorizeView>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="text-center">
+                <RadzenLoader />
+                <p>Yükleniyor...</p>
+            </div>
+        }
+        else if (employees.Any())
+        {
+            <RadzenDataGrid Data="@employees" 
+                           TItem="EmployeeDto" 
+                           AllowPaging="true" 
+                           AllowSorting="true"
+                           PageSize="10">
+                <Columns>
+                    <RadzenDataGridColumn TItem="EmployeeDto" Property="Name" Title="Ad Soyad" />
+                    <RadzenDataGridColumn TItem="EmployeeDto" Property="BusinessName" Title="İşletme" />
+                    <RadzenDataGridColumn TItem="EmployeeDto" Property="Specialization" Title="Uzmanlık" />
+                    <RadzenDataGridColumn TItem="EmployeeDto" Property="IsActive" Title="Aktif" />
+                    <RadzenDataGridColumn TItem="EmployeeDto" Title="İşlemler" Width="150px">
+                        <Template Context="employee">
+                            <AuthorizeView Roles="Business">
+                                <RadzenButton Text="Düzenle" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" 
+                                            Click="@(args => ShowEditDialog(employee))" Icon="edit" />
+                                <RadzenButton Text="Sil" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                            Click="@(args => DeleteEmployee(employee.Id))" Icon="delete" class="ms-1" />
+                            </AuthorizeView>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <p>Henüz çalışan bulunmamaktadır.</p>
+            </div>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<EmployeeDto> employees = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await EmployeeApiService.GetAllEmployeesAsync();
+        if (response.Success)
+        {
+            employees = response.Data ?? new List<EmployeeDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            employees = new List<EmployeeDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Yeni Çalışan",
+            new Dictionary<string, object>() { { "isEdit", false } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadEmployees();
+        }
+    }
+
+    private async Task ShowEditDialog(EmployeeDto employee)
+    {
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Çalışan Düzenle",
+            new Dictionary<string, object>() { { "isEdit", true }, { "EmployeeId", employee.Id }, { "BusinessId", employee.BusinessId } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadEmployees();
+        }
+    }
+
+    private async Task DeleteEmployee(int employeeId)
+    {
+        var result = await DialogService.Confirm("Bu çalışanı silmek istediğinize emin misiniz?", "Çalışan Sil", new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+        if (result.HasValue && result.Value)
+        {
+            var response = await EmployeeApiService.DeleteEmployeeAsync(employeeId);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Çalışan başarıyla silindi.");
+                await LoadEmployees();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+    }
+}

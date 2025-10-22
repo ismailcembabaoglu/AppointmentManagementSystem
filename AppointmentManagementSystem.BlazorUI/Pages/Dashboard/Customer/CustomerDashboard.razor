@@ -1,0 +1,63 @@
+﻿@page "/dashboard/customer"
+@attribute [Authorize(Roles = "Customer")]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Müşteri Dashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>Müşteri Dashboard</h1>
+            <p>Hoş geldiniz, @userName!</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Randevularım</h5>
+                    <p class="card-text">Geçmiş ve aktif randevularınızı görüntüleyin.</p>
+                    <RadzenButton Text="Randevuları Görüntüle" ButtonStyle="ButtonStyle.Primary" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Yeni Randevu</h5>
+                    <p class="card-text">Yeni randevu oluşturun.</p>
+                    <RadzenButton Text="Randevu Oluştur" ButtonStyle="ButtonStyle.Success" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Profilim</h5>
+                    <p class="card-text">Profil bilgilerinizi güncelleyin.</p>
+                    <RadzenButton Text="Profili Düzenle" ButtonStyle="ButtonStyle.Info" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string userName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userName = user.FindFirst("name")?.Value ?? user.Identity.Name ?? "";
+        }
+    }
+}

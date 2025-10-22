@@ -1,0 +1,77 @@
+﻿ Radzen Custom Theme 
+:root {
+    --rz-primary: #3f51b5;
+    --rz-primary-light: #757de8;
+    --rz-primary-dark: #002984;
+    --rz-primary-contrast: #ffffff;
+    --rz-success: #4caf50;
+    --rz-info: #2196f3;
+    --rz-warning: #ff9800;
+    --rz-danger: #f44336;
+}
+
+ Responsive improvements 
+@media (max-width: 768px) {
+    .rz-card {
+        margin-bottom: 1rem;
+    }
+    
+    .rz-form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+ Dashboard cards 
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+ Auth pages 
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+}
+
+.auth-card {
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: none;
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+ Loading animation 
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+ Panel menu improvements 
+.rz-panel-menu-item {
+    border-radius: 8px !important;
+    margin: 4px 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+    .rz-panel-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        transform: translateX(5px);
+    }
+
+    .rz-panel-menu-item.rz-active {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+    }

@@ -1,0 +1,105 @@
+﻿@page "/login"
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services
+@using AppointmentManagementSystem.BlazorUI.Services.Authentication
+@using Radzen
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IApiService ApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="auth-container">
+    <RadzenCard class="auth-card mx-auto" Style="max-width: 400px; width: 90%; margin: 2rem auto;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="24px">
+            <div class="text-center">
+                <RadzenIcon Icon="account_circle" Style="font-size: 48px; color: var(--rz-primary);" />
+                <h2 class="mt-3">Giriş Yap</h2>
+                <p class="text-muted">Hesabınıza erişmek için giriş yapın</p>
+            </div>
+
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                <RadzenTextBox Placeholder="E-posta adresinizi girin"
+                               @bind-Value="loginDto.Email"
+                               Icon="email" />
+                @if (!string.IsNullOrEmpty(emailError))
+                {
+                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@emailError</RadzenText>
+                }
+
+                <RadzenPassword Placeholder="Şifrenizi girin"
+                                @bind-Value="loginDto.Password"
+                                Icon="lock" />
+                @if (!string.IsNullOrEmpty(passwordError))
+                {
+                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@passwordError</RadzenText>
+                }
+
+                <RadzenButton Text="Giriş Yap"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="@(async () => await HandleLogin())"
+                              Icon="login"
+                              Style="width: 100%;" />
+
+                <div class="text-center">
+                    <RadzenText>Hesabınız yok mu? <a href="/register" style="color: var(--rz-primary);">Kayıt Ol</a></RadzenText>
+                </div>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+</div>
+
+@code {
+    private LoginDto loginDto = new();
+    private string emailError = "";
+    private string passwordError = "";
+
+    private async Task HandleLogin()
+    {
+        // Basic validation
+        emailError = "";
+        passwordError = "";
+
+        if (string.IsNullOrWhiteSpace(loginDto.Email))
+        {
+            emailError = "E-posta alanı gereklidir.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(loginDto.Password))
+        {
+            passwordError = "Şifre alanı gereklidir.";
+            return;
+        }
+
+        var response = await ApiService.LoginAsync(loginDto);
+
+        if (response.Success && response.Data != null)
+        {
+            // Token'ı localStorage'a kaydet ve auth state'i güncelle
+            if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+            {
+                await customProvider.MarkUserAsAuthenticated(response.Data.Token);
+            }
+            NotificationService.Notify(new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Başarılı",
+                Detail = response.Message,
+                Duration = 4000
+            });
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            var errorMessage = response.Errors.Any() ? string.Join(", ", response.Errors) : response.Message;
+            NotificationService.Notify(new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Hata",
+                Detail = errorMessage,
+                Duration = 4000
+            });
+        }
+    }
+}

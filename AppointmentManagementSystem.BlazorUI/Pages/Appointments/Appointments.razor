@@ -1,0 +1,171 @@
+﻿@page "/appointments"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Appointments
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAppointmentApiService AppointmentApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Randevular</PageTitle>
+
+<AuthorizeView>
+    <Authorized Context="authContext">
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Randevular</h2>
+                    <AuthorizeView Roles="Customer">
+                        <RadzenButton Text="Yeni Randevu" ButtonStyle="ButtonStyle.Success" 
+                                    Click="ShowCreateDialog" Icon="add" />
+                    </AuthorizeView>
+                </div>
+
+                @if (isLoading)
+                {
+                    <div class="text-center">
+                        <RadzenLoader />
+                        <p>Yükleniyor...</p>
+                    </div>
+                }
+                else if (appointments.Any())
+                {
+                    <RadzenDataGrid Data="@appointments" 
+                                   TItem="AppointmentDto" 
+                                   AllowPaging="true" 
+                                   AllowSorting="true"
+                                   PageSize="10">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="BusinessName" Title="İşletme" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="ServiceName" Title="Hizmet" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="EmployeeName" Title="Çalışan" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="AppointmentDate" Title="Tarih" Format="d" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="StartTime" Title="Saat" Format="t" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="Status" Title="Durum" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="Rating" Title="Puan" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Title="İşlemler" Width="150px">
+                                <Template Context="appointment">
+                                    <RadzenButton Text="Detay" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" 
+                                                Click="@(args => ViewAppointmentDetails(appointment.Id))" Icon="visibility" />
+                                    @if (appointment.Status == "Pending")
+                                    {
+                                        <AuthorizeView Roles="Business">
+                                            <RadzenButton Text="Onayla" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" 
+                                                        Click="@(args => UpdateStatus(appointment.Id, "Confirmed"))" Icon="check" class="ms-1" />
+                                        </AuthorizeView>
+                                    }
+                                    @if (appointment.Status == "Completed" && appointment.Rating == null)
+                                    {
+                                        <AuthorizeView Roles="Customer">
+                                            <RadzenButton Text="Değerlendir" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" 
+                                                        Click="@(args => ShowRatingDialog(appointment.Id))" Icon="star" class="ms-1" />
+                                        </AuthorizeView>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <p>Henüz randevu bulunmamaktadır.</p>
+                    </div>
+                }
+            </RadzenStack>
+        </RadzenCard>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-warning">
+            <h4>Yetkisiz Erişim</h4>
+            <p>Randevuları görmek için giriş yapmanız gerekmektedir.</p>
+            <RadzenButton Text="Giriş Yap" ButtonStyle="ButtonStyle.Primary" 
+                        Click='() => Navigation.NavigateTo("/login")' />
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<AppointmentDto> appointments = new();
+    private bool isLoading = true;
+    private int currentUserId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCurrentUserId();
+        await LoadAppointments();
+    }
+
+    private async Task GetCurrentUserId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        
+        if (user.Identity.IsAuthenticated)
+        {
+            // Kullanıcı ID'sini token'dan veya başka bir yerden almak gerekiyor
+            // Şimdilik geçici çözüm
+            currentUserId = 1; // Gerçek uygulamada bu değeri authentication state'den almalıyız
+        }
+    }
+
+    private async Task LoadAppointments()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await AppointmentApiService.GetAllAppointmentsAsync();
+        if (response.Success)
+        {
+            appointments = response.Data ?? new List<AppointmentDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            appointments = new List<AppointmentDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateAppointmentDialog>("Yeni Randevu",
+            new Dictionary<string, object>() { { "CustomerId", currentUserId } },
+            new DialogOptions() { Width = "600px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadAppointments();
+        }
+    }
+
+    private void ViewAppointmentDetails(int appointmentId)
+    {
+        NotificationService.Notify(NotificationSeverity.Info, "Bilgi", "Randevu detayları yakında eklenecek.");
+    }
+
+    private async Task UpdateStatus(int appointmentId, string status)
+    {
+        var response = await AppointmentApiService.UpdateAppointmentStatusAsync(appointmentId, status);
+        if (response.Success)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Başarılı", $"Randevu {status.ToLower()} olarak güncellendi.");
+            await LoadAppointments();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+        }
+    }
+
+    private void ShowRatingDialog(int appointmentId)
+    {
+        NotificationService.Notify(NotificationSeverity.Info, "Bilgi", "Değerlendirme özelliği yakında eklenecek.");
+    }
+}

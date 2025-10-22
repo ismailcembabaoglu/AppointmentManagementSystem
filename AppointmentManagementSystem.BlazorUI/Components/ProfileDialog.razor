@@ -1,0 +1,56 @@
+﻿@using Radzen
+@using System.Security.Claims
+
+<RadzenCard Style="min-width: 300px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div class="text-center">
+            <RadzenIcon Icon="person" Style="font-size: 48px; color: var(--rz-primary);" />
+            <h3 class="mt-2">@UserName</h3>
+            <RadzenText TextStyle="TextStyle.Body1">@UserEmail</RadzenText>
+            <RadzenBadge Text="@UserRole" BadgeStyle="BadgeStyle.Primary" />
+        </div>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+            <RadzenRow>
+                <RadzenColumn Col="6">
+                    <RadzenButton Text="Profil Düzenle"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Icon="edit"
+                                  Style="width: 100%;"
+                                  Click="CloseDialog" />
+                </RadzenColumn>
+                <RadzenColumn Col="6">
+                    <RadzenButton Text="Ayarlar"
+                                  ButtonStyle="ButtonStyle.Secondary"
+                                  Icon="settings"
+                                  Style="width: 100%;"
+                                  Click="CloseDialog" />
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+
+        <div class="text-center">
+            <RadzenButton Text="Kapat"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="CloseDialog"
+                          Style="width: 100%;" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public ClaimsPrincipal User { get; set; } = new();
+
+    private string UserName => User?.FindFirst("name")?.Value ?? User?.Identity?.Name ?? "Kullanıcı";
+    private string UserEmail => User?.FindFirst("email")?.Value ?? "E-posta bulunamadı";
+    private string UserRole => User?.FindFirst("role")?.Value ?? "Rol bulunamadı";
+
+    [Inject]
+    private DialogService DialogService { get; set; } = default!;
+
+    private void CloseDialog()
+    {
+        DialogService.Close();
+    }
+}

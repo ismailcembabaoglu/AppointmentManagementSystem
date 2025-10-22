@@ -1,0 +1,57 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+<div class="top-row ps-4 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Appointment Management System</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        
+        <AuthorizeView>
+            <Authorized Context="authContext"> @* CONTEXT PARAMETRESİNİ EKLE *@
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="dashboard">
+                        <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                    </NavLink>
+                </div>
+                
+                <AuthorizeView Roles="Customer">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="dashboard/customer">
+                            <span class="oi oi-calendar" aria-hidden="true"></span> Müşteri Paneli
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+                
+                <AuthorizeView Roles="Business">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="dashboard/business">
+                            <span class="oi oi-briefcase" aria-hidden="true"></span> İşletme Paneli
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Giriş Yap
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="register">
+                        <span class="oi oi-person" aria-hidden="true"></span> Kayıt Ol
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
