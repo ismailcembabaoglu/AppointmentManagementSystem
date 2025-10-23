@@ -1,59 +1,150 @@
 ﻿@page "/register"
+@using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
 @inject IApiService ApiService
+@inject ICategoryApiService CategoryApiService
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 
 <div class="auth-container">
-    <RadzenCard class="auth-card mx-auto" Style="max-width: 450px; width: 90%; margin: 2rem auto;">
+    <RadzenCard class="auth-card mx-auto" Style="max-width: 550px; width: 95%; margin: 2rem auto;">
         <RadzenStack Orientation="Orientation.Vertical" Gap="24px">
             <div class="text-center">
                 <RadzenIcon Icon="person_add" Style="font-size: 48px; color: var(--rz-success);" />
                 <h2 class="mt-3">Kayıt Ol</h2>
                 <p class="text-muted">Yeni bir hesap oluşturun</p>
             </div>
-
+            
             <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                <RadzenTextBox Placeholder="Adınızı ve soyadınızı girin"
-                               @bind-Value="registerDto.Name"
-                               Icon="person" />
-                @if (!string.IsNullOrEmpty(nameError))
+                <!-- Temel Bilgiler -->
+                <div>
+                    <RadzenLabel Text="Ad Soyad *" />
+                    <RadzenTextBox @bind-Value="registerDto.Name" Placeholder="Adınızı ve soyadınızı girin" />
+                    @if (!string.IsNullOrEmpty(nameError))
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@nameError</RadzenText>
+                    }
+                </div>
+
+                <div>
+                    <RadzenLabel Text="E-posta *" />
+                    <RadzenTextBox @bind-Value="registerDto.Email" Placeholder="E-posta adresinizi girin" />
+                    @if (!string.IsNullOrEmpty(emailError))
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@emailError</RadzenText>
+                    }
+                </div>
+
+                <div>
+                    <RadzenLabel Text="Şifre *" />
+                    <RadzenPassword @bind-Value="registerDto.Password" Placeholder="Şifrenizi girin" />
+                    @if (!string.IsNullOrEmpty(passwordError))
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@passwordError</RadzenText>
+                    }
+                </div>
+
+                <!-- Rol Seçimi -->
+                <div>
+                    <RadzenLabel Text="Rol *" />
+                    <RadzenDropDown @bind-Value="registerDto.Role" 
+                                  Data="@(new List<string> { "Customer", "Business" })" 
+                                  Change="@(args => OnRoleChanged())"
+                                  Placeholder="Rol seçiniz" />
+                    @if (!string.IsNullOrEmpty(roleError))
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@roleError</RadzenText>
+                    }
+                </div>
+
+                <!-- Business için ek alanlar -->
+                @if (registerDto.Role == "Business")
                 {
-                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@nameError</RadzenText>
+                    <RadzenCard Style="background-color: #f8f9fa;">
+                        <h5>İşletme Bilgileri</h5>
+                        
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            <div>
+                                <RadzenLabel Text="İşletme Adı *" />
+                                <RadzenTextBox @bind-Value="businessInfo.Name" Placeholder="İşletme adını girin" />
+                                @if (!string.IsNullOrEmpty(businessNameError))
+                                {
+                                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessNameError</RadzenText>
+                                }
+                            </div>
+
+                            <div>
+                                <RadzenLabel Text="Kategori *" />
+                                @if (categoriesLoading)
+                                {
+                                    <RadzenLoader Size="LoaderSize.Small" />
+                                }
+                                else
+                                {
+                                    <RadzenDropDown @bind-Value="businessInfo.CategoryId" 
+                                                  Data="categories" 
+                                                  TextProperty="Name" 
+                                                  ValueProperty="Id" 
+                                                  Placeholder="Kategori seçin" />
+                                }
+                                @if (!string.IsNullOrEmpty(categoryError))
+                                {
+                                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@categoryError</RadzenText>
+                                }
+                            </div>
+
+                            <div>
+                                <RadzenLabel Text="Açıklama" />
+                                <RadzenTextArea @bind-Value="businessInfo.Description" Rows="3" Placeholder="İşletme açıklaması" />
+                            </div>
+
+                            <div>
+                                <RadzenLabel Text="Adres" />
+                                <RadzenTextBox @bind-Value="businessInfo.Address" Placeholder="Adres" />
+                            </div>
+
+                            <RadzenRow>
+                                <RadzenColumn Col="6">
+                                    <div>
+                                        <RadzenLabel Text="Şehir" />
+                                        <RadzenTextBox @bind-Value="businessInfo.City" Placeholder="Şehir" />
+                                    </div>
+                                </RadzenColumn>
+                                <RadzenColumn Col="6">
+                                    <div>
+                                        <RadzenLabel Text="İlçe" />
+                                        <RadzenTextBox @bind-Value="businessInfo.District" Placeholder="İlçe" />
+                                    </div>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <div>
+                                <RadzenLabel Text="Telefon" />
+                                <RadzenTextBox @bind-Value="businessInfo.Phone" Placeholder="Telefon numarası" />
+                            </div>
+
+                            <div>
+                                <RadzenLabel Text="E-posta" />
+                                <RadzenTextBox @bind-Value="businessInfo.Email" Placeholder="İşletme e-posta adresi" />
+                            </div>
+
+                            <div>
+                                <RadzenLabel Text="Web Sitesi" />
+                                <RadzenTextBox @bind-Value="businessInfo.Website" Placeholder="Web sitesi" />
+                            </div>
+                        </RadzenStack>
+                    </RadzenCard>
                 }
 
-                <RadzenTextBox Placeholder="E-posta adresinizi girin"
-                               @bind-Value="registerDto.Email"
-                               Icon="email" />
-                @if (!string.IsNullOrEmpty(emailError))
-                {
-                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@emailError</RadzenText>
-                }
-
-                <RadzenPassword Placeholder="Şifrenizi girin"
-                                @bind-Value="registerDto.Password"
-                                Icon="lock" />
-                @if (!string.IsNullOrEmpty(passwordError))
-                {
-                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@passwordError</RadzenText>
-                }
-
-                <RadzenDropDown Placeholder="Rol seçiniz"
-                                @bind-Value="registerDto.Role"
-                                Data="@(new List<string> { "Customer", "Business" })"
-                                Icon="work" />
-                @if (!string.IsNullOrEmpty(roleError))
-                {
-                    <RadzenText TextStyle="TextStyle.Subtitle1" Size="TextStyleSize.Small">@roleError</RadzenText>
-                }
-
-                <RadzenButton Text="Kayıt Ol"
-                              ButtonStyle="ButtonStyle.Success"
-                              Click="@(async () => await HandleRegister())"
-                              Icon="person_add"
-                              Style="width: 100%;" />
+                <RadzenButton Text="Kayıt Ol" 
+                            ButtonStyle="ButtonStyle.Success" 
+                            Click="@(async () => await HandleRegister())" 
+                            Icon="person_add" 
+                            Style="width: 100%;" 
+                            Disabled="isRegistering" />
 
                 <div class="text-center">
                     <RadzenText>Zaten hesabınız var mı? <a href="/login" style="color: var(--rz-primary);">Giriş Yap</a></RadzenText>
@@ -64,67 +155,157 @@
 </div>
 
 @code {
-    private RegisterDto registerDto = new();
+    private RegisterDto registerDto = new() { Role = "Customer" };
+    private CreateBusinessDto businessInfo = new();
+    private List<CategoryDto> categories = new();
+    private bool categoriesLoading = true;
+    private bool isRegistering = false;
+    
+    // Validation errors
     private string nameError = "";
     private string emailError = "";
     private string passwordError = "";
     private string roleError = "";
+    private string businessNameError = "";
+    private string categoryError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        categoriesLoading = true;
+        var response = await CategoryApiService.GetAllCategoriesAsync();
+        if (response.Success)
+        {
+            categories = response.Data ?? new List<CategoryDto>();
+        }
+        categoriesLoading = false;
+    }
+
+    private void OnRoleChanged()
+    {
+        StateHasChanged();
+    }
 
     private async Task HandleRegister()
     {
-        // Basic validation
+        if (!Validate())
+            return;
+
+        isRegistering = true;
+        StateHasChanged();
+
+        try
+        {
+            // Business rolü için business info ekle
+            if (registerDto.Role == "Business")
+            {
+                registerDto.BusinessInfo = businessInfo;
+            }
+
+            var response = await ApiService.RegisterAsync(registerDto);
+
+            if (response.Success)
+            {
+                NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Başarılı",
+                    Detail = "Hesabınız başarıyla oluşturuldu. Giriş yapabilirsiniz.",
+                    Duration = 4000
+                });
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var errorMessage = response.Errors.Any() ? string.Join(", ", response.Errors) : response.Message;
+                NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Hata",
+                    Detail = errorMessage,
+                    Duration = 4000
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Hata",
+                Detail = $"Bir hata oluştu: {ex.Message}",
+                Duration = 4000
+            });
+        }
+        finally
+        {
+            isRegistering = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        // Temizle
         nameError = "";
         emailError = "";
         passwordError = "";
         roleError = "";
+        businessNameError = "";
+        categoryError = "";
 
+        bool isValid = true;
+
+        // Temel validation
         if (string.IsNullOrWhiteSpace(registerDto.Name))
         {
             nameError = "Ad Soyad alanı gereklidir.";
-            return;
+            isValid = false;
         }
 
         if (string.IsNullOrWhiteSpace(registerDto.Email))
         {
             emailError = "E-posta alanı gereklidir.";
-            return;
+            isValid = false;
         }
 
         if (string.IsNullOrWhiteSpace(registerDto.Password))
         {
             passwordError = "Şifre alanı gereklidir.";
-            return;
+            isValid = false;
+        }
+        else if (registerDto.Password.Length < 6)
+        {
+            passwordError = "Şifre en az 6 karakter olmalıdır.";
+            isValid = false;
         }
 
         if (string.IsNullOrWhiteSpace(registerDto.Role))
         {
             roleError = "Rol seçimi gereklidir.";
-            return;
+            isValid = false;
         }
 
-        var response = await ApiService.RegisterAsync(registerDto);
+        // Business için ek validation
+        if (registerDto.Role == "Business")
+        {
+            if (string.IsNullOrWhiteSpace(businessInfo.Name))
+            {
+                businessNameError = "İşletme adı gereklidir.";
+                isValid = false;
+            }
 
-        if (response.Success)
-        {
-            NotificationService.Notify(new NotificationMessage()
+            if (businessInfo.CategoryId <= 0)
             {
-                Severity = NotificationSeverity.Success,
-                Summary = "Başarılı",
-                Detail = response.Message,
-                Duration = 4000
-            });
-            Navigation.NavigateTo("/login");
+                categoryError = "Kategori seçimi gereklidir.";
+                isValid = false;
+            }
         }
-        else
-        {
-            var errorMessage = response.Errors.Any() ? string.Join(", ", response.Errors) : response.Message;
-            NotificationService.Notify(new NotificationMessage()
-            {
-                Severity = NotificationSeverity.Error,
-                Summary = "Hata",
-                Detail = errorMessage,
-                Duration = 4000
-            });
-        }
+
+        return isValid;
     }
 }

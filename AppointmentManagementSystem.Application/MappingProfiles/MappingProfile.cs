@@ -67,6 +67,13 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
 
             // Document mappings
             CreateMap<EmployeeDocument, DocumentDto>(); // BU SATIR EKLENDİ
+                                                        // BusinessUser mappings
+            CreateMap<BusinessUser, BusinessUserDto>()
+                .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business.Name))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
+
+            CreateMap<CreateBusinessUserDto, BusinessUser>();
+
         }
     }
 }

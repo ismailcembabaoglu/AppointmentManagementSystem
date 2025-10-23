@@ -3,61 +3,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class v3 : Migration
+    public partial class v1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Address",
-                table: "Users",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "City",
-                table: "Users",
-                type: "nvarchar(100)",
-                maxLength: 100,
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "DateOfBirth",
-                table: "Users",
-                type: "datetime2",
-                nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsActive",
-                table: "Users",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<int>(
-                name: "OwnedBusinessId",
-                table: "Users",
-                type: "int",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "PhoneNumber",
-                table: "Users",
-                type: "nvarchar(20)",
-                maxLength: 20,
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "ProfilePhotoPath",
-                table: "Users",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
@@ -68,7 +23,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Icon = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -94,7 +50,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     Longitude = table.Column<double>(type: "float", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -105,6 +62,64 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Services",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DurationMinutes = table.Column<int>(type: "int", nullable: false),
+                    BusinessId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Services", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Services_Businesses_BusinessId",
+                        column: x => x.BusinessId,
+                        principalTable: "Businesses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ProfilePhotoPath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    OwnedBusinessId = table.Column<int>(type: "int", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Businesses_OwnedBusinessId",
+                        column: x => x.OwnedBusinessId,
+                        principalTable: "Businesses",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -122,7 +137,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     CanManageServices = table.Column<bool>(type: "bit", nullable: false),
                     CanManageEmployees = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -142,32 +158,6 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Services",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    DurationMinutes = table.Column<int>(type: "int", nullable: false),
-                    BusinessId = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Services", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Services_Businesses_BusinessId",
-                        column: x => x.BusinessId,
-                        principalTable: "Businesses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -180,7 +170,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     BusinessUserId = table.Column<int>(type: "int", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -219,7 +210,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     RatingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedById = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -265,7 +257,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -293,7 +286,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     EmployeeId = table.Column<int>(type: "int", nullable: true),
                     ServiceId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -320,16 +314,15 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_OwnedBusinessId",
-                table: "Users",
-                column: "OwnedBusinessId");
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CreatedAt", "Description", "Icon", "IsDeleted", "Name", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 2, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6272), "Güzellik ve bakım hizmetleri", "spa", false, "Güzellik Merkezi", null },
+                    { 3, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6274), "Diş sağlığı hizmetleri", "local_hospital", false, "Diş Hekimi", null },
+                    { 4, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6276), "Tıbbi estetik hizmetleri", "healing", false, "Tıbbi Estetik", null }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_BusinessId",
@@ -417,21 +410,21 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                 table: "Services",
                 column: "BusinessId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Users_Businesses_OwnedBusinessId",
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
                 table: "Users",
-                column: "OwnedBusinessId",
-                principalTable: "Businesses",
-                principalColumn: "Id");
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_OwnedBusinessId",
+                table: "Users",
+                column: "OwnedBusinessId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Businesses_OwnedBusinessId",
-                table: "Users");
-
             migrationBuilder.DropTable(
                 name: "EmployeeDocuments");
 
@@ -451,46 +444,13 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                 name: "BusinessUsers");
 
             migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
                 name: "Businesses");
 
             migrationBuilder.DropTable(
                 name: "Categories");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Users_Email",
-                table: "Users");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Users_OwnedBusinessId",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "Address",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "City",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "DateOfBirth",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "IsActive",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "OwnedBusinessId",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "PhoneNumber",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "ProfilePhotoPath",
-                table: "Users");
         }
     }
 }

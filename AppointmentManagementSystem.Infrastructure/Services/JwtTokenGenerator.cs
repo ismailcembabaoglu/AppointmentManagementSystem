@@ -22,14 +22,20 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new ArgumentNullException("JWT Key is missing"));
 
-            var claims = new[]
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Name),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
+
+            // Business kullanıcıları için business ID ekle
+            if (user.Role == "Business" && user.OwnedBusinessId.HasValue)
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+                claims.Add(new Claim("businessId", user.OwnedBusinessId.Value.ToString()));
+            }
 
             var signingKey = new SymmetricSecurityKey(key);
             var signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
@@ -44,5 +50,6 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

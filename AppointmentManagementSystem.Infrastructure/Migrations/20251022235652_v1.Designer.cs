@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppointmentDbContext))]
-    [Migration("20251021150054_v4")]
-    partial class v4
+    [Migration("20251022235652_v1")]
+    partial class v1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -259,6 +259,35 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6272),
+                            Description = "Güzellik ve bakım hizmetleri",
+                            Icon = "spa",
+                            IsDeleted = false,
+                            Name = "Güzellik Merkezi"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6274),
+                            Description = "Diş sağlığı hizmetleri",
+                            Icon = "local_hospital",
+                            IsDeleted = false,
+                            Name = "Diş Hekimi"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6276),
+                            Description = "Tıbbi estetik hizmetleri",
+                            Icon = "healing",
+                            IsDeleted = false,
+                            Name = "Tıbbi Estetik"
+                        });
                 });
 
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Employee", b =>

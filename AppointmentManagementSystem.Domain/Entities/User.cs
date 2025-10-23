@@ -38,11 +38,11 @@ namespace AppointmentManagementSystem.Domain.Entities
 
         // Business için alanlar (şirket sahibi ise)
         public int? OwnedBusinessId { get; set; }
+        public virtual Business? OwnedBusiness { get; set; }
 
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public virtual Business? OwnedBusiness { get; set; }
         public virtual ICollection<BusinessUser> BusinessUsers { get; set; } = new List<BusinessUser>();
         public virtual ICollection<Appointment> CustomerAppointments { get; set; } = new List<Appointment>();
     }

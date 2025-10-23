@@ -1,16 +1,18 @@
 ﻿@page "/dashboard/business"
 @attribute [Authorize(Roles = "Business")]
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+@inject IBusinessApiService BusinessApiService
 <PageTitle>İşletme Dashboard</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <h1>İşletme Dashboard</h1>
-            <p>Hoş geldiniz, @businessName!</p>
+            <p>Hoş geldiniz, @(business?.Name??"")!</p>
         </div>
     </div>
 
@@ -58,7 +60,8 @@
 </div>
 
 @code {
-    private string businessName = "";
+    private int businessId = 0;
+    private BusinessDto? business;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,7 +70,25 @@
 
         if (user.Identity.IsAuthenticated)
         {
-            businessName = user.FindFirst("name")?.Value ?? user.Identity.Name ?? "";
+            var businessIdClaim = user.FindFirst("businessId")?.Value;
+            if (!string.IsNullOrEmpty(businessIdClaim) && int.TryParse(businessIdClaim, out int id))
+            {
+                businessId = id;
+                await LoadBusinessData();
+            }
+        }
+    }
+
+    private async Task LoadBusinessData()
+    {
+        if (businessId > 0)
+        {
+            var response = await BusinessApiService.GetBusinessByIdAsync(businessId);
+            if (response.Success)
+            {
+                business = response.Data;
+            }
         }
     }
 }
+

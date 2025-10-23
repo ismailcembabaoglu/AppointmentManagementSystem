@@ -5,39 +5,42 @@ using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
 
-public class CreateBusinessCommandHandler : IRequestHandler<CreateBusinessCommand, BusinessDto>
+namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
-    private readonly IBusinessRepository _businessRepository;
-    private readonly ICategoryRepository _categoryRepository; // BU SATIR EKLENDİ
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-
-    public CreateBusinessCommandHandler(
-        IBusinessRepository businessRepository,
-        ICategoryRepository categoryRepository, // BU SATIR EKLENDİ
-        IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public class CreateBusinessCommandHandler : IRequestHandler<CreateBusinessCommand, BusinessDto>
     {
-        _businessRepository = businessRepository;
-        _categoryRepository = categoryRepository; // BU SATIR EKLENDİ
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-    }
+        private readonly IBusinessRepository _businessRepository;
+        private readonly ICategoryRepository _categoryRepository; // BU SATIR EKLENDİ
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-    public async Task<BusinessDto> Handle(CreateBusinessCommand request, CancellationToken cancellationToken)
-    {
-        // Category kontrolü
-        var categoryExists = await _categoryRepository.GetByIdAsync(request.CreateBusinessDto.CategoryId);
-        if (categoryExists == null)
+        public CreateBusinessCommandHandler(
+            IBusinessRepository businessRepository,
+            ICategoryRepository categoryRepository, // BU SATIR EKLENDİ
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
-            throw new Exception("Geçersiz kategori ID.");
+            _businessRepository = businessRepository;
+            _categoryRepository = categoryRepository; // BU SATIR EKLENDİ
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        var business = _mapper.Map<Business>(request.CreateBusinessDto);
-        await _businessRepository.AddAsync(business);
-        await _unitOfWork.SaveChangesAsync();
+        public async Task<BusinessDto> Handle(CreateBusinessCommand request, CancellationToken cancellationToken)
+        {
+            // Category kontrolü
+            var category = await _categoryRepository.GetByIdAsync(request.CreateBusinessDto.CategoryId);
+            if (category == null)
+            {
+                throw new Exception($"Category with ID {request.CreateBusinessDto.CategoryId} not found.");
+            }
 
-        var businessWithCategory = await _businessRepository.GetByIdWithDetailsAsync(business.Id);
-        return _mapper.Map<BusinessDto>(businessWithCategory);
+            var business = _mapper.Map<Business>(request.CreateBusinessDto);
+            await _businessRepository.AddAsync(business);
+            await _unitOfWork.SaveChangesAsync();
+
+            var businessWithCategory = await _businessRepository.GetByIdWithDetailsAsync(business.Id);
+            return _mapper.Map<BusinessDto>(businessWithCategory);
+        }
     }
 }

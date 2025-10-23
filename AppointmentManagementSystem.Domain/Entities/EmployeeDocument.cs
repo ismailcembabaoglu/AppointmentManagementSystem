@@ -26,6 +26,6 @@ namespace AppointmentManagementSystem.Domain.Entities
         public int EmployeeId { get; set; }
 
         // Navigation property
-        public virtual Employee Employee { get; set; } = new();
+        public virtual Employee? Employee { get; set; } = new();
     }
 }

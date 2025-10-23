@@ -195,9 +195,11 @@ namespace AppointmentManagementSystem.Infrastructure.Data
                       .OnDelete(DeleteBehavior.NoAction);
             });
             modelBuilder.Entity<Category>().HasData(
+                        new Category { Id = 1, Name = "Berber", Description = "Erkek Berber Hizmetleri", Icon = "healing", CreatedAt = DateTime.UtcNow },
         new Category { Id = 2, Name = "Güzellik Merkezi", Description = "Güzellik ve bakım hizmetleri", Icon = "spa", CreatedAt = DateTime.UtcNow },
         new Category { Id = 3, Name = "Diş Hekimi", Description = "Diş sağlığı hizmetleri", Icon = "local_hospital", CreatedAt = DateTime.UtcNow },
         new Category { Id = 4, Name = "Tıbbi Estetik", Description = "Tıbbi estetik hizmetleri", Icon = "healing", CreatedAt = DateTime.UtcNow }
+
     );
         }
     }

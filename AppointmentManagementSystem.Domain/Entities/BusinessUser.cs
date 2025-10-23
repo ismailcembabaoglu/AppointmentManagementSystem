@@ -23,8 +23,8 @@ namespace AppointmentManagementSystem.Domain.Entities
         public bool CanManageEmployees { get; set; } = false;
 
         // Navigation properties
-        public virtual Business Business { get; set; } = new();
-        public virtual User User { get; set; } = new();
-        public virtual ICollection<Employee> ManagedEmployees { get; set; } = new List<Employee>();
+        public virtual Business? Business { get; set; } = new();
+        public virtual User? User { get; set; } = new();
+        public virtual ICollection<Employee>? ManagedEmployees { get; set; } = new List<Employee>();
     }
 }

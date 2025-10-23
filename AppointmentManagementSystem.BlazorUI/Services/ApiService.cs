@@ -1,4 +1,5 @@
-﻿using AppointmentManagementSystem.BlazorUI.Models;
+﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage; // BU SATIRI GÜNCELLE
 using System.Net.Http.Headers;
 using System.Net.Http.Json;

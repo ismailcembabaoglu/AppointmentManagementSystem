@@ -2,6 +2,7 @@
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Features.Categories.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppointmentManagementSystem.API.Controllers
@@ -16,6 +17,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var query = new GetAllCategoriesQuery();

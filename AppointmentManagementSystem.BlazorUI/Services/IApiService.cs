@@ -1,4 +1,5 @@
-﻿using AppointmentManagementSystem.BlazorUI.Models;
+﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.BlazorUI.Models;
 
 namespace AppointmentManagementSystem.BlazorUI.Services
 {

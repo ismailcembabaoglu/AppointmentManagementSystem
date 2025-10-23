@@ -24,8 +24,8 @@ namespace AppointmentManagementSystem.Domain.Entities
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public virtual Business Business { get; set; } = new();
-        public virtual ICollection<ServicePhoto> Photos { get; set; } = new List<ServicePhoto>();
-        public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public virtual Business? Business { get; set; } = new();
+        public virtual ICollection<ServicePhoto>? Photos { get; set; } = new List<ServicePhoto>();
+        public virtual ICollection<Appointment>? Appointments { get; set; } = new List<Appointment>();
     }
 }

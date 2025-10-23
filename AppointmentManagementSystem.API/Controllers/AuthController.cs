@@ -25,7 +25,13 @@ namespace AppointmentManagementSystem.API.Controllers
         {
             var command = new RegisterCommand { RegisterDto = registerDto };
             var result = await _mediator.Send(command);
-            return result.Success ? Ok(result) : BadRequest(result);
+            var resuls= new BaseResponse<AuthResponseDto>
+            {
+                Data = result,
+                Success = !string.IsNullOrEmpty(result.Token),
+                Message = !string.IsNullOrEmpty(result.Token) ? "Kayıt başarılı" : "Kayıt başarısız"
+            };
+            return resuls.Success? Ok(resuls) : BadRequest(result);
         }
 
         [HttpPost("login")]

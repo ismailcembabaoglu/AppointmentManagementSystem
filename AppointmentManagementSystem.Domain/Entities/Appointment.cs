@@ -38,11 +38,11 @@ namespace AppointmentManagementSystem.Domain.Entities
         public DateTime? RatingDate { get; set; }
 
         // Navigation properties
-        public virtual User Customer { get; set; } = new();
-        public virtual Business Business { get; set; } = new();
+        public virtual User? Customer { get; set; } = new();
+        public virtual Business? Business { get; set; } = new();
         public virtual Employee? Employee { get; set; }
-        public virtual Service Service { get; set; } = new();
+        public virtual Service? Service { get; set; } = new();
         public virtual BusinessUser? CreatedBy { get; set; }
-        public virtual ICollection<AppointmentPhoto> Photos { get; set; } = new List<AppointmentPhoto>();
+        public virtual ICollection<AppointmentPhoto>? Photos { get; set; } = new List<AppointmentPhoto>();
     }
 }
