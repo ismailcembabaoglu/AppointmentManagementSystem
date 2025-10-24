@@ -23,6 +23,11 @@ namespace AppointmentManagementSystem.Domain.Entities
 
         public long FileSize { get; set; }
 
+        /// <summary>
+        /// Base64 encoded document data for storing documents directly in database
+        /// </summary>
+        public string? Base64Data { get; set; }
+
         public int EmployeeId { get; set; }
 
         // Navigation property

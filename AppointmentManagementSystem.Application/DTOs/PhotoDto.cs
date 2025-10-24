@@ -7,6 +7,7 @@
         public string? FilePath { get; set; }
         public string? ContentType { get; set; }
         public long FileSize { get; set; }
+        public string? Base64Data { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

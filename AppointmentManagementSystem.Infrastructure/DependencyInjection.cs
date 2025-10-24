@@ -21,8 +21,16 @@ namespace AppointmentManagementSystem.Infrastructure
             services.AddScoped<IServiceRepository, ServiceRepository>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-            // Repositories bölümünde şu satırı ekle:
             services.AddScoped<IBusinessUserRepository, BusinessUserRepository>();
+
+            // Photo Repositories
+            services.AddScoped<IBusinessPhotoRepository, BusinessPhotoRepository>();
+            services.AddScoped<IEmployeePhotoRepository, EmployeePhotoRepository>();
+            services.AddScoped<IServicePhotoRepository, ServicePhotoRepository>();
+            services.AddScoped<IAppointmentPhotoRepository, AppointmentPhotoRepository>();
+
+            // Document Repositories
+            services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
 
 
             // Unit of Work
