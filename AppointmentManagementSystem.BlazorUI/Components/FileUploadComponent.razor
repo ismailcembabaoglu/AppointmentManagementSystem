@@ -1,0 +1,254 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using AppointmentManagementSystem.Application.DTOs
+
+<RadzenCard Style="@CardStyle">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <!-- Upload Area -->
+        <div class="upload-area @(isDragOver ? "drag-over" : "")"
+             @ondrop="HandleDrop"
+             @ondragenter="HandleDragEnter"
+             @ondragleave="HandleDragLeave"
+             @ondragover:preventDefault
+             style="@UploadAreaStyle">
+
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="12px" Style="padding: 24px;">
+                <RadzenText TextStyle="TextStyle.H5" Style="color: var(--rz-primary); margin: 0;">
+                    📁 Dosya Yükle
+                </RadzenText>
+
+                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); text-align: center;">
+                    Dosyaları buraya sürükleyip bırakın veya
+                </RadzenText>
+
+                <InputFile id="fileInput" OnChange="HandleFileSelected" multiple="@Multiple" accept="@Accept" style="display: none;" />
+
+                <RadzenButton Text="Dosya Seç"
+                             ButtonStyle="ButtonStyle.Primary"
+                             Click="@(() => fileInputRef?.Click())"
+                             Size="ButtonSize.Medium"
+                             Icon="upload" />
+
+                @if (!string.IsNullOrEmpty(Accept))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); font-size: 12px;">
+                        İzin verilen: @GetAllowedTypesText()
+                    </RadzenText>
+                }
+
+                @if (MaxFileSize > 0)
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); font-size: 12px;">
+                        Maksimum boyut: @(MaxFileSize / 1024 / 1024)MB
+                    </RadzenText>
+                }
+            </RadzenStack>
+        </div>
+
+        <!-- Uploaded Files Preview -->
+        @if (uploadedFiles.Any())
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                <RadzenText TextStyle="TextStyle.Subtitle2" Style="font-weight: 600;">
+                    Yüklenen Dosyalar (@uploadedFiles.Count)
+                </RadzenText>
+
+                @foreach (var file in uploadedFiles)
+                {
+                    <RadzenCard Style="padding: 12px; background: var(--rz-base-200);">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="12px">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px" Style="flex: 1;">
+                                @if (file.IsImage && !string.IsNullOrEmpty(file.Base64Data))
+                                {
+                                    <img src="data:@file.ContentType;base64,@file.Base64Data"
+                                         alt="@file.FileName"
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 2px solid var(--rz-primary-lighter);" />
+                                }
+                                else
+                                {
+                                    <div style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--rz-primary-lighter); border-radius: 4px;">
+                                        <RadzenText TextStyle="TextStyle.H4" Style="color: var(--rz-primary); margin: 0;">
+                                            📄
+                                        </RadzenText>
+                                    </div>
+                                }
+
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; word-break: break-word;">
+                                        @file.FileName
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">
+                                        @FormatFileSize(file.Size)
+                                    </RadzenText>
+                                </RadzenStack>
+                            </RadzenStack>
+
+                            <RadzenButton Icon="close"
+                                        ButtonStyle="ButtonStyle.Danger"
+                                        Variant="Variant.Flat"
+                                        Size="ButtonSize.Small"
+                                        Click="@(() => RemoveFile(file))" />
+                        </RadzenStack>
+                    </RadzenCard>
+                }
+            </RadzenStack>
+        }
+
+        <!-- Error Messages -->
+        @if (errorMessages.Any())
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                @foreach (var error in errorMessages)
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Size="AlertSize.Small">
+                        ⚠️ @error
+                    </RadzenAlert>
+                }
+            </RadzenStack>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter] public bool Multiple { get; set; } = true;
+    [Parameter] public string Accept { get; set; } = "image/jpeg,image/jpg,image/png,image/webp";
+    [Parameter] public long MaxFileSize { get; set; } = 10 * 1024 * 1024; // 10MB default
+    [Parameter] public EventCallback<List<UploadedFileModel>> OnFilesUploaded { get; set; }
+    [Parameter] public string CardStyle { get; set; } = "width: 100%;";
+
+    private List<UploadedFileModel> uploadedFiles = new();
+    private List<string> errorMessages = new();
+    private bool isDragOver = false;
+    private ElementReference fileInputRef;
+
+    private string UploadAreaStyle => $@"
+        border: 2px dashed {(isDragOver ? "var(--rz-primary)" : "var(--rz-border-color)")};
+        border-radius: 8px;
+        background: {(isDragOver ? "var(--rz-primary-lighter)" : "var(--rz-base-100)")};
+        transition: all 0.3s ease;
+        cursor: pointer;
+    ";
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        errorMessages.Clear();
+
+        foreach (var file in e.GetMultipleFiles(100))
+        {
+            await ProcessFile(file);
+        }
+
+        await NotifyFilesUploaded();
+    }
+
+    private async Task ProcessFile(IBrowserFile file)
+    {
+        try
+        {
+            // Validate file size
+            if (file.Size > MaxFileSize)
+            {
+                errorMessages.Add($"{file.Name}: Dosya boyutu {MaxFileSize / 1024 / 1024}MB'ı aşıyor");
+                return;
+            }
+
+            // Validate file type
+            if (!string.IsNullOrEmpty(Accept))
+            {
+                var allowedTypes = Accept.Split(',').Select(t => t.Trim().ToLower()).ToList();
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                {
+                    errorMessages.Add($"{file.Name}: İzin verilmeyen dosya tipi");
+                    return;
+                }
+            }
+
+            // Read file and convert to base64
+            var buffer = new byte[file.Size];
+            await file.OpenReadStream(MaxFileSize).ReadAsync(buffer);
+            var base64 = Convert.ToBase64String(buffer);
+
+            var uploadedFile = new UploadedFileModel
+            {
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                Size = file.Size,
+                Base64Data = base64,
+                IsImage = file.ContentType.StartsWith("image/")
+            };
+
+            uploadedFiles.Add(uploadedFile);
+        }
+        catch (Exception ex)
+        {
+            errorMessages.Add($"{file.Name}: {ex.Message}");
+        }
+    }
+
+    private void HandleDragEnter()
+    {
+        isDragOver = true;
+    }
+
+    private void HandleDragLeave()
+    {
+        isDragOver = false;
+    }
+
+    private async Task HandleDrop(DragEventArgs e)
+    {
+        isDragOver = false;
+        // Note: Drag and drop file handling requires JavaScript interop in Blazor
+        // For now, users will use the file picker
+    }
+
+    private void RemoveFile(UploadedFileModel file)
+    {
+        uploadedFiles.Remove(file);
+        NotifyFilesUploaded();
+    }
+
+    private async Task NotifyFilesUploaded()
+    {
+        await OnFilesUploaded.InvokeAsync(uploadedFiles);
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private string GetAllowedTypesText()
+    {
+        if (Accept.Contains("image"))
+            return "JPG, PNG, WebP";
+        if (Accept.Contains("pdf"))
+            return "PDF, DOC, DOCX";
+        return "Tüm dosyalar";
+    }
+
+    public List<UploadedFileModel> GetUploadedFiles() => uploadedFiles;
+
+    public void ClearFiles()
+    {
+        uploadedFiles.Clear();
+        errorMessages.Clear();
+        StateHasChanged();
+    }
+
+    public class UploadedFileModel
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public string Base64Data { get; set; } = string.Empty;
+        public bool IsImage { get; set; }
+    }
+}
