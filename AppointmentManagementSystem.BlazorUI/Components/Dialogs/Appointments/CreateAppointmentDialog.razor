@@ -9,157 +9,206 @@
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenCard Style="min-width: 500px;">
-    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-        <h3>Yeni Randevu</h3>
-        
-        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+<RadzenCard Style="min-width: 550px; max-width: 700px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+        <!-- Başlık Bölümü -->
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="8px" Style="padding-bottom: 8px; border-bottom: 2px solid var(--rz-primary);">
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: var(--rz-primary); font-weight: 600;">
+                📅 Yeni Randevu Oluştur
+            </RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
             <!-- İşletme Seçimi -->
-            <div>
-                <RadzenLabel Text="İşletme *" />
+            <RadzenFormField Text="İşletme" Variant="Variant.Outlined" Style="width: 100%;">
                 @if (businessesLoading)
                 {
-                    <RadzenLoader Size="LoaderSize.Small" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">Yükleniyor...</RadzenText>
+                    </RadzenStack>
                 }
                 else
                 {
-                    <RadzenDropDown @bind-Value="selectedBusinessId" 
-                                  Data="businesses" 
-                                  TextProperty="Name" 
-                                  ValueProperty="Id" 
-                                  Placeholder="İşletme seçin"
-                                  Change="@(args => OnBusinessChanged())" />
+                    <RadzenDropDown @bind-Value="selectedBusinessId"
+                                  Data="businesses"
+                                  TextProperty="Name"
+                                  ValueProperty="Id"
+                                  Placeholder="İşletme seçiniz"
+                                  Change="@(args => OnBusinessChanged())"
+                                  Style="width: 100%;" />
                 }
                 @if (!string.IsNullOrEmpty(businessError))
                 {
-                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessError</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px; display: block;">
+                        ⚠️ @businessError
+                    </RadzenText>
                 }
-            </div>
+            </RadzenFormField>
 
             <!-- Hizmet Seçimi -->
-            <div>
-                <RadzenLabel Text="Hizmet *" />
+            <RadzenFormField Text="Hizmet" Variant="Variant.Outlined" Style="width: 100%;">
                 @if (servicesLoading)
                 {
-                    <RadzenLoader Size="LoaderSize.Small" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">Yükleniyor...</RadzenText>
+                    </RadzenStack>
                 }
                 else if (services.Any())
                 {
-                    <RadzenDropDown @bind-Value="appointmentDto.ServiceId" 
-                                  Data="services" 
-                                  TextProperty="Name" 
-                                  ValueProperty="Id" 
-                                  Placeholder="Hizmet seçin"
-                                  Change="@(args => OnServiceChanged())" />
-                    @if (selectedService != null)
-                    {
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                @if (selectedService.Price.HasValue)
-                                {
-                                    <span>@selectedService.Price.Value.ToString("C") - </span>
-                                }
-                                <span>@selectedService.DurationMinutes dk</span>
-                            </small>
-                        </div>
-                    }
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                        <RadzenDropDown @bind-Value="appointmentDto.ServiceId"
+                                      Data="services"
+                                      TextProperty="Name"
+                                      ValueProperty="Id"
+                                      Placeholder="Hizmet seçiniz"
+                                      Change="@(args => OnServiceChanged())"
+                                      Style="width: 100%;" />
+                        @if (selectedService != null)
+                        {
+                            <RadzenCard Style="padding: 8px 12px; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 3px solid var(--rz-primary);">
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" AlignItems="AlignItems.Center">
+                                    @if (selectedService.Price.HasValue)
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">💰</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; color: var(--rz-success);">
+                                                @selectedService.Price.Value.ToString("C")
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    }
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">⏱️</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600;">
+                                            @selectedService.DurationMinutes dk
+                                        </RadzenText>
+                                    </RadzenStack>
+                                </RadzenStack>
+                            </RadzenCard>
+                        }
+                    </RadzenStack>
                 }
                 else if (selectedBusinessId > 0)
                 {
-                    <div class="alert alert-info small">
+                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Size="AlertSize.Small" Shade="Shade.Lighter">
                         Bu işletmede henüz hizmet tanımlanmamış.
-                    </div>
+                    </RadzenAlert>
                 }
                 @if (!string.IsNullOrEmpty(serviceError))
                 {
-                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@serviceError</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px; display: block;">
+                        ⚠️ @serviceError
+                    </RadzenText>
                 }
-            </div>
+            </RadzenFormField>
 
             <!-- Çalışan Seçimi (Opsiyonel) -->
-            <div>
-                <RadzenLabel Text="Çalışan (Opsiyonel)" />
+            <RadzenFormField Text="Çalışan (Opsiyonel)" Variant="Variant.Outlined" Style="width: 100%;">
                 @if (employeesLoading)
                 {
-                    <RadzenLoader Size="LoaderSize.Small" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">Yükleniyor...</RadzenText>
+                    </RadzenStack>
                 }
                 else if (employees.Any())
                 {
-                    <RadzenDropDown @bind-Value="appointmentDto.EmployeeId" 
-                                  Data="employees" 
-                                  TextProperty="Name" 
-                                  ValueProperty="Id" 
-                                  Placeholder="Çalışan seçin (opsiyonel)" 
-                                  AllowClear="true" />
+                    <RadzenDropDown @bind-Value="appointmentDto.EmployeeId"
+                                  Data="employees"
+                                  TextProperty="Name"
+                                  ValueProperty="Id"
+                                  Placeholder="Çalışan seçiniz (opsiyonel)"
+                                  AllowClear="true"
+                                  Style="width: 100%;" />
                 }
                 else if (selectedBusinessId > 0)
                 {
-                    <div class="alert alert-info small">
+                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Size="AlertSize.Small" Shade="Shade.Lighter">
                         Bu işletmede henüz çalışan tanımlanmamış.
-                    </div>
+                    </RadzenAlert>
                 }
-            </div>
+            </RadzenFormField>
 
             <!-- Tarih ve Saat -->
-            <RadzenRow>
-                <RadzenColumn Col="6">
-                    <div>
-                        <RadzenLabel Text="Tarih *" />
-                        <RadzenDatePicker @bind-Value="appointmentDto.AppointmentDate" 
-                                        DateFormat="dd.MM.yyyy" 
-                                        Placeholder="Tarih seçin" />
+            <RadzenRow Gap="12px">
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Tarih" Variant="Variant.Outlined" Style="width: 100%;">
+                        <RadzenDatePicker @bind-Value="appointmentDto.AppointmentDate"
+                                        DateFormat="dd.MM.yyyy"
+                                        Placeholder="Tarih seçiniz"
+                                        Style="width: 100%;" />
                         @if (!string.IsNullOrEmpty(dateError))
                         {
-                            <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@dateError</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px; display: block;">
+                                ⚠️ @dateError
+                            </RadzenText>
                         }
-                    </div>
+                    </RadzenFormField>
                 </RadzenColumn>
-                <RadzenColumn Col="6">
-                    <div>
-                        <RadzenLabel Text="Saat *" />
-                        <RadzenTimeSpanPicker @bind-Value="appointmentDto.StartTime" 
-                                        Format="HH:mm" 
-                                        Placeholder="Saat seçin" />
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="Saat" Variant="Variant.Outlined" Style="width: 100%;">
+                        <RadzenTimeSpanPicker @bind-Value="appointmentDto.StartTime"
+                                        Format="HH:mm"
+                                        Placeholder="Saat seçiniz"
+                                        Style="width: 100%;" />
                         @if (!string.IsNullOrEmpty(timeError))
                         {
-                            <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@timeError</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px; display: block;">
+                                ⚠️ @timeError
+                            </RadzenText>
                         }
-                    </div>
+                    </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
 
             <!-- Notlar -->
-            <div>
-                <RadzenLabel Text="Notlar" />
-                <RadzenTextArea @bind-Value="appointmentDto.Notes" Rows="3" Placeholder="Ek notlar (opsiyonel)" />
-            </div>
+            <RadzenFormField Text="Notlar (Opsiyonel)" Variant="Variant.Outlined" Style="width: 100%;">
+                <RadzenTextArea @bind-Value="appointmentDto.Notes"
+                              Rows="3"
+                              Placeholder="Randevu ile ilgili notlarınızı buraya yazabilirsiniz..."
+                              Style="width: 100%;" />
+            </RadzenFormField>
         </RadzenStack>
 
-        <!-- Toplam Süre ve Fiyat -->
+        <!-- Toplam Süre ve Fiyat Özeti -->
         @if (selectedService != null)
         {
-            <RadzenCard Style="background-color: #f8f9fa;">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <strong>Toplam Süre:</strong> @selectedService.DurationMinutes dk
-                    </div>
+            <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                        <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
+                            ⏱️ Toplam Süre:
+                        </RadzenText>
+                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@($"{selectedService.DurationMinutes} dakika")" Style="font-size: 14px; padding: 6px 12px;" />
+                    </RadzenStack>
                     @if (selectedService.Price.HasValue)
                     {
-                        <div>
-                            <strong>Toplam Fiyat:</strong> @selectedService.Price.Value.ToString("C")
-                        </div>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                            <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
+                                💰 Toplam Tutar:
+                            </RadzenText>
+                            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@selectedService.Price.Value.ToString("C")" Style="font-size: 14px; padding: 6px 12px; font-weight: 600;" />
+                        </RadzenStack>
                     }
-                </div>
+                </RadzenStack>
             </RadzenCard>
         }
 
-        <div class="d-flex justify-content-end gap-2">
-            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
-            <RadzenButton Text="Randevu Oluştur" 
-                        ButtonStyle="ButtonStyle.Primary" 
-                        Click="Save" 
-                        Disabled="isSaving" />
-        </div>
+        <!-- Butonlar -->
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="12px" Style="padding-top: 8px;">
+            <RadzenButton Text="İptal"
+                        ButtonStyle="ButtonStyle.Light"
+                        Click="Cancel"
+                        Size="ButtonSize.Medium"
+                        Style="min-width: 100px;" />
+            <RadzenButton Text="@(isSaving ? "Kaydediliyor..." : "Randevu Oluştur")"
+                        ButtonStyle="ButtonStyle.Primary"
+                        Click="Save"
+                        Disabled="isSaving"
+                        Size="ButtonSize.Medium"
+                        Style="min-width: 140px; font-weight: 600;" />
+        </RadzenStack>
     </RadzenStack>
 </RadzenCard>
 
