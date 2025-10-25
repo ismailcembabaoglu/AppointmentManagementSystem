@@ -441,16 +441,16 @@
     <RadzenCard Style="margin-top: 0; border-radius: 12px; background: var(--rz-base-background-color);">
         <RadzenRow Gap="12px">
             <RadzenColumn Size="12" SizeMD="4">
-                <RadzenButton Text="@(currentStep == 0 ? "İptal" : "Geri")" 
-                             ButtonStyle="ButtonStyle.Light" 
-                             Click="@(currentStep == 0 ? (EventCallback)Cancel : PreviousStep)"
-                             Style="width: 100%;" 
+                <RadzenButton Text="@(currentStep == 0 ? "İptal" : "Geri")"
+                             ButtonStyle="ButtonStyle.Light"
+                             Click="@(async () => { if (currentStep == 0) Cancel(); else PreviousStep(); })"
+                             Style="width: 100%;"
                              Size="ButtonSize.Large" />
             </RadzenColumn>
             <RadzenColumn Size="12" SizeMD="8">
-                <RadzenButton Text="@(currentStep == stepTitles.Length - 1 ? (isSaving ? "Oluşturuluyor..." : "Randevuyu Oluştur") : "Devam Et")" 
-                             ButtonStyle="ButtonStyle.Primary" 
-                             Click="@(currentStep == stepTitles.Length - 1 ? (EventCallback)Save : NextStep)"
+                <RadzenButton Text="@(currentStep == stepTitles.Length - 1 ? (isSaving ? "Oluşturuluyor..." : "Randevuyu Oluştur") : "Devam Et")"
+                             ButtonStyle="ButtonStyle.Primary"
+                             Click="@(async () => { if (currentStep == stepTitles.Length - 1) await Save(); else await NextStep(); })"
                              Disabled="@(!CanProceed() || isSaving)"
                              Style="width: 100%; font-weight: 600;" 
                              Size="ButtonSize.Large" />
