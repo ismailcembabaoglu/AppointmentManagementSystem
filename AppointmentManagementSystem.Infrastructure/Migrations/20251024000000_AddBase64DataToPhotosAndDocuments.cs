@@ -10,10 +10,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Add Base64Data column to Photos table (for BusinessPhoto, EmployeePhoto, ServicePhoto, AppointmentPhoto)
+            // Add Base64Data column to Photo table (TPH: BusinessPhoto, EmployeePhoto, ServicePhoto, AppointmentPhoto)
             migrationBuilder.AddColumn<string>(
                 name: "Base64Data",
-                table: "Photos",
+                table: "Photo",
                 type: "nvarchar(max)",
                 nullable: true);
 
@@ -28,10 +28,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Remove Base64Data column from Photos table
+            // Remove Base64Data column from Photo table
             migrationBuilder.DropColumn(
                 name: "Base64Data",
-                table: "Photos");
+                table: "Photo");
 
             // Remove Base64Data column from EmployeeDocuments table
             migrationBuilder.DropColumn(
