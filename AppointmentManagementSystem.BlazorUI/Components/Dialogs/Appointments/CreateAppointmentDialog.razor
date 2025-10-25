@@ -109,7 +109,7 @@
                         {
                             var isSelected = selectedTimeSlot == slot;
                             <RadzenColumn Size="6" SizeSM="4" SizeMD="3">
-                                <RadzenButton Text="@slot.ToString(@"HH\:mm")"
+                                <RadzenButton Text="@($"{slot.Hours:00}:{slot.Minutes:00}")"
                                              ButtonStyle="@(isSelected ? ButtonStyle.Primary : ButtonStyle.Light)"
                                              Click="@(() => SelectTimeSlot(slot))"
                                              Style="width: 100%; font-weight: 600; transition: all 0.2s ease;"
@@ -353,7 +353,7 @@
                                     @selectedDate.Value.ToString("dd MMMM yyyy, dddd")
                                 </RadzenText>
                                 <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0; font-weight: 600; color: var(--rz-primary);">
-                                    @selectedTimeSlot.Value.ToString(@"HH\:mm")
+                                    @($"{selectedTimeSlot.Value.Hours:00}:{selectedTimeSlot.Value.Minutes:00}")
                                 </RadzenText>
                             </RadzenStack>
                         </RadzenStack>
