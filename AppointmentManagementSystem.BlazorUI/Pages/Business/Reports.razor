@@ -365,7 +365,7 @@ else
 
             if (user.Identity?.IsAuthenticated == true)
             {
-                var businessesResponse = await BusinessService.GetAllAsync();
+                var businessesResponse = await BusinessService.GetAllBusinessesAsync();
                 if (businessesResponse.Success && businessesResponse.Data != null)
                 {
                     business = businessesResponse.Data.FirstOrDefault();
@@ -397,10 +397,10 @@ else
         {
             if (business != null)
             {
-                var response = await ServiceService.GetByBusinessIdAsync(business.Id);
+                var response = await ServiceService.GetAllServicesAsync(business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    services = response.Data.ToList();
+                    services = response.Data;
                 }
             }
         }
@@ -416,10 +416,10 @@ else
         {
             if (business != null)
             {
-                var response = await EmployeeService.GetByBusinessIdAsync(business.Id);
+                var response = await EmployeeService.GetAllEmployeesAsync(business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    employees = response.Data.ToList();
+                    employees = response.Data;
                 }
             }
         }

@@ -401,7 +401,7 @@ else
             if (user.Identity?.IsAuthenticated == true)
             {
                 // Get all businesses and find the one for current user
-                var businessesResponse = await BusinessService.GetAllAsync();
+                var businessesResponse = await BusinessService.GetAllBusinessesAsync();
                 if (businessesResponse.Success && businessesResponse.Data != null)
                 {
                     // For now, get the first business (later we'll filter by user)
@@ -437,10 +437,10 @@ else
         {
             if (business != null)
             {
-                var response = await ServiceService.GetByBusinessIdAsync(business.Id);
+                var response = await ServiceService.GetAllServicesAsync(business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    services = response.Data.ToList();
+                    services = response.Data;
                     servicesCount = services.Count;
                 }
             }
@@ -465,10 +465,10 @@ else
         {
             if (business != null)
             {
-                var response = await EmployeeService.GetByBusinessIdAsync(business.Id);
+                var response = await EmployeeService.GetAllEmployeesAsync(business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    employees = response.Data.ToList();
+                    employees = response.Data;
                     employeesCount = employees.Count;
                 }
             }
@@ -579,7 +579,7 @@ else
 
         if (confirmed == true)
         {
-            var response = await ServiceService.DeleteAsync(serviceId);
+            var response = await ServiceService.DeleteServiceAsync(serviceId);
             if (response.Success)
             {
                 await LoadServices();
@@ -633,7 +633,7 @@ else
 
         if (confirmed == true)
         {
-            var response = await EmployeeService.DeleteAsync(employeeId);
+            var response = await EmployeeService.DeleteEmployeeAsync(employeeId);
             if (response.Success)
             {
                 await LoadEmployees();
