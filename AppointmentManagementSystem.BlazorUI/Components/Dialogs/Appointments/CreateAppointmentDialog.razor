@@ -85,11 +85,14 @@
                     <RadzenText TextStyle="TextStyle.H5" Style="font-weight: 600; margin: 0;">
                         Saat Seçin
                     </RadzenText>
-                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                        @selectedDate.Value.ToString("dd MMMM yyyy, dddd") - Uygun saatler
-                    </RadzenText>
+                    @if (selectedDate.HasValue)
+                    {
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                            @selectedDate.Value.ToString("dd MMMM yyyy, dddd") - Uygun saatler
+                        </RadzenText>
+                    }
                 </RadzenStack>
-                
+
                 @if (loadingTimeSlots)
                 {
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center" Style="padding: 40px 0;">
@@ -99,14 +102,14 @@
                         </RadzenText>
                     </RadzenStack>
                 }
-                else
+                else if (availableTimeSlots.Any())
                 {
                     <RadzenRow Gap="12px">
                         @foreach (var slot in availableTimeSlots)
                         {
                             var isSelected = selectedTimeSlot == slot;
                             <RadzenColumn Size="6" SizeSM="4" SizeMD="3">
-                                <RadzenButton Text="@slot.ToString(@"HH\:mm")" 
+                                <RadzenButton Text="@slot.ToString(@"HH\:mm")"
                                              ButtonStyle="@(isSelected ? ButtonStyle.Primary : ButtonStyle.Light)"
                                              Click="@(() => SelectTimeSlot(slot))"
                                              Style="width: 100%; font-weight: 600; transition: all 0.2s ease;"
@@ -114,13 +117,12 @@
                             </RadzenColumn>
                         }
                     </RadzenRow>
-                    
-                    @if (availableTimeSlots.Count == 0)
-                    {
-                        <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
-                            Bu tarih için uygun saat bulunmamaktadır. Lütfen başka bir tarih seçin.
-                        </RadzenAlert>
-                    }
+                }
+                else
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
+                        Bu tarih için uygun saat bulunmamaktadır. Lütfen başka bir tarih seçin.
+                    </RadzenAlert>
                 }
             </RadzenStack>
         }
@@ -530,34 +532,50 @@
 
     private async Task OnDateChanged(DateTime? value)
     {
-        if (value.HasValue)
+        try
         {
-            await LoadAvailableTimeSlots(value.Value);
+            if (value.HasValue)
+            {
+                await LoadAvailableTimeSlots(value.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Tarih değiştirilirken hata oluştu: {ex.Message}");
         }
     }
 
     private async Task LoadAvailableTimeSlots(DateTime date)
     {
-        loadingTimeSlots = true;
-        availableTimeSlots.Clear();
-        selectedTimeSlot = null;
-        StateHasChanged();
-
-        // Simulate API call - In real app, get from backend
-        await Task.Delay(500);
-
-        // Generate time slots (9:00 - 18:00, every 30 minutes)
-        var startHour = 9;
-        var endHour = 18;
-        
-        for (int hour = startHour; hour < endHour; hour++)
+        try
         {
-            availableTimeSlots.Add(new TimeSpan(hour, 0, 0));
-            availableTimeSlots.Add(new TimeSpan(hour, 30, 0));
-        }
+            loadingTimeSlots = true;
+            availableTimeSlots.Clear();
+            selectedTimeSlot = null;
+            StateHasChanged();
 
-        loadingTimeSlots = false;
-        StateHasChanged();
+            // Simulate API call - In real app, get from backend
+            await Task.Delay(500);
+
+            // Generate time slots (9:00 - 18:00, every 30 minutes)
+            var startHour = 9;
+            var endHour = 18;
+
+            for (int hour = startHour; hour < endHour; hour++)
+            {
+                availableTimeSlots.Add(new TimeSpan(hour, 0, 0));
+                availableTimeSlots.Add(new TimeSpan(hour, 30, 0));
+            }
+
+            loadingTimeSlots = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            loadingTimeSlots = false;
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Uygun saatler yüklenirken hata oluştu: {ex.Message}");
+            StateHasChanged();
+        }
     }
 
     private void SelectTimeSlot(TimeSpan slot)
@@ -618,13 +636,20 @@
 
     private async Task NextStep()
     {
-        if (currentStep == 0 && selectedDate.HasValue)
+        try
         {
-            await LoadAvailableTimeSlots(selectedDate.Value);
-        }
+            if (currentStep == 0 && selectedDate.HasValue)
+            {
+                await LoadAvailableTimeSlots(selectedDate.Value);
+            }
 
-        currentStep++;
-        StateHasChanged();
+            currentStep++;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"İşlem sırasında hata oluştu: {ex.Message}");
+        }
     }
 
     private void PreviousStep()
