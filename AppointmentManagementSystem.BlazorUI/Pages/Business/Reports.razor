@@ -61,7 +61,7 @@ else
                     <RadzenDatePicker @bind-Value="startDate"
                                      DateFormat="dd/MM/yyyy"
                                      Style="width: 100%;"
-                                     Change="@ApplyFilters" />
+                                     Change="@(args => ApplyFilters())" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -71,7 +71,7 @@ else
                     <RadzenDatePicker @bind-Value="endDate"
                                      DateFormat="dd/MM/yyyy"
                                      Style="width: 100%;"
-                                     Change="@ApplyFilters" />
+                                     Change="@(args => ApplyFilters())" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -85,7 +85,7 @@ else
                                    AllowClear="true"
                                    Placeholder="Tüm Çalışanlar"
                                    Style="width: 100%;"
-                                   Change="@ApplyFilters" />
+                                   Change="@(args => ApplyFilters())" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -97,7 +97,7 @@ else
                                    AllowClear="true"
                                    Placeholder="Tüm Durumlar"
                                    Style="width: 100%;"
-                                   Change="@ApplyFilters" />
+                                   Change="@(args => ApplyFilters())" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>

@@ -62,12 +62,12 @@
                     Randevu Tarihini Seçin
                 </RadzenText>
                 
-                <RadzenDatePicker @bind-Value="selectedDate" 
+                <RadzenDatePicker @bind-Value="selectedDate"
                                  Inline="true"
                                  DateFormat="dd/MM/yyyy"
                                  Style="width: 100%;"
                                  Min="DateTime.Today"
-                                 Change="@OnDateChanged" />
+                                 Change="@(args => OnDateChanged(args))" />
                 
                 @if (selectedDate.HasValue)
                 {
