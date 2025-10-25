@@ -107,15 +107,15 @@ else
             <RadzenButton Text="Filtreleri Uygula"
                          Icon="filter_list"
                          ButtonStyle="ButtonStyle.Primary"
-                         Click="@ApplyFilters" />
+                         Click="@(() => ApplyFilters())" />
             <RadzenButton Text="Filtreleri Temizle"
                          Icon="clear"
                          ButtonStyle="ButtonStyle.Light"
-                         Click="@ClearFilters" />
+                         Click="@(() => ClearFilters())" />
             <RadzenButton Text="Excel'e Aktar"
                          Icon="download"
                          ButtonStyle="ButtonStyle.Success"
-                         Click="@ExportToExcel"
+                         Click="@(() => ExportToExcel())"
                          Style="margin-left: auto;" />
         </RadzenStack>
     </RadzenCard>
