@@ -1,56 +1,96 @@
-﻿@page "/categories"
+@page "/categories"
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
 @inject ICategoryApiService CategoryApiService
-@inject NotificationService NotificationService
 @inject NavigationManager Navigation
+@inject NotificationService NotificationService
 
 <PageTitle>Kategoriler</PageTitle>
 
-<RadzenCard>
-    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Kategoriler</h2>
-        </div>
-        
-        @if (isLoading)
-        {
-            <div class="text-center">
-                <RadzenLoader />
-                <p>Yükleniyor...</p>
-            </div>
-        }
-        else if (categories.Any())
-        {
-            <RadzenDataGrid Data="@categories" 
-                           TItem="CategoryDto" 
-                           AllowPaging="true" 
-                           AllowSorting="true"
-                           PageSize="10">
-                <Columns>
-                    <RadzenDataGridColumn TItem="CategoryDto" Property="Id" Title="ID" Width="80px" />
-                    <RadzenDataGridColumn TItem="CategoryDto" Property="Name" Title="Kategori Adı" />
-                    <RadzenDataGridColumn TItem="CategoryDto" Property="Description" Title="Açıklama" />
-                    <RadzenDataGridColumn TItem="CategoryDto" Property="BusinessCount" Title="İşletme Sayısı" Width="150px" />
-                    <RadzenDataGridColumn TItem="CategoryDto" Title="İşlemler" Width="120px">
-                        <Template Context="category">
-                            <RadzenButton Text="İşletmeler" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" 
-                                        Click="@(args => ViewBusinesses(category.Id))" Icon="business" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Columns>
-            </RadzenDataGrid>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                <p>Henüz kategori bulunmamaktadır.</p>
-            </div>
-        }
-    </RadzenStack>
-</RadzenCard>
+<RadzenStack Orientation="Orientation.Vertical" Gap="24px" Style="padding: 16px;">
+    <!-- Hero Header -->
+    <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; border-radius: 16px; text-align: center; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px" AlignItems="AlignItems.Center">
+            <RadzenText TextStyle="TextStyle.H3" Style="color: white; font-weight: 700; margin: 0;">
+                Hoş Geldiniz! 👋
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" Style="color: rgba(255,255,255,0.9); max-width: 600px;">
+                Hizmet almak istediğiniz kategoriyi seçin ve size en yakın işletmeleri keşfedin
+            </RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (isLoading)
+    {
+        <RadzenCard Style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color);">
+                    Kategoriler yükleniyor...
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else if (categories.Any())
+    {
+        <!-- Categories Grid -->
+        <RadzenRow Gap="16px">
+            @foreach (var category in categories)
+            {
+                <RadzenColumn Size="12" SizeSM="6" SizeMD="4" SizeLG="3">
+                    <RadzenCard @onclick="@(() => NavigateToBusinesses(category.Id))" 
+                               Style="cursor: pointer; height: 100%; transition: all 0.3s ease; border-radius: 12px; overflow: hidden;"
+                               class="category-card">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center" Style="padding: 24px;">
+                            <!-- Icon -->
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin: 0;">
+                                    @GetCategoryIcon(category.Name)
+                                </RadzenText>
+                            </div>
+                            
+                            <!-- Category Name -->
+                            <RadzenText TextStyle="TextStyle.H6" Style="text-align: center; font-weight: 600; margin: 0;">
+                                @category.Name
+                            </RadzenText>
+                            
+                            <!-- Description -->
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                <RadzenText TextStyle="TextStyle.Body2" Style="text-align: center; color: var(--rz-text-secondary-color); margin: 0; min-height: 40px;">
+                                    @category.Description
+                                </RadzenText>
+                            }
+                            
+                            <!-- Arrow Icon -->
+                            <RadzenIcon Icon="arrow_forward" Style="color: var(--rz-primary);" />
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenColumn>
+            }
+        </RadzenRow>
+    }
+    else
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="category" Style="font-size: 64px; color: var(--rz-text-disabled-color);" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color);">
+                    Henüz kategori bulunmamaktadır
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+<style>
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+    }
+</style>
 
 @code {
     private List<CategoryDto> categories = new();
@@ -81,9 +121,24 @@
         StateHasChanged();
     }
 
-    private void ViewBusinesses(int categoryId)
+    private void NavigateToBusinesses(int categoryId)
     {
-        // İşletmeler sayfasına yönlendir
-        Navigation.NavigateTo($"/categories/{categoryId}/businesses");
+        Navigation.NavigateTo($"/businesses/category/{categoryId}");
+    }
+
+    private string GetCategoryIcon(string categoryName)
+    {
+        return categoryName.ToLower() switch
+        {
+            var name when name.Contains("kuaför") || name.Contains("berber") => "✂️",
+            var name when name.Contains("güzellik") || name.Contains("spa") => "💆",
+            var name when name.Contains("sağlık") || name.Contains("doktor") => "🏥",
+            var name when name.Contains("fitness") || name.Contains("spor") => "💪",
+            var name when name.Contains("restorant") || name.Contains("cafe") => "🍴",
+            var name when name.Contains("oto") || name.Contains("araba") => "🚗",
+            var name when name.Contains("eğitim") || name.Contains("kurs") => "📚",
+            var name when name.Contains("pet") || name.Contains("veteriner") => "🐾",
+            _ => "📋"
+        };
     }
 }
