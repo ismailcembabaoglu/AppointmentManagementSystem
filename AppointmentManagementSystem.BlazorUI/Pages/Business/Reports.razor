@@ -1,0 +1,587 @@
+@page "/business/reports"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IBusinessApiService BusinessService
+@inject IServiceApiService ServiceService
+@inject IEmployeeApiService EmployeeService
+@inject IAppointmentApiService AppointmentService
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Business")]
+
+<PageTitle>Raporlar</PageTitle>
+
+<!-- Hero Section -->
+<RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 24px; padding: 32px;">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700;">
+                Raporlar
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" Style="opacity: 0.95;">
+                İşletmenizin detaylı raporlarını görüntüleyin
+            </RadzenText>
+        </RadzenStack>
+        <RadzenButton Text="Panele Dön"
+                     Icon="dashboard"
+                     ButtonStyle="ButtonStyle.Light"
+                     Click="@(() => Navigation.NavigateTo("/business/dashboard"))"
+                     Style="background: white; color: var(--rz-primary);" />
+    </RadzenStack>
+</RadzenCard>
+
+@if (isLoading)
+{
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 64px 0;">
+        <RadzenProgressBarCircular ShowValue="false" ProgressBarStyle="ProgressBarStyle.Primary" />
+        <RadzenText>Yükleniyor...</RadzenText>
+    </RadzenStack>
+}
+else if (business == null)
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 32px;">
+            <RadzenIcon Icon="business" Style="font-size: 64px; color: var(--rz-text-disabled-color);" />
+            <RadzenText TextStyle="TextStyle.H6">Henüz bir işletmeniz yok</RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <!-- Filters Card -->
+    <RadzenCard Style="margin-bottom: 24px;">
+        <RadzenText TextStyle="TextStyle.H6" Style="margin-bottom: 16px;">Filtreler</RadzenText>
+
+        <RadzenRow Gap="16px">
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenLabel Text="Başlangıç Tarihi" />
+                    <RadzenDatePicker @bind-Value="startDate"
+                                     DateFormat="dd/MM/yyyy"
+                                     Style="width: 100%;"
+                                     Change="@ApplyFilters" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenLabel Text="Bitiş Tarihi" />
+                    <RadzenDatePicker @bind-Value="endDate"
+                                     DateFormat="dd/MM/yyyy"
+                                     Style="width: 100%;"
+                                     Change="@ApplyFilters" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenLabel Text="Çalışan" />
+                    <RadzenDropDown Data="@employees"
+                                   @bind-Value="selectedEmployeeId"
+                                   TextProperty="Name"
+                                   ValueProperty="Id"
+                                   AllowClear="true"
+                                   Placeholder="Tüm Çalışanlar"
+                                   Style="width: 100%;"
+                                   Change="@ApplyFilters" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenLabel Text="Durum" />
+                    <RadzenDropDown Data="@statusOptions"
+                                   @bind-Value="selectedStatus"
+                                   AllowClear="true"
+                                   Placeholder="Tüm Durumlar"
+                                   Style="width: 100%;"
+                                   Change="@ApplyFilters" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" Style="margin-top: 16px;">
+            <RadzenButton Text="Filtreleri Uygula"
+                         Icon="filter_list"
+                         ButtonStyle="ButtonStyle.Primary"
+                         Click="@ApplyFilters" />
+            <RadzenButton Text="Filtreleri Temizle"
+                         Icon="clear"
+                         ButtonStyle="ButtonStyle.Light"
+                         Click="@ClearFilters" />
+            <RadzenButton Text="Excel'e Aktar"
+                         Icon="download"
+                         ButtonStyle="ButtonStyle.Success"
+                         Click="@ExportToExcel"
+                         Style="margin-left: auto;" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- Summary Statistics -->
+    <RadzenRow Gap="16px" Style="margin-bottom: 24px;">
+        <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
+            <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 4px solid var(--rz-primary);">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color);">
+                        Toplam Randevu
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700; color: var(--rz-primary);">
+                        @filteredAppointments.Count
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
+            <RadzenCard Style="background: linear-gradient(135deg, #2ecc7115 0%, #2ecc7125 100%); border-left: 4px solid #2ecc71;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color);">
+                        Tamamlanan
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700; color: #2ecc71;">
+                        @completedCount
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
+            <RadzenCard Style="background: linear-gradient(135deg, #f39c1215 0%, #f39c1225 100%); border-left: 4px solid #f39c12;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color);">
+                        Bekleyen
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700; color: #f39c12;">
+                        @pendingCount
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
+            <RadzenCard Style="background: linear-gradient(135deg, #3498db15 0%, #3498db25 100%); border-left: 4px solid #3498db;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color);">
+                        Toplam Gelir
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700; color: #3498db;">
+                        @totalRevenue.ToString("C")
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <!-- Revenue Chart -->
+    <RadzenCard Style="margin-bottom: 24px;">
+        <RadzenText TextStyle="TextStyle.H6" Style="margin-bottom: 16px;">Gelir Trendi</RadzenText>
+
+        @if (chartData.Any())
+        {
+            <RadzenChart Style="height: 300px;">
+                <RadzenLineSeries Data="@chartData" CategoryProperty="Date" ValueProperty="Revenue">
+                    <RadzenSeriesDataLabels Visible="false" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis>
+                    <RadzenAxisTitle Text="Tarih" />
+                </RadzenCategoryAxis>
+                <RadzenValueAxis>
+                    <RadzenAxisTitle Text="Gelir (₺)" />
+                    <RadzenGridLines Visible="true" />
+                </RadzenValueAxis>
+            </RadzenChart>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 32px;">
+                <RadzenIcon Icon="show_chart" Style="font-size: 48px; color: var(--rz-text-disabled-color);" />
+                <RadzenText>Seçili tarih aralığında veri bulunmuyor</RadzenText>
+            </RadzenStack>
+        }
+    </RadzenCard>
+
+    <!-- Detailed Appointments Table -->
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H6" Style="margin-bottom: 16px;">Detaylı Randevu Listesi</RadzenText>
+
+        @if (filteredAppointments.Any())
+        {
+            <RadzenDataGrid Data="@filteredAppointments" TItem="AppointmentDto"
+                           AllowFiltering="true" AllowSorting="true" AllowPaging="true"
+                           PageSize="20" Style="margin-top: 16px;">
+                <Columns>
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="AppointmentDate" Title="Tarih" Width="160px">
+                        <Template Context="appointment">
+                            @appointment.AppointmentDate.ToString("dd/MM/yyyy HH:mm")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="CustomerName" Title="Müşteri" Width="150px" />
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="ServiceName" Title="Hizmet" Width="150px" />
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="EmployeeName" Title="Çalışan" Width="150px" />
+                    <RadzenDataGridColumn TItem="AppointmentDto" Title="Fiyat" Width="120px">
+                        <Template Context="appointment">
+                            @GetAppointmentPrice(appointment).ToString("C")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="Status" Title="Durum" Width="120px">
+                        <Template Context="appointment">
+                            <RadzenBadge Text="@GetStatusText(appointment.Status)"
+                                       BadgeStyle="@GetStatusBadgeStyle(appointment.Status)" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AppointmentDto" Property="Rating" Title="Puan" Width="100px">
+                        <Template Context="appointment">
+                            @if (appointment.Rating.HasValue)
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="star" Style="color: #f39c12; font-size: 16px;" />
+                                    <span>@appointment.Rating.Value.ToString("F1")</span>
+                                </RadzenStack>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 32px;">
+                <RadzenIcon Icon="event" Style="font-size: 48px; color: var(--rz-text-disabled-color);" />
+                <RadzenText>Seçili filtrelere uygun randevu bulunmuyor</RadzenText>
+            </RadzenStack>
+        }
+    </RadzenCard>
+
+    <!-- Employee Performance -->
+    <RadzenCard Style="margin-top: 24px;">
+        <RadzenText TextStyle="TextStyle.H6" Style="margin-bottom: 16px;">Çalışan Performansı</RadzenText>
+
+        @if (employeePerformance.Any())
+        {
+            <RadzenRow Gap="16px">
+                @foreach (var performance in employeePerformance)
+                {
+                    <RadzenColumn Size="12" SizeSM="6" SizeMD="4" SizeLG="3">
+                        <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600;">
+                                    @performance.EmployeeName
+                                </RadzenText>
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                        Randevu
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Body1" Style="font-weight: 600;">
+                                        @performance.AppointmentCount
+                                    </RadzenText>
+                                </RadzenStack>
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                        Gelir
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Body1" Style="font-weight: 600; color: #2ecc71;">
+                                        @performance.Revenue.ToString("C")
+                                    </RadzenText>
+                                </RadzenStack>
+                                @if (performance.AverageRating.HasValue)
+                                {
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                            Ortalama Puan
+                                        </RadzenText>
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="star" Style="color: #f39c12; font-size: 16px;" />
+                                            <RadzenText TextStyle="TextStyle.Body1" Style="font-weight: 600;">
+                                                @performance.AverageRating.Value.ToString("F1")
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </RadzenStack>
+                                }
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                }
+            </RadzenRow>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 32px;">
+                <RadzenIcon Icon="people" Style="font-size: 48px; color: var(--rz-text-disabled-color);" />
+                <RadzenText>Seçili tarih aralığında performans verisi bulunmuyor</RadzenText>
+            </RadzenStack>
+        }
+    </RadzenCard>
+}
+
+@code {
+    private BusinessDto? business;
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private List<AppointmentDto> allAppointments = new();
+    private List<AppointmentDto> filteredAppointments = new();
+
+    private bool isLoading = true;
+
+    // Filters
+    private DateTime? startDate = DateTime.Today.AddMonths(-1);
+    private DateTime? endDate = DateTime.Today;
+    private int? selectedEmployeeId;
+    private string? selectedStatus;
+
+    private List<string> statusOptions = new() { "Pending", "Confirmed", "Completed", "Cancelled" };
+
+    // Statistics
+    private int completedCount = 0;
+    private int pendingCount = 0;
+    private decimal totalRevenue = 0;
+
+    // Chart data
+    private List<RevenueChartData> chartData = new();
+
+    // Employee performance
+    private List<EmployeePerformance> employeePerformance = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinessData();
+    }
+
+    private async Task LoadBusinessData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var businessesResponse = await BusinessService.GetAllAsync();
+                if (businessesResponse.Success && businessesResponse.Data != null)
+                {
+                    business = businessesResponse.Data.FirstOrDefault();
+
+                    if (business != null)
+                    {
+                        await LoadServices();
+                        await LoadEmployees();
+                        await LoadAppointments();
+                        ApplyFilters();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Veri yüklenirken hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadServices()
+    {
+        try
+        {
+            if (business != null)
+            {
+                var response = await ServiceService.GetByBusinessIdAsync(business.Id);
+                if (response.Success && response.Data != null)
+                {
+                    services = response.Data.ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Hizmetler yüklenirken hata: {ex.Message}");
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        try
+        {
+            if (business != null)
+            {
+                var response = await EmployeeService.GetByBusinessIdAsync(business.Id);
+                if (response.Success && response.Data != null)
+                {
+                    employees = response.Data.ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Çalışanlar yüklenirken hata: {ex.Message}");
+        }
+    }
+
+    private async Task LoadAppointments()
+    {
+        try
+        {
+            if (business != null)
+            {
+                var response = await AppointmentService.GetAllAppointmentsAsync(null, business.Id);
+                if (response.Success && response.Data != null)
+                {
+                    allAppointments = response.Data;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Randevular yüklenirken hata: {ex.Message}");
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredAppointments = allAppointments.Where(a =>
+        {
+            // Date range filter
+            if (startDate.HasValue && a.AppointmentDate.Date < startDate.Value.Date)
+                return false;
+            if (endDate.HasValue && a.AppointmentDate.Date > endDate.Value.Date)
+                return false;
+
+            // Employee filter
+            if (selectedEmployeeId.HasValue && a.EmployeeId != selectedEmployeeId.Value)
+                return false;
+
+            // Status filter
+            if (!string.IsNullOrEmpty(selectedStatus) && a.Status != selectedStatus)
+                return false;
+
+            return true;
+        }).ToList();
+
+        CalculateStatistics();
+        GenerateChartData();
+        CalculateEmployeePerformance();
+
+        StateHasChanged();
+    }
+
+    private void ClearFilters()
+    {
+        startDate = DateTime.Today.AddMonths(-1);
+        endDate = DateTime.Today;
+        selectedEmployeeId = null;
+        selectedStatus = null;
+
+        ApplyFilters();
+    }
+
+    private void CalculateStatistics()
+    {
+        completedCount = filteredAppointments.Count(a => a.Status == "Completed");
+        pendingCount = filteredAppointments.Count(a => a.Status == "Pending");
+
+        totalRevenue = 0;
+        foreach (var appointment in filteredAppointments.Where(a => a.Status == "Completed"))
+        {
+            totalRevenue += GetAppointmentPrice(appointment);
+        }
+    }
+
+    private void GenerateChartData()
+    {
+        if (!filteredAppointments.Any())
+        {
+            chartData = new List<RevenueChartData>();
+            return;
+        }
+
+        chartData = filteredAppointments
+            .Where(a => a.Status == "Completed")
+            .GroupBy(a => a.AppointmentDate.Date)
+            .Select(g => new RevenueChartData
+            {
+                Date = g.Key.ToString("dd/MM"),
+                Revenue = g.Sum(a => GetAppointmentPrice(a))
+            })
+            .OrderBy(d => d.Date)
+            .ToList();
+    }
+
+    private void CalculateEmployeePerformance()
+    {
+        employeePerformance = filteredAppointments
+            .GroupBy(a => new { a.EmployeeId, a.EmployeeName })
+            .Select(g => new EmployeePerformance
+            {
+                EmployeeId = g.Key.EmployeeId ?? 0,
+                EmployeeName = g.Key.EmployeeName ?? "Belirtilmemiş",
+                AppointmentCount = g.Count(),
+                Revenue = g.Where(a => a.Status == "Completed").Sum(a => GetAppointmentPrice(a)),
+                AverageRating = g.Where(a => a.Rating.HasValue).Any()
+                    ? g.Where(a => a.Rating.HasValue).Average(a => a.Rating!.Value)
+                    : null
+            })
+            .OrderByDescending(p => p.Revenue)
+            .ToList();
+    }
+
+    private decimal GetAppointmentPrice(AppointmentDto appointment)
+    {
+        var service = services.FirstOrDefault(s => s.Id == appointment.ServiceId);
+        return service?.Price ?? 0;
+    }
+
+    private void ExportToExcel()
+    {
+        NotificationService.Notify(NotificationSeverity.Info, "Bilgi", "Excel aktarma özelliği yakında eklenecek");
+    }
+
+    private string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => "Bekliyor",
+            "Confirmed" => "Onaylandı",
+            "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal Edildi",
+            _ => status
+        };
+    }
+
+    private BadgeStyle GetStatusBadgeStyle(string status)
+    {
+        return status switch
+        {
+            "Pending" => BadgeStyle.Warning,
+            "Confirmed" => BadgeStyle.Success,
+            "Completed" => BadgeStyle.Info,
+            "Cancelled" => BadgeStyle.Danger,
+            _ => BadgeStyle.Secondary
+        };
+    }
+
+    private class RevenueChartData
+    {
+        public string Date { get; set; } = "";
+        public decimal Revenue { get; set; }
+    }
+
+    private class EmployeePerformance
+    {
+        public int EmployeeId { get; set; }
+        public string EmployeeName { get; set; } = "";
+        public int AppointmentCount { get; set; }
+        public decimal Revenue { get; set; }
+        public double? AverageRating { get; set; }
+    }
+}
