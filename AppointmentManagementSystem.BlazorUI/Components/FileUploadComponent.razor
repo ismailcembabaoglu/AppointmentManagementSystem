@@ -17,16 +17,16 @@
                 </RadzenText>
 
                 <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); text-align: center;">
-                    Dosyaları buraya sürükleyip bırakın veya
+                    Dosyaları seçmek için butona tıklayın
                 </RadzenText>
 
+                <label for="fileInput" style="cursor: pointer;">
+                    <RadzenButton Text="Dosya Seç"
+                                 ButtonStyle="ButtonStyle.Primary"
+                                 Size="ButtonSize.Medium"
+                                 Icon="upload" />
+                </label>
                 <InputFile id="fileInput" OnChange="HandleFileSelected" multiple="@Multiple" accept="@Accept" style="display: none;" />
-
-                <RadzenButton Text="Dosya Seç"
-                             ButtonStyle="ButtonStyle.Primary"
-                             Click="@(() => fileInputRef?.Click())"
-                             Size="ButtonSize.Medium"
-                             Icon="upload" />
 
                 @if (!string.IsNullOrEmpty(Accept))
                 {
@@ -118,7 +118,6 @@
     private List<UploadedFileModel> uploadedFiles = new();
     private List<string> errorMessages = new();
     private bool isDragOver = false;
-    private ElementReference fileInputRef;
 
     private string UploadAreaStyle => $@"
         border: 2px dashed {(isDragOver ? "var(--rz-primary)" : "var(--rz-border-color)")};
