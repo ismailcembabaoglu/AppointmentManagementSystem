@@ -1,3 +1,4 @@
+using AppointmentManagementSystem.API.Middleware;
 using AppointmentManagementSystem.Application;
 using AppointmentManagementSystem.Infrastructure;
 using AppointmentManagementSystem.Infrastructure.Data;
@@ -94,6 +95,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// Global exception handling middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

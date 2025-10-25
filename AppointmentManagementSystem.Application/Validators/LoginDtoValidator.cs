@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using FluentValidation;
 
 namespace AppointmentManagementSystem.Application.Validators
@@ -8,11 +8,12 @@ namespace AppointmentManagementSystem.Application.Validators
         public LoginDtoValidator()
         {
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("E-posta alanı boş olamaz.")
-                .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+                .NotEmpty().WithMessage("E-posta adresi gereklidir.")
+                .EmailAddress().WithMessage("Geçersiz e-posta adresi.");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Şifre alanı boş olamaz.");
+                .NotEmpty().WithMessage("Şifre gereklidir.")
+                .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır.");
         }
     }
 }
