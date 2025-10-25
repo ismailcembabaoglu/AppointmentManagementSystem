@@ -43,8 +43,16 @@
                             <RadzenDataGridColumn TItem="AppointmentDto" Property="BusinessName" Title="İşletme" />
                             <RadzenDataGridColumn TItem="AppointmentDto" Property="ServiceName" Title="Hizmet" />
                             <RadzenDataGridColumn TItem="AppointmentDto" Property="EmployeeName" Title="Çalışan" />
-                            <RadzenDataGridColumn TItem="AppointmentDto" Property="AppointmentDate" Title="Tarih" Format="d" />
-                            <RadzenDataGridColumn TItem="AppointmentDto" Property="StartTime" Title="Saat" Format="t" />
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="AppointmentDate" Title="Tarih">
+                                <Template Context="appointment">
+                                    @appointment.AppointmentDate.ToString("dd.MM.yyyy")
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="AppointmentDto" Property="StartTime" Title="Saat">
+                                <Template Context="appointment">
+                                    @appointment.StartTime.ToString(@"hh\:mm")
+                                </Template>
+                            </RadzenDataGridColumn>
                             <RadzenDataGridColumn TItem="AppointmentDto" Property="Status" Title="Durum" />
                             <RadzenDataGridColumn TItem="AppointmentDto" Property="Rating" Title="Puan" />
                             <RadzenDataGridColumn TItem="AppointmentDto" Title="İşlemler" Width="150px">
