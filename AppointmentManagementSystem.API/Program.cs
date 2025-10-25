@@ -74,14 +74,11 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero // Token süresi için tolerans sýfýr
+        ClockSkew = TimeSpan.Zero // Token sï¿½resi iï¿½in tolerans sï¿½fï¿½r
     };
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = options.DefaultPolicy;
-});
+builder.Services.AddAuthorization();
 // CORS
 builder.Services.AddCors(options =>
 {

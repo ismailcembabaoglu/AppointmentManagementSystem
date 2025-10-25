@@ -18,6 +18,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] int? businessId = null)
         {
             var query = new GetAllServicesQuery { BusinessId = businessId };
@@ -26,6 +27,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var query = new GetServiceByIdQuery { Id = id };

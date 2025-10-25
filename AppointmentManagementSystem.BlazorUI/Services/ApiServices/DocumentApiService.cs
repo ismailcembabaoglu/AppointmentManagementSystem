@@ -16,6 +16,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.PostAsJsonAsync($"api/documents/employee/{employeeId}", documentDto);
                 return await HandleApiResponse<DocumentDto>(response);
             }
@@ -29,6 +30,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.DeleteAsync($"api/documents/{documentId}");
                 return await HandleApiResponse<bool>(response);
             }

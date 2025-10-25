@@ -9,11 +9,11 @@
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenCard Style="min-width: 650px; max-width: 900px;">
+<RadzenCard Style="width: 100%; max-width: 900px; min-width: auto;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
         <!-- Modern Başlık -->
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="8px" Style="padding-bottom: 8px; border-bottom: 2px solid var(--rz-primary);">
-            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: var(--rz-primary); font-weight: 600;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="8px" Style="padding-bottom: 8px; border-bottom: 2px solid var(--rz-primary); flex-wrap: wrap;">
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: var(--rz-primary); font-weight: 600; text-align: center;">
                 @(isEdit ? "🏢 İşletme Düzenle" : "🏢 Yeni İşletme Oluştur")
             </RadzenText>
         </RadzenStack>
@@ -145,19 +145,23 @@
         </RadzenTabs>
 
         <!-- Butonlar -->
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="12px" Style="padding-top: 8px; border-top: 1px solid var(--rz-border-color);">
-            <RadzenButton Text="İptal"
-                        ButtonStyle="ButtonStyle.Light"
-                        Click="Cancel"
-                        Size="ButtonSize.Medium"
-                        Style="min-width: 100px;" />
-            <RadzenButton Text="@(isSaving ? (isEdit ? "Güncelleniyor..." : "Oluşturuluyor...") : (isEdit ? "Güncelle" : "Oluştur"))"
-                        ButtonStyle="ButtonStyle.Primary"
-                        Click="Save"
-                        Disabled="isSaving"
-                        Size="ButtonSize.Medium"
-                        Style="min-width: 140px; font-weight: 600;" />
-        </RadzenStack>
+        <RadzenRow Gap="12px" Style="padding-top: 8px; border-top: 1px solid var(--rz-border-color);">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenButton Text="İptal"
+                            ButtonStyle="ButtonStyle.Light"
+                            Click="Cancel"
+                            Size="ButtonSize.Medium"
+                            Style="width: 100%;" />
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenButton Text="@(isSaving ? (isEdit ? "Güncelleniyor..." : "Oluşturuluyor...") : (isEdit ? "Güncelle" : "Oluştur"))"
+                            ButtonStyle="ButtonStyle.Primary"
+                            Click="Save"
+                            Disabled="isSaving"
+                            Size="ButtonSize.Medium"
+                            Style="width: 100%; font-weight: 600;" />
+            </RadzenColumn>
+        </RadzenRow>
     </RadzenStack>
 </RadzenCard>
 

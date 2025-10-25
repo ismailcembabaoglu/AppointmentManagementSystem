@@ -16,6 +16,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.PostAsJsonAsync($"api/photos/business/{businessId}", photoDto);
                 return await HandleApiResponse<PhotoDto>(response);
             }
@@ -29,6 +30,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.PostAsJsonAsync($"api/photos/employee/{employeeId}", photoDto);
                 return await HandleApiResponse<PhotoDto>(response);
             }
@@ -42,6 +44,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.PostAsJsonAsync($"api/photos/service/{serviceId}", photoDto);
                 return await HandleApiResponse<PhotoDto>(response);
             }
@@ -55,6 +58,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                await AddAuthorizationHeader();
                 var response = await _httpClient.DeleteAsync($"api/photos/{photoId}");
                 return await HandleApiResponse<bool>(response);
             }

@@ -18,6 +18,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] int? categoryId = null, [FromQuery] string? search = null)
         {
             var query = new GetAllBusinessesQuery
@@ -30,6 +31,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var query = new GetBusinessByIdQuery { Id = id };
@@ -42,6 +44,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}/services")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetServices(int id)
         {
             var query = new GetServicesByBusinessQuery { BusinessId = id };
@@ -50,6 +53,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}/employees")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetEmployees(int id)
         {
             var query = new GetEmployeesByBusinessQuery { BusinessId = id };
@@ -58,6 +62,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}/appointments")]
+        [Authorize(Roles = "Business,Admin")]
         public async Task<IActionResult> GetAppointments(int id)
         {
             var query = new GetAppointmentsByBusinessQuery { BusinessId = id };

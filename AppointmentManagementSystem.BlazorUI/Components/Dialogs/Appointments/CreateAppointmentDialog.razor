@@ -9,11 +9,11 @@
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenCard Style="min-width: 550px; max-width: 700px;">
+<RadzenCard Style="width: 100%; max-width: 700px; min-width: auto;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
         <!-- Başlık Bölümü -->
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="8px" Style="padding-bottom: 8px; border-bottom: 2px solid var(--rz-primary);">
-            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: var(--rz-primary); font-weight: 600;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="8px" Style="padding-bottom: 8px; border-bottom: 2px solid var(--rz-primary); flex-wrap: wrap;">
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: var(--rz-primary); font-weight: 600; text-align: center;">
                 📅 Yeni Randevu Oluştur
             </RadzenText>
         </RadzenStack>
@@ -175,40 +175,48 @@
         @if (selectedService != null)
         {
             <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
-                        <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
-                            ⏱️ Toplam Süre:
-                        </RadzenText>
-                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@($"{selectedService.DurationMinutes} dakika")" Style="font-size: 14px; padding: 6px 12px;" />
-                    </RadzenStack>
+                <RadzenRow Gap="12px">
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" JustifyContentMD="JustifyContent.Start">
+                            <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
+                                ⏱️ Toplam Süre:
+                            </RadzenText>
+                            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@($"{selectedService.DurationMinutes} dakika")" Style="font-size: 14px; padding: 6px 12px;" />
+                        </RadzenStack>
+                    </RadzenColumn>
                     @if (selectedService.Price.HasValue)
                     {
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
-                            <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
-                                💰 Toplam Tutar:
-                            </RadzenText>
-                            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@selectedService.Price.Value.ToString("C")" Style="font-size: 14px; padding: 6px 12px; font-weight: 600;" />
-                        </RadzenStack>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" JustifyContentMD="JustifyContent.End">
+                                <RadzenText TextStyle="TextStyle.Body1" Style="color: white; font-weight: 500;">
+                                    💰 Toplam Tutar:
+                                </RadzenText>
+                                <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="@selectedService.Price.Value.ToString("C")" Style="font-size: 14px; padding: 6px 12px; font-weight: 600;" />
+                            </RadzenStack>
+                        </RadzenColumn>
                     }
-                </RadzenStack>
+                </RadzenRow>
             </RadzenCard>
         }
 
         <!-- Butonlar -->
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="12px" Style="padding-top: 8px;">
-            <RadzenButton Text="İptal"
-                        ButtonStyle="ButtonStyle.Light"
-                        Click="Cancel"
-                        Size="ButtonSize.Medium"
-                        Style="min-width: 100px;" />
-            <RadzenButton Text="@(isSaving ? "Kaydediliyor..." : "Randevu Oluştur")"
-                        ButtonStyle="ButtonStyle.Primary"
-                        Click="Save"
-                        Disabled="isSaving"
-                        Size="ButtonSize.Medium"
-                        Style="min-width: 140px; font-weight: 600;" />
-        </RadzenStack>
+        <RadzenRow Gap="12px" Style="padding-top: 8px;">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenButton Text="İptal"
+                            ButtonStyle="ButtonStyle.Light"
+                            Click="Cancel"
+                            Size="ButtonSize.Medium"
+                            Style="width: 100%;" />
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenButton Text="@(isSaving ? "Kaydediliyor..." : "Randevu Oluştur")"
+                            ButtonStyle="ButtonStyle.Primary"
+                            Click="Save"
+                            Disabled="isSaving"
+                            Size="ButtonSize.Medium"
+                            Style="width: 100%; font-weight: 600;" />
+            </RadzenColumn>
+        </RadzenRow>
     </RadzenStack>
 </RadzenCard>
 
