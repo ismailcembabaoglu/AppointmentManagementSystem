@@ -38,7 +38,7 @@
                                 @(stepIndex + 1)
                             }
                         </div>
-                        <RadzenText TextStyle="TextStyle.Caption" Style="color: white; margin: 0; text-align: center; font-size: 10px; display: @(stepIndex < 3 ? "block" : "none"); display: block;">
+                        <RadzenText TextStyle="TextStyle.Caption" Style="color: white; margin: 0; text-align: center; font-size: 10px; display: block;">
                             @stepTitles[stepIndex]
                         </RadzenText>
                     </RadzenStack>
@@ -150,8 +150,8 @@
                         @foreach (var service in services)
                         {
                             var isSelected = selectedServices.Contains(service.Id);
-                            <RadzenCard @onclick="@(() => ToggleService(service.Id))" 
-                                       Style="cursor: pointer; border: 2px solid @(isSelected ? "var(--rz-primary)" : "transparent"); background: @(isSelected ? "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)" : "white"); transition: all 0.3s ease;">
+                            <RadzenCard @onclick="@(() => ToggleService(service.Id))"
+                                       Style="@GetServiceCardStyle(isSelected)">
                                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="16px">
                                     <RadzenStack Orientation="Orientation.Vertical" Gap="8px" Style="flex: 1;">
                                         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
@@ -251,8 +251,8 @@
                         {
                             var isSelected = selectedEmployeeId == employee.Id;
                             <RadzenColumn Size="12" SizeSM="6" SizeMD="4">
-                                <RadzenCard @onclick="@(() => SelectEmployee(employee.Id))" 
-                                           Style="cursor: pointer; border: 2px solid @(isSelected ? "var(--rz-primary)" : "transparent"); background: @(isSelected ? "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)" : "white"); transition: all 0.3s ease; height: 100%;">
+                                <RadzenCard @onclick="@(() => SelectEmployee(employee.Id))"
+                                           Style="@GetEmployeeCardStyle(isSelected)">
                                     <RadzenStack Orientation="Orientation.Vertical" Gap="12px" AlignItems="AlignItems.Center">
                                         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; position: relative;">
                                             <RadzenText TextStyle="TextStyle.DisplayH5" Style="color: white; margin: 0; font-weight: 700;">
@@ -688,5 +688,19 @@
     private void Cancel()
     {
         DialogService.Close(false);
+    }
+
+    private string GetServiceCardStyle(bool isSelected)
+    {
+        var border = isSelected ? "var(--rz-primary)" : "transparent";
+        var background = isSelected ? "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)" : "white";
+        return $"cursor: pointer; border: 2px solid {border}; background: {background}; transition: all 0.3s ease;";
+    }
+
+    private string GetEmployeeCardStyle(bool isSelected)
+    {
+        var border = isSelected ? "var(--rz-primary)" : "transparent";
+        var background = isSelected ? "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)" : "white";
+        return $"cursor: pointer; border: 2px solid {border}; background: {background}; transition: all 0.3s ease; height: 100%;";
     }
 }
