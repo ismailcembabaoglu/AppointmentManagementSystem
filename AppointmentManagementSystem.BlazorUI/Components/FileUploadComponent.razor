@@ -3,30 +3,23 @@
 
 <RadzenCard Style="@CardStyle">
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-        <!-- Upload Area -->
-        <div class="upload-area @(isDragOver ? "drag-over" : "")"
-             @ondrop="HandleDrop"
-             @ondragenter="HandleDragEnter"
-             @ondragleave="HandleDragLeave"
-             @ondragover:preventDefault
-             style="@UploadAreaStyle">
-
-            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="12px" Style="padding: 24px;">
+        <div style="border: 2px dashed var(--rz-border-color); border-radius: 8px; padding: 24px; text-align: center;">
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="12px">
                 <RadzenText TextStyle="TextStyle.H5" Style="color: var(--rz-primary); margin: 0;">
                     📁 Dosya Yükle
                 </RadzenText>
 
-                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); text-align: center;">
+                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
                     Dosyaları seçmek için butona tıklayın
                 </RadzenText>
 
-                <label for="fileInput" style="cursor: pointer;">
+                <label for="@inputId" style="cursor: pointer;">
                     <RadzenButton Text="Dosya Seç"
                                  ButtonStyle="ButtonStyle.Primary"
                                  Size="ButtonSize.Medium"
                                  Icon="upload" />
                 </label>
-                <InputFile id="fileInput" OnChange="HandleFileSelected" multiple="@Multiple" accept="@Accept" style="display: none;" />
+                <InputFile id="@inputId" OnChange="HandleFileSelected" multiple accept="@Accept" style="display: none;" />
 
                 @if (!string.IsNullOrEmpty(Accept))
                 {
@@ -44,7 +37,6 @@
             </RadzenStack>
         </div>
 
-        <!-- Uploaded Files Preview -->
         @if (uploadedFiles.Any())
         {
             <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
@@ -61,7 +53,7 @@
                                 {
                                     <img src="data:@file.ContentType;base64,@file.Base64Data"
                                          alt="@file.FileName"
-                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 2px solid var(--rz-primary-lighter);" />
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" />
                                 }
                                 else
                                 {
@@ -93,7 +85,6 @@
             </RadzenStack>
         }
 
-        <!-- Error Messages -->
         @if (errorMessages.Any())
         {
             <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
@@ -109,23 +100,25 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public bool Multiple { get; set; } = true;
-    [Parameter] public string Accept { get; set; } = "image/jpeg,image/jpg,image/png,image/webp";
-    [Parameter] public long MaxFileSize { get; set; } = 10 * 1024 * 1024; // 10MB default
-    [Parameter] public EventCallback<List<UploadedFileModel>> OnFilesUploaded { get; set; }
-    [Parameter] public string CardStyle { get; set; } = "width: 100%;";
+    private readonly string inputId = Guid.NewGuid().ToString();
+
+    [Parameter]
+    public bool Multiple { get; set; } = true;
+
+    [Parameter]
+    public string Accept { get; set; } = "image/jpeg,image/jpg,image/png,image/webp";
+
+    [Parameter]
+    public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
+
+    [Parameter]
+    public EventCallback<List<UploadedFileModel>> OnFilesUploaded { get; set; }
+
+    [Parameter]
+    public string CardStyle { get; set; } = "width: 100%;";
 
     private List<UploadedFileModel> uploadedFiles = new();
     private List<string> errorMessages = new();
-    private bool isDragOver = false;
-
-    private string UploadAreaStyle => $@"
-        border: 2px dashed {(isDragOver ? "var(--rz-primary)" : "var(--rz-border-color)")};
-        border-radius: 8px;
-        background: {(isDragOver ? "var(--rz-primary-lighter)" : "var(--rz-base-100)")};
-        transition: all 0.3s ease;
-        cursor: pointer;
-    ";
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -143,14 +136,12 @@
     {
         try
         {
-            // Validate file size
             if (file.Size > MaxFileSize)
             {
                 errorMessages.Add($"{file.Name}: Dosya boyutu {MaxFileSize / 1024 / 1024}MB'ı aşıyor");
                 return;
             }
 
-            // Validate file type
             if (!string.IsNullOrEmpty(Accept))
             {
                 var allowedTypes = Accept.Split(',').Select(t => t.Trim().ToLower()).ToList();
@@ -161,19 +152,18 @@
                 }
             }
 
-            // Read file and convert to base64
             var buffer = new byte[file.Size];
             await file.OpenReadStream(MaxFileSize).ReadAsync(buffer);
             var base64 = Convert.ToBase64String(buffer);
 
             var uploadedFile = new UploadedFileModel
-            {
-                FileName = file.Name,
-                ContentType = file.ContentType,
-                Size = file.Size,
-                Base64Data = base64,
-                IsImage = file.ContentType.StartsWith("image/")
-            };
+                {
+                    FileName = file.Name,
+                    ContentType = file.ContentType,
+                    Size = file.Size,
+                    Base64Data = base64,
+                    IsImage = file.ContentType.StartsWith("image/")
+                };
 
             uploadedFiles.Add(uploadedFile);
         }
@@ -181,23 +171,6 @@
         {
             errorMessages.Add($"{file.Name}: {ex.Message}");
         }
-    }
-
-    private void HandleDragEnter()
-    {
-        isDragOver = true;
-    }
-
-    private void HandleDragLeave()
-    {
-        isDragOver = false;
-    }
-
-    private async Task HandleDrop(DragEventArgs e)
-    {
-        isDragOver = false;
-        // Note: Drag and drop file handling requires JavaScript interop in Blazor
-        // For now, users will use the file picker
     }
 
     private void RemoveFile(UploadedFileModel file)
