@@ -23,5 +23,15 @@ namespace AppointmentManagementSystem.Application.DTOs
 
         [MaxLength(1000)]
         public string? Notes { get; set; }
+
+        public List<AppointmentPhotoDto>? Photos { get; set; } = new List<AppointmentPhotoDto>();
+    }
+
+    public class AppointmentPhotoDto
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
+        public byte[] FileData { get; set; } = Array.Empty<byte>();
+        public long FileSize { get; set; }
     }
 }

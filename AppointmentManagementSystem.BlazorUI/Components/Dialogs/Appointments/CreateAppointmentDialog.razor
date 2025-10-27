@@ -2,6 +2,7 @@
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
+@using Microsoft.AspNetCore.Components.Forms
 @inject IAppointmentApiService AppointmentApiService
 @inject IBusinessApiService BusinessApiService
 @inject IServiceApiService ServiceApiService
@@ -133,6 +134,37 @@
                 <RadzenLabel Text="Notlar" />
                 <RadzenTextArea @bind-Value="appointmentDto.Notes" Rows="3" Placeholder="Ek notlar (opsiyonel)" />
             </div>
+
+            <!-- Resim Yükleme -->
+            <div>
+                <RadzenLabel Text="Fotoğraflar (Opsiyonel)" />
+                <InputFile OnChange="OnFileSelected" multiple accept="image/*" class="form-control" />
+                <small class="text-muted">Birden fazla resim seçebilirsiniz. Maksimum 5 MB.</small>
+
+                @if (selectedPhotos.Any())
+                {
+                    <div class="mt-2">
+                        <strong>Seçilen resimler:</strong>
+                        <ul class="list-unstyled">
+                            @foreach (var photo in selectedPhotos)
+                            {
+                                <li class="d-flex align-items-center gap-2 mb-1">
+                                    <span>@photo.FileName (@FormatFileSize(photo.FileSize))</span>
+                                    <RadzenButton Size="ButtonSize.ExtraSmall"
+                                                ButtonStyle="ButtonStyle.Danger"
+                                                Icon="delete"
+                                                Click="@(() => RemovePhoto(photo))" />
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(photoError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small" class="text-danger">@photoError</RadzenText>
+                }
+            </div>
         </RadzenStack>
 
         <!-- Toplam Süre ve Fiyat -->
@@ -176,17 +208,19 @@
     private List<EmployeeDto> employees = new();
     private int selectedBusinessId = 0;
     private ServiceDto? selectedService = null;
-    
+    private List<AppointmentPhotoDto> selectedPhotos = new();
+
     private bool businessesLoading = true;
     private bool servicesLoading = false;
     private bool employeesLoading = false;
     private bool isSaving = false;
-    
+
     // Validation errors
     private string businessError = "";
     private string serviceError = "";
     private string dateError = "";
     private string timeError = "";
+    private string photoError = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -272,6 +306,69 @@
         StateHasChanged();
     }
 
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        photoError = "";
+        const long maxFileSize = 5 * 1024 * 1024; // 5 MB
+
+        foreach (var file in e.GetMultipleFiles(10)) // Maksimum 10 dosya
+        {
+            if (file.Size > maxFileSize)
+            {
+                photoError = $"{file.Name} dosyası çok büyük. Maksimum 5 MB olabilir.";
+                continue;
+            }
+
+            if (!file.ContentType.StartsWith("image/"))
+            {
+                photoError = $"{file.Name} bir resim dosyası değil.";
+                continue;
+            }
+
+            try
+            {
+                var buffer = new byte[file.Size];
+                await file.OpenReadStream(maxFileSize).ReadAsync(buffer);
+
+                var photoDto = new AppointmentPhotoDto
+                {
+                    FileName = file.Name,
+                    ContentType = file.ContentType,
+                    FileData = buffer,
+                    FileSize = file.Size
+                };
+
+                selectedPhotos.Add(photoDto);
+            }
+            catch (Exception ex)
+            {
+                photoError = $"{file.Name} yüklenirken hata oluştu: {ex.Message}";
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private void RemovePhoto(AppointmentPhotoDto photo)
+    {
+        selectedPhotos.Remove(photo);
+        photoError = "";
+        StateHasChanged();
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
     private async Task Save()
     {
         if (!Validate())
@@ -282,8 +379,11 @@
 
         try
         {
+            // Resimleri DTO'ya ekle
+            appointmentDto.Photos = selectedPhotos;
+
             var response = await AppointmentApiService.CreateAppointmentAsync(appointmentDto);
-            
+
             if (response.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu başarıyla oluşturuldu.");
