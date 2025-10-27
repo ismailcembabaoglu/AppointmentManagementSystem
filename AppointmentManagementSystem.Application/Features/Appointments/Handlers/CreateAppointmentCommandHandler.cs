@@ -4,7 +4,6 @@ using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 
 namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
 {
@@ -14,20 +13,17 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
         private readonly IServiceRepository _serviceRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
 
         public CreateAppointmentCommandHandler(
             IAppointmentRepository appointmentRepository,
             IServiceRepository serviceRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper,
-            IConfiguration configuration)
+            IMapper mapper)
         {
             _appointmentRepository = appointmentRepository;
             _serviceRepository = serviceRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _configuration = configuration;
         }
 
         public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
@@ -44,7 +40,7 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
             // Resimleri kaydet
             if (request.CreateAppointmentDto.Photos != null && request.CreateAppointmentDto.Photos.Any())
             {
-                var uploadPath = _configuration["FileUploadSettings:UploadPath"] ?? "uploads/appointments";
+                var uploadPath = "uploads/appointments";
                 var fullPath = Path.Combine(Directory.GetCurrentDirectory(), uploadPath);
 
                 if (!Directory.Exists(fullPath))
