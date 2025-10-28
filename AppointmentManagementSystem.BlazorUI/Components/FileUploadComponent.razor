@@ -17,9 +17,15 @@
                     <RadzenButton Text="Dosya Seç"
                                  ButtonStyle="ButtonStyle.Primary"
                                  Size="ButtonSize.Medium"
-                                 Icon="upload" />
+                                 Icon="upload"
+                                 ButtonType="ButtonType.Button" />
                 </label>
-                <InputFile id="@inputId" OnChange="HandleFileSelected" multiple accept="@Accept" style="display: none;" />
+                <InputFile id="@inputId"
+                          OnChange="HandleFileSelected"
+                          multiple="@Multiple"
+                          accept="@Accept"
+                          style="display: none;"
+                          class="file-input" />
 
                 @if (!string.IsNullOrEmpty(Accept))
                 {
@@ -124,12 +130,15 @@
     {
         errorMessages.Clear();
 
-        foreach (var file in e.GetMultipleFiles(100))
+        var files = Multiple ? e.GetMultipleFiles(100) : new[] { e.File };
+
+        foreach (var file in files)
         {
             await ProcessFile(file);
         }
 
         await NotifyFilesUploaded();
+        StateHasChanged();
     }
 
     private async Task ProcessFile(IBrowserFile file)
@@ -173,10 +182,11 @@
         }
     }
 
-    private void RemoveFile(UploadedFileModel file)
+    private async Task RemoveFile(UploadedFileModel file)
     {
         uploadedFiles.Remove(file);
-        NotifyFilesUploaded();
+        await NotifyFilesUploaded();
+        StateHasChanged();
     }
 
     private async Task NotifyFilesUploaded()
