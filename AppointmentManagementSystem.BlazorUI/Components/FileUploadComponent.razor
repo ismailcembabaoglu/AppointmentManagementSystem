@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using AppointmentManagementSystem.Application.DTOs
+@inject IJSRuntime JSRuntime
 
 <RadzenCard Style="@CardStyle">
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
@@ -13,14 +14,15 @@
                     Dosyaları seçmek için butona tıklayın
                 </RadzenText>
 
-                <label for="@inputId" style="cursor: pointer;">
-                    <RadzenButton Text="Dosya Seç"
-                                 ButtonStyle="ButtonStyle.Primary"
-                                 Size="ButtonSize.Medium"
-                                 Icon="upload"
-                                 ButtonType="ButtonType.Button" />
-                </label>
-                <InputFile id="@inputId"
+                <RadzenButton Text="Dosya Seç"
+                             ButtonStyle="ButtonStyle.Primary"
+                             Size="ButtonSize.Medium"
+                             Icon="upload"
+                             ButtonType="ButtonType.Button"
+                             Click="@OpenFileDialog" />
+
+                <InputFile @ref="inputFileRef"
+                          id="@inputId"
                           OnChange="HandleFileSelected"
                           multiple="@Multiple"
                           accept="@Accept"
@@ -107,6 +109,7 @@
 
 @code {
     private readonly string inputId = Guid.NewGuid().ToString();
+    private InputFile? inputFileRef;
 
     [Parameter]
     public bool Multiple { get; set; } = true;
@@ -125,6 +128,19 @@
 
     private List<UploadedFileModel> uploadedFiles = new();
     private List<string> errorMessages = new();
+
+    private async Task OpenFileDialog()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{inputId}').click()");
+        }
+        catch (Exception ex)
+        {
+            errorMessages.Add($"Dosya seçme ekranı açılamadı: {ex.Message}");
+            StateHasChanged();
+        }
+    }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {

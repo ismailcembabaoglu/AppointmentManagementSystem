@@ -386,13 +386,28 @@ else
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        
-        // Get customer ID from claims (you'll need to implement this based on your auth setup)
-        var customerId = 1; // Placeholder - get from claims
+
+        // Get customer ID from claims
+        int customerId = 0;
+        var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                         ?? user.FindFirst("sub")
+                         ?? user.FindFirst("userId")
+                         ?? user.FindFirst("id");
+
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var parsedId))
+        {
+            customerId = parsedId;
+        }
+
+        if (customerId == 0)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın.");
+            return;
+        }
 
         var result = await DialogService.OpenAsync<CreateAppointmentDialog>("Yeni Randevu",
-            new Dictionary<string, object>() 
-            { 
+            new Dictionary<string, object>()
+            {
                 { "CustomerId", customerId },
                 { "PreselectedBusinessId", BusinessId }
             },
