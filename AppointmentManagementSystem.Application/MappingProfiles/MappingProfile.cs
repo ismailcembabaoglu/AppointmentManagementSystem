@@ -38,13 +38,25 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
 
             // Appointment mappings
             CreateMap<Appointment, AppointmentDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.Name))
-                .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business.Name))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : ""))
+                .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business != null ? src.Business.Name : ""))
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.Name : null))
-                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.Name))
-                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos.Select(p => p.Base64Data ?? "").ToList()));
+                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service != null ? src.Service.Name : ""))
+                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos != null ? src.Photos.Select(p => p.Base64Data ?? "").ToList() : new List<string>()));
 
-            CreateMap<CreateAppointmentDto, Appointment>();
+            CreateMap<CreateAppointmentDto, Appointment>()
+                .ForMember(dest => dest.Customer, opt => opt.Ignore())
+                .ForMember(dest => dest.Business, opt => opt.Ignore())
+                .ForMember(dest => dest.Employee, opt => opt.Ignore())
+                .ForMember(dest => dest.Service, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.Photos, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.EndTime, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedByBusinessUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                .ForMember(dest => dest.Review, opt => opt.Ignore())
+                .ForMember(dest => dest.RatingDate, opt => opt.Ignore());
 
             // User mappings
             CreateMap<User, UserDto>();
