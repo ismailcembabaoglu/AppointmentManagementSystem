@@ -660,14 +660,45 @@
 
     private async Task Save()
     {
-        if (!PreselectedBusinessId.HasValue || !selectedDate.HasValue || !selectedTimeSlot.HasValue)
+        // Validation checks
+        if (!PreselectedBusinessId.HasValue)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme seçilmemiş.");
             return;
+        }
+
+        if (!selectedDate.HasValue)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "Tarih seçilmemiş.");
+            return;
+        }
+
+        if (!selectedTimeSlot.HasValue)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "Saat seçilmemiş.");
+            return;
+        }
+
+        if (!selectedServices.Any())
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "En az bir hizmet seçmelisiniz.");
+            return;
+        }
+
+        if (CustomerId <= 0)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "Müşteri bilgisi bulunamadı. Lütfen giriş yapın.");
+            return;
+        }
 
         isSaving = true;
         StateHasChanged();
 
         try
         {
+            // Combine date and time
+            var appointmentDateTime = selectedDate.Value.Date.Add(selectedTimeSlot.Value);
+
             // Create appointment with first service (in real app, handle multiple services)
             var appointmentDto = new CreateAppointmentDto
             {
@@ -675,9 +706,10 @@
                 BusinessId = PreselectedBusinessId.Value,
                 ServiceId = selectedServices.First(),
                 EmployeeId = selectedEmployeeId,
-                AppointmentDate = selectedDate.Value,
+                AppointmentDate = appointmentDateTime,
                 StartTime = selectedTimeSlot.Value,
-                Notes = $"Toplam {selectedServices.Count} hizmet seçildi. {uploadedPhotos.Count} fotoğraf yüklendi."
+                Notes = $"Toplam {selectedServices.Count} hizmet seçildi." +
+                       (uploadedPhotos.Any() ? $" {uploadedPhotos.Count} fotoğraf yüklendi." : "")
             };
 
             var response = await AppointmentApiService.CreateAppointmentAsync(appointmentDto);
@@ -688,7 +720,7 @@
                 if (uploadedPhotos.Any() && response.Data != null)
                 {
                     // In real app, upload photos to appointment
-                    // For now, just show success
+                    // For now, photos are noted in the Notes field
                 }
 
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevunuz başarıyla oluşturuldu!");
@@ -696,12 +728,19 @@
             }
             else
             {
-                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+                NotificationService.Notify(NotificationSeverity.Error, "Hata",
+                    response.Message ?? "Randevu oluşturulurken bir hata oluştu.");
             }
+        }
+        catch (InvalidOperationException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata",
+                "Lütfen gerekli tüm alanları doldurun.");
         }
         catch (Exception ex)
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+            NotificationService.Notify(NotificationSeverity.Error, "Hata",
+                $"Bir hata oluştu: {ex.Message}");
         }
         finally
         {
