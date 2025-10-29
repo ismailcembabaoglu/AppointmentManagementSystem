@@ -113,6 +113,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 var businessPhoto = new BusinessPhoto
                 {
                     BusinessId = business.Id,
+                    Business=business,
                     FileName = $"business_{business.Id}_photo.jpg",
                     Base64Data = dto.BusinessPhotoBase64,
                     ContentType = "image/jpeg",
@@ -131,6 +132,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                     Price = serviceDto.Price,
                     DurationMinutes = serviceDto.DurationMinutes,
                     BusinessId = business.Id,
+                    Business=business,
                     IsActive = true
                 };
                 await _serviceRepository.AddAsync(service);
@@ -167,6 +169,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                                 var employeePhoto = new EmployeePhoto
                                 {
                                     EmployeeId = employee.Id,
+                                    Employee=employee,
                                     FileName = $"employee_{employee.Id}_photo_{photoIndex}.jpg",
                                     Base64Data = photoBase64,
                                     ContentType = "image/jpeg",
