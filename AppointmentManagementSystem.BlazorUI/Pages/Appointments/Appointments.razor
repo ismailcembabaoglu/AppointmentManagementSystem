@@ -5,7 +5,6 @@
 @using Radzen
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IAppointmentApiService AppointmentApiService
-@inject IUserApiService UserApiService
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
@@ -303,20 +302,13 @@
                 userRole = roleClaim.Value;
             }
 
-            // If business, get business ID
+            // If business, get business ID from token
             if (userRole == "Business")
             {
-                try
+                var businessIdClaim = user.FindFirst("businessId");
+                if (businessIdClaim != null && int.TryParse(businessIdClaim.Value, out var parsedBusinessId))
                 {
-                    var userResponse = await UserApiService.GetUserByIdAsync(currentUserId);
-                    if (userResponse.Success && userResponse.Data != null)
-                    {
-                        currentBusinessId = userResponse.Data.OwnedBusinessId;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Kullanıcı bilgileri alınamadı.");
+                    currentBusinessId = parsedBusinessId;
                 }
             }
         }
