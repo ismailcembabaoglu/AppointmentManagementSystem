@@ -113,7 +113,6 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 var businessPhoto = new BusinessPhoto
                 {
                     BusinessId = business.Id,
-                    Business=business,
                     FileName = $"business_{business.Id}_photo.jpg",
                     Base64Data = dto.BusinessPhotoBase64,
                     ContentType = "image/jpeg",
@@ -132,45 +131,55 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                     Price = serviceDto.Price,
                     DurationMinutes = serviceDto.DurationMinutes,
                     BusinessId = business.Id,
-                    Business=business,
                     IsActive = true
                 };
                 await _serviceRepository.AddAsync(service);
             }
 
-            // Create Employees
-            foreach (var employeeDto in dto.Employees)
-            {
-                var employee = new Employee
-                {
-                    Name = employeeDto.Name,
-                    Specialization = employeeDto.Specialization,
-                    Description = employeeDto.Description,
-                    BusinessId = business.Id,
-                    Business=business,
-                    IsActive = employeeDto.IsActive
-                };
-                await _employeeRepository.AddAsync(employee);
-                await _unitOfWork.SaveChangesAsync(); // Save to get employee ID
+            // Save services and business photo
+            await _unitOfWork.SaveChangesAsync();
 
-                // Add Employee Photos
-                int photoIndex = 0;
-                foreach (var photoBase64 in employeeDto.PhotosBase64)
+            // Create Employees
+            if (dto.Employees != null && dto.Employees.Any())
+            {
+                foreach (var employeeDto in dto.Employees)
                 {
-                    photoIndex++;
-                    var employeePhoto = new EmployeePhoto
+                    var employee = new Employee
                     {
-                        EmployeeId = employee.Id,
-                        Employee=employee,
-                        FileName = $"employee_{employee.Id}_photo_{photoIndex}.jpg",
-                        Base64Data = photoBase64,
-                        ContentType = "image/jpeg",
-                        FileSize = photoBase64.Length
+                        Name = employeeDto.Name,
+                        Specialization = employeeDto.Specialization,
+                        Description = employeeDto.Description,
+                        BusinessId = business.Id,
+                        IsActive = employeeDto.IsActive
                     };
-                    await _employeePhotoRepository.AddAsync(employeePhoto);
+                    await _employeeRepository.AddAsync(employee);
+                    await _unitOfWork.SaveChangesAsync(); // Save to get employee ID
+
+                    // Add Employee Photos
+                    if (employeeDto.PhotosBase64 != null && employeeDto.PhotosBase64.Any())
+                    {
+                        int photoIndex = 0;
+                        foreach (var photoBase64 in employeeDto.PhotosBase64)
+                        {
+                            if (!string.IsNullOrEmpty(photoBase64))
+                            {
+                                photoIndex++;
+                                var employeePhoto = new EmployeePhoto
+                                {
+                                    EmployeeId = employee.Id,
+                                    FileName = $"employee_{employee.Id}_photo_{photoIndex}.jpg",
+                                    Base64Data = photoBase64,
+                                    ContentType = "image/jpeg",
+                                    FileSize = photoBase64.Length
+                                };
+                                await _employeePhotoRepository.AddAsync(employeePhoto);
+                            }
+                        }
+                    }
                 }
             }
 
+            // Final save for employee photos
             await _unitOfWork.SaveChangesAsync();
 
             // Generate token
