@@ -42,5 +42,33 @@ namespace AppointmentManagementSystem.API.Controllers
             var result = await _mediator.Send(command);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("register-business")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BaseResponse<AuthResponseDto>>> RegisterBusiness([FromBody] RegisterBusinessDto registerBusinessDto)
+        {
+            try
+            {
+                var command = new RegisterBusinessCommand { RegisterBusinessDto = registerBusinessDto };
+                var result = await _mediator.Send(command);
+                var response = new BaseResponse<AuthResponseDto>
+                {
+                    Data = result,
+                    Success = !string.IsNullOrEmpty(result.Token),
+                    Message = !string.IsNullOrEmpty(result.Token) ? "İşletme kaydı başarılı" : "İşletme kaydı başarısız"
+                };
+                return response.Success ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new BaseResponse<AuthResponseDto>
+                {
+                    Success = false,
+                    Message = "Bir hata oluştu",
+                    Errors = new List<string> { ex.Message }
+                };
+                return BadRequest(errorResponse);
+            }
+        }
     }
 }

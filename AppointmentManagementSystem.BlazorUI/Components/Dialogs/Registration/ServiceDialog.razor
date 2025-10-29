@@ -1,0 +1,142 @@
+@using Radzen
+
+<RadzenCard Style="width: 600px; max-width: 100%;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <h3>@(IsEdit ? "Hizmet Düzenle" : "Yeni Hizmet Ekle")</h3>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <div>
+                <RadzenLabel Text="Hizmet Adı *" />
+                <RadzenTextBox @bind-Value="model.Name"
+                              Placeholder="Örn: Saç Kesimi"
+                              Style="width: 100%;" />
+                @if (!string.IsNullOrEmpty(nameError))
+                {
+                    <RadzenText TextStyle="TextStyle.Caption"
+                               Style="color: var(--rz-danger);">
+                        @nameError
+                    </RadzenText>
+                }
+            </div>
+
+            <div>
+                <RadzenLabel Text="Açıklama" />
+                <RadzenTextArea @bind-Value="model.Description"
+                               Rows="3"
+                               Placeholder="Hizmet hakkında detaylı bilgi"
+                               Style="width: 100%;" />
+            </div>
+
+            <RadzenRow>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <div>
+                        <RadzenLabel Text="Fiyat (TL)" />
+                        <RadzenNumeric @bind-Value="model.Price"
+                                      ShowUpDown="false"
+                                      Placeholder="Fiyat"
+                                      Min="0"
+                                      Style="width: 100%;" />
+                    </div>
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <div>
+                        <RadzenLabel Text="Süre (Dakika) *" />
+                        <RadzenNumeric @bind-Value="model.DurationMinutes"
+                                      ShowUpDown="true"
+                                      Placeholder="Dakika"
+                                      Min="1"
+                                      Max="1440"
+                                      Style="width: 100%;" />
+                        @if (!string.IsNullOrEmpty(durationError))
+                        {
+                            <RadzenText TextStyle="TextStyle.Caption"
+                                       Style="color: var(--rz-danger);">
+                                @durationError
+                            </RadzenText>
+                        }
+                    </div>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+
+        <div class="d-flex justify-content-end gap-2" style="margin-top: 16px;">
+            <RadzenButton Text="İptal"
+                         ButtonStyle="ButtonStyle.Light"
+                         Click="Cancel" />
+            <RadzenButton Text="@(IsEdit ? "Güncelle" : "Ekle")"
+                         ButtonStyle="ButtonStyle.Primary"
+                         Click="Save" />
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public bool IsEdit { get; set; } = false;
+
+    [Parameter]
+    public ServiceModel? ServiceToEdit { get; set; }
+
+    [Inject]
+    public DialogService DialogService { get; set; } = default!;
+
+    private ServiceModel model = new();
+    private string nameError = "";
+    private string durationError = "";
+
+    protected override void OnInitialized()
+    {
+        if (IsEdit && ServiceToEdit != null)
+        {
+            model = new ServiceModel
+            {
+                Name = ServiceToEdit.Name,
+                Description = ServiceToEdit.Description,
+                Price = ServiceToEdit.Price,
+                DurationMinutes = ServiceToEdit.DurationMinutes
+            };
+        }
+    }
+
+    private void Save()
+    {
+        if (!Validate())
+            return;
+
+        DialogService.Close(model);
+    }
+
+    private bool Validate()
+    {
+        nameError = "";
+        durationError = "";
+        bool isValid = true;
+
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            nameError = "Hizmet adı gereklidir.";
+            isValid = false;
+        }
+
+        if (model.DurationMinutes <= 0)
+        {
+            durationError = "Süre en az 1 dakika olmalıdır.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(null);
+    }
+
+    public class ServiceModel
+    {
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public decimal? Price { get; set; }
+        public int DurationMinutes { get; set; }
+    }
+}

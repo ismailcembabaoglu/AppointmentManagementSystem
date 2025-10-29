@@ -54,6 +54,20 @@ namespace AppointmentManagementSystem.BlazorUI.Services
             }
         }
 
+        public async Task<ApiResponse<AuthResponseDto>> RegisterBusinessAsync(RegisterBusinessDto registerBusinessDto)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/auth/register-business", registerBusinessDto);
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<AuthResponseDto>>();
+                return result ?? new ApiResponse<AuthResponseDto> { Success = false, Message = "Bilinmeyen hata" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<AuthResponseDto> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+        }
+
         public async Task<ApiResponse<string>> GetProtectedDataAsync()
         {
             await AddAuthorizationHeader();
