@@ -1,0 +1,561 @@
+@page "/appointments/{Id:int}"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAppointmentApiService AppointmentApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Randevu Detayı</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        @if (isLoading)
+        {
+            <RadzenCard Style="padding: 60px; text-align: center;">
+                <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.Body1" Style="margin-top: 16px;">Randevu detayları yükleniyor...</RadzenText>
+            </RadzenCard>
+        }
+        else if (appointment == null)
+        {
+            <RadzenCard Style="text-align: center; padding: 60px 20px;">
+                <div style="font-size: 64px; opacity: 0.3;">❌</div>
+                <RadzenText TextStyle="TextStyle.H5" Style="margin-top: 16px;">Randevu Bulunamadı</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1" Style="margin-top: 8px; color: var(--rz-text-secondary-color);">
+                    Aradığınız randevu bulunamadı veya erişim yetkiniz yok.
+                </RadzenText>
+                <RadzenButton Text="Randevularıma Dön" Icon="arrow_back" ButtonStyle="ButtonStyle.Primary"
+                            Click='() => Navigation.NavigateTo("/appointments")' Style="margin-top: 24px;" />
+            </RadzenCard>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                <!-- Header -->
+                <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="16px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600;">📋 Randevu Detayı</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body2" Style="opacity: 0.9;">
+                                Randevu No: #@appointment.Id
+                            </RadzenText>
+                        </RadzenStack>
+                        <RadzenButton Text="Geri" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
+                                    Click='() => Navigation.NavigateTo("/appointments")' />
+                    </RadzenStack>
+                </RadzenCard>
+
+                <RadzenRow Gap="20px">
+                    <!-- Left Column - Main Info -->
+                    <RadzenColumn Size="12" SizeLG="8">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                            <!-- Status Card -->
+                            <RadzenCard>
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="16px">
+                                    <div>
+                                        <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0;">DURUM</RadzenText>
+                                        <RadzenBadge Text="@GetStatusText(appointment.Status)"
+                                                   BadgeStyle="@GetStatusBadgeStyle(appointment.Status)"
+                                                   Style="font-size: 16px; padding: 8px 16px; margin-top: 8px;" />
+                                    </div>
+
+                                    @if (userRole == "Business" && appointment.Status == "Pending")
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                                            <RadzenButton Text="Onayla" Icon="check" ButtonStyle="ButtonStyle.Success"
+                                                        Click="@(() => UpdateStatus("Confirmed"))" />
+                                            <RadzenButton Text="Reddet" Icon="close" ButtonStyle="ButtonStyle.Danger"
+                                                        Click="@(() => UpdateStatus("Cancelled"))" />
+                                        </RadzenStack>
+                                    }
+
+                                    @if (userRole == "Business" && appointment.Status == "Confirmed")
+                                    {
+                                        <RadzenButton Text="Tamamlandı Olarak İşaretle" Icon="done_all" ButtonStyle="ButtonStyle.Info"
+                                                    Click="@(() => UpdateStatus("Completed"))" />
+                                    }
+
+                                    @if ((appointment.Status == "Pending" || appointment.Status == "Confirmed"))
+                                    {
+                                        <RadzenButton Text="İptal Et" Icon="cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                                    Click="@CancelAppointment" />
+                                    }
+                                </RadzenStack>
+                            </RadzenCard>
+
+                            <!-- Appointment Info -->
+                            <RadzenCard>
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📅 Randevu Bilgileri</RadzenText>
+
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                                    <!-- Date & Time -->
+                                    <RadzenRow Gap="16px">
+                                        <RadzenColumn Size="12" SizeMD="6">
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
+                                                <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--rz-primary-lighter); display: flex; align-items: center; justify-content: center;">
+                                                    <RadzenIcon Icon="calendar_today" Style="color: var(--rz-primary); font-size: 24px;" />
+                                                </div>
+                                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Tarih</RadzenText>
+                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                        @appointment.AppointmentDate.ToString("dd MMMM yyyy, dddd")
+                                                    </RadzenText>
+                                                </RadzenStack>
+                                            </RadzenStack>
+                                        </RadzenColumn>
+
+                                        <RadzenColumn Size="12" SizeMD="6">
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
+                                                <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--rz-success-lighter); display: flex; align-items: center; justify-content: center;">
+                                                    <RadzenIcon Icon="schedule" Style="color: var(--rz-success); font-size: 24px;" />
+                                                </div>
+                                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Saat</RadzenText>
+                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                        @($"{appointment.StartTime.Hours:00}:{appointment.StartTime.Minutes:00}") - @($"{appointment.EndTime.Hours:00}:{appointment.EndTime.Minutes:00}")
+                                                    </RadzenText>
+                                                </RadzenStack>
+                                            </RadzenStack>
+                                        </RadzenColumn>
+                                    </RadzenRow>
+
+                                    <RadzenDivider Style="margin: 0;" />
+
+                                    <!-- Business Info -->
+                                    <div>
+                                        <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">İŞLETME</RadzenText>
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                            <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                                <RadzenText TextStyle="TextStyle.H6" Style="color: white; margin: 0;">🏢</RadzenText>
+                                            </div>
+                                            <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                @appointment.BusinessName
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </div>
+
+                                    <!-- Service Info -->
+                                    <div>
+                                        <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">HİZMET</RadzenText>
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                            <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--rz-info-lighter); display: flex; align-items: center; justify-content: center;">
+                                                <RadzenIcon Icon="build" Style="color: var(--rz-info); font-size: 20px;" />
+                                            </div>
+                                            <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                @appointment.ServiceName
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(appointment.EmployeeName))
+                                    {
+                                        <!-- Employee Info -->
+                                        <div>
+                                            <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">ÇALIŞAN</RadzenText>
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--rz-warning-lighter); display: flex; align-items: center; justify-content: center;">
+                                                    <RadzenIcon Icon="person" Style="color: var(--rz-warning); font-size: 20px;" />
+                                                </div>
+                                                <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                    @appointment.EmployeeName
+                                                </RadzenText>
+                                            </RadzenStack>
+                                        </div>
+                                    }
+
+                                    @if (userRole == "Business" && !string.IsNullOrEmpty(appointment.CustomerName))
+                                    {
+                                        <!-- Customer Info (for Business) -->
+                                        <div>
+                                            <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">MÜŞTERİ</RadzenText>
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--rz-secondary-lighter); display: flex; align-items: center; justify-content: center;">
+                                                    <RadzenIcon Icon="account_circle" Style="color: var(--rz-secondary); font-size: 20px;" />
+                                                </div>
+                                                <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                    @appointment.CustomerName
+                                                </RadzenText>
+                                            </RadzenStack>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(appointment.Notes))
+                                    {
+                                        <RadzenDivider Style="margin: 0;" />
+
+                                        <!-- Notes -->
+                                        <div>
+                                            <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">NOTLAR</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body1" Style="color: var(--rz-text-secondary-color);">
+                                                @appointment.Notes
+                                            </RadzenText>
+                                        </div>
+                                    }
+                                </RadzenStack>
+                            </RadzenCard>
+
+                            <!-- Photos -->
+                            @if (appointment.PhotoUrls != null && appointment.PhotoUrls.Any())
+                            {
+                                <RadzenCard>
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📸 Fotoğraflar</RadzenText>
+                                    <RadzenRow Gap="12px">
+                                        @foreach (var photoUrl in appointment.PhotoUrls)
+                                        {
+                                            <RadzenColumn Size="6" SizeSM="4" SizeMD="3">
+                                                <div style="position: relative; padding-top: 100%; border-radius: 8px; overflow: hidden; cursor: pointer;"
+                                                     @onclick="@(() => ShowPhotoDialog(photoUrl))">
+                                                    <img src="@photoUrl" alt="Randevu fotoğrafı"
+                                                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
+                                                         class="photo-hover" />
+                                                </div>
+                                            </RadzenColumn>
+                                        }
+                                    </RadzenRow>
+                                </RadzenCard>
+                            }
+
+                            <!-- Rating & Review -->
+                            @if (appointment.Status == "Completed")
+                            {
+                                <RadzenCard>
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">⭐ Değerlendirme</RadzenText>
+
+                                    @if (appointment.Rating.HasValue)
+                                    {
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                                            <div>
+                                                <RadzenRating Value="@((int)appointment.Rating.Value)" ReadOnly="true" Stars="5" />
+                                                <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin-top: 8px; font-weight: 600;">
+                                                    @appointment.Rating.Value.ToString("0.0") / 5.0
+                                                </RadzenText>
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(appointment.Review))
+                                            {
+                                                <div>
+                                                    <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">YORUM</RadzenText>
+                                                    <RadzenText TextStyle="TextStyle.Body1">
+                                                        @appointment.Review
+                                                    </RadzenText>
+                                                </div>
+                                            }
+
+                                            @if (appointment.RatingDate.HasValue)
+                                            {
+                                                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">
+                                                    Değerlendirme Tarihi: @appointment.RatingDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                                </RadzenText>
+                                            }
+                                        </RadzenStack>
+                                    }
+                                    else if (userRole == "Customer")
+                                    {
+                                        <div style="text-align: center; padding: 20px;">
+                                            <RadzenText TextStyle="TextStyle.Body1" Style="color: var(--rz-text-secondary-color); margin-bottom: 16px;">
+                                                Bu randevuyu henüz değerlendirmediniz.
+                                            </RadzenText>
+                                            <RadzenButton Text="Değerlendir" Icon="star" ButtonStyle="ButtonStyle.Warning"
+                                                        Click="@ShowRatingDialog" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                                            Müşteri henüz bu randevuyu değerlendirmedi.
+                                        </RadzenAlert>
+                                    }
+                                </RadzenCard>
+                            }
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <!-- Right Column - Timeline & Actions -->
+                    <RadzenColumn Size="12" SizeLG="4">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                            <!-- Quick Actions -->
+                            <RadzenCard>
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 16px 0; font-weight: 600;">⚡ Hızlı İşlemler</RadzenText>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                    @if (userRole == "Business" && appointment.Status == "Pending")
+                                    {
+                                        <RadzenButton Text="Randevuyu Onayla" Icon="check" ButtonStyle="ButtonStyle.Success"
+                                                    Click="@(() => UpdateStatus("Confirmed"))" Style="width: 100%;" />
+                                        <RadzenButton Text="Randevuyu Reddet" Icon="close" ButtonStyle="ButtonStyle.Danger"
+                                                    Click="@(() => UpdateStatus("Cancelled"))" Style="width: 100%;" />
+                                    }
+
+                                    @if (userRole == "Business" && appointment.Status == "Confirmed")
+                                    {
+                                        <RadzenButton Text="Tamamlandı İşaretle" Icon="done_all" ButtonStyle="ButtonStyle.Info"
+                                                    Click="@(() => UpdateStatus("Completed"))" Style="width: 100%;" />
+                                    }
+
+                                    @if (userRole == "Customer" && appointment.Status == "Completed" && !appointment.Rating.HasValue)
+                                    {
+                                        <RadzenButton Text="Değerlendir" Icon="star" ButtonStyle="ButtonStyle.Warning"
+                                                    Click="@ShowRatingDialog" Style="width: 100%;" />
+                                    }
+
+                                    @if (appointment.Status == "Pending" || appointment.Status == "Confirmed")
+                                    {
+                                        <RadzenButton Text="Randevuyu İptal Et" Icon="cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                                    Click="@CancelAppointment" Style="width: 100%;" />
+                                    }
+
+                                    <RadzenDivider Style="margin: 8px 0;" />
+
+                                    <RadzenButton Text="Randevulara Dön" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
+                                                Click='() => Navigation.NavigateTo("/appointments")' Style="width: 100%;" />
+                                </RadzenStack>
+                            </RadzenCard>
+
+                            <!-- Status Timeline -->
+                            <RadzenCard>
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 16px 0; font-weight: 600;">🕒 Zaman Çizelgesi</RadzenText>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                                    <div style="position: relative; padding-left: 32px;">
+                                        <div style="position: absolute; left: 8px; top: 0; bottom: -16px; width: 2px; background: var(--rz-border-color);"></div>
+
+                                        <div style="position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--rz-success); border: 2px solid white;"></div>
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Oluşturuldu</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
+                                            @appointment.CreatedDate?.ToString("dd.MM.yyyy HH:mm")
+                                        </RadzenText>
+                                    </div>
+
+                                    @if (appointment.Status != "Pending")
+                                    {
+                                        <div style="position: relative; padding-left: 32px;">
+                                            <div style="position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: @GetStatusColor(appointment.Status); border: 2px solid white;"></div>
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">@GetStatusText(appointment.Status)</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
+                                                Güncellendi
+                                            </RadzenText>
+                                        </div>
+                                    }
+
+                                    @if (appointment.RatingDate.HasValue)
+                                    {
+                                        <div style="position: relative; padding-left: 32px;">
+                                            <div style="position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: #ffc107; border: 2px solid white;"></div>
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Değerlendirildi</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
+                                                @appointment.RatingDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                            </RadzenText>
+                                        </div>
+                                    }
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+
+            <style>
+                .photo-hover:hover {
+                    transform: scale(1.05);
+                }
+            </style>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <RadzenCard Style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 64px; opacity: 0.3;">🔒</div>
+            <RadzenText TextStyle="TextStyle.H5" Style="margin-top: 16px;">Yetkisiz Erişim</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" Style="margin-top: 8px; color: var(--rz-text-secondary-color);">
+                Randevu detaylarını görmek için giriş yapmanız gerekmektedir.
+            </RadzenText>
+            <RadzenButton Text="Giriş Yap" Icon="login" ButtonStyle="ButtonStyle.Primary"
+                        Click='() => Navigation.NavigateTo("/login")' Style="margin-top: 24px;" />
+        </RadzenCard>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private AppointmentDto? appointment;
+    private bool isLoading = true;
+    private string userRole = "";
+
+    private int ratingValue = 0;
+    private string reviewText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUserRole();
+        await LoadAppointment();
+    }
+
+    private async Task GetUserRole()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = user.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            if (roleClaim != null)
+            {
+                userRole = roleClaim.Value;
+            }
+        }
+    }
+
+    private async Task LoadAppointment()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await AppointmentApiService.GetAppointmentByIdAsync(Id);
+            if (response.Success && response.Data != null)
+            {
+                appointment = response.Data;
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Randevu bulunamadı.");
+                appointment = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Randevu yüklenirken hata oluştu: {ex.Message}");
+            appointment = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateStatus(string newStatus)
+    {
+        if (appointment == null) return;
+
+        var confirmed = await DialogService.Confirm(
+            $"Randevu durumunu '{GetStatusText(newStatus)}' olarak güncellemek istediğinize emin misiniz?",
+            "Durum Güncelle",
+            new ConfirmOptions { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            var response = await AppointmentApiService.UpdateAppointmentStatusAsync(Id, newStatus);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu durumu güncellendi.");
+                await LoadAppointment();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Durum güncellenemedi.");
+            }
+        }
+    }
+
+    private async Task CancelAppointment()
+    {
+        var confirmed = await DialogService.Confirm(
+            "Randevuyu iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+            "Randevu İptali",
+            new ConfirmOptions { OkButtonText = "Evet, İptal Et", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            await UpdateStatus("Cancelled");
+        }
+    }
+
+    private async Task ShowRatingDialog()
+    {
+        var result = await DialogService.OpenAsync("Randevuyu Değerlendir",
+            ds =>
+            @<div style="padding: 20px;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                    <div style="text-align: center;">
+                        <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
+                            Lütfen randevunuzu değerlendirin
+                        </RadzenText>
+                        <RadzenRating @bind-Value="@ratingValue" Stars="5" />
+                    </div>
+                    <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
+                        <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="() => ds.Close(false)" />
+                        <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => ds.Close(true)" Disabled="@(ratingValue == 0)" />
+                    </RadzenStack>
+                </RadzenStack>
+            </div>,
+            new DialogOptions { Width = "500px", Height = "auto" });
+
+        if (result == true && ratingValue > 0)
+        {
+            var ratingDto = new AddAppointmentRatingDto
+            {
+                Rating = ratingValue,
+                Review = reviewText
+            };
+
+            var response = await AppointmentApiService.AddAppointmentRatingAsync(Id, ratingDto);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Değerlendirmeniz kaydedildi. Teşekkür ederiz!");
+                await LoadAppointment();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Değerlendirme kaydedilemedi.");
+            }
+        }
+
+        // Reset values
+        ratingValue = 0;
+        reviewText = "";
+    }
+
+    private async Task ShowPhotoDialog(string photoUrl)
+    {
+        await DialogService.OpenAsync("Fotoğraf",
+            ds =>
+            @<div style="text-align: center;">
+                <img src="@photoUrl" alt="Randevu fotoğrafı" style="max-width: 100%; max-height: 80vh; border-radius: 8px;" />
+            </div>,
+            new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
+    }
+
+    private string GetStatusColor(string status) => status switch
+    {
+        "Pending" => "#ffc107",
+        "Confirmed" => "#2ecc71",
+        "Completed" => "#3498db",
+        "Cancelled" => "#e74c3c",
+        _ => "#95a5a6"
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => "Bekliyor",
+        "Confirmed" => "Onaylandı",
+        "Completed" => "Tamamlandı",
+        "Cancelled" => "İptal Edildi",
+        _ => status
+    };
+
+    private BadgeStyle GetStatusBadgeStyle(string status) => status switch
+    {
+        "Pending" => BadgeStyle.Warning,
+        "Confirmed" => BadgeStyle.Success,
+        "Completed" => BadgeStyle.Info,
+        "Cancelled" => BadgeStyle.Danger,
+        _ => BadgeStyle.Secondary
+    };
+}
