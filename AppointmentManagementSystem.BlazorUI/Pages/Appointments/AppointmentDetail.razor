@@ -30,7 +30,7 @@
                     Aradığınız randevu bulunamadı veya erişim yetkiniz yok.
                 </RadzenText>
                 <RadzenButton Text="Randevularıma Dön" Icon="arrow_back" ButtonStyle="ButtonStyle.Primary"
-                            Click='() => Navigation.NavigateTo("/appointments")' Style="margin-top: 24px;" />
+                            Click="@(() => Navigation.NavigateTo("/appointments"))" Style="margin-top: 24px;" />
             </RadzenCard>
         }
         else
@@ -46,7 +46,7 @@
                             </RadzenText>
                         </RadzenStack>
                         <RadzenButton Text="Geri" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
-                                    Click='() => Navigation.NavigateTo("/appointments")' />
+                                    Click="@(() => Navigation.NavigateTo("/appointments"))" />
                     </RadzenStack>
                 </RadzenCard>
 
@@ -311,7 +311,7 @@
                                     <RadzenDivider Style="margin: 8px 0;" />
 
                                     <RadzenButton Text="Randevulara Dön" Icon="arrow_back" ButtonStyle="ButtonStyle.Light"
-                                                Click='() => Navigation.NavigateTo("/appointments")' Style="width: 100%;" />
+                                                Click="@(() => Navigation.NavigateTo("/appointments"))" Style="width: 100%;" />
                                 </RadzenStack>
                             </RadzenCard>
 
@@ -323,9 +323,9 @@
                                         <div style="position: absolute; left: 8px; top: 0; bottom: -16px; width: 2px; background: var(--rz-border-color);"></div>
 
                                         <div style="position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--rz-success); border: 2px solid white;"></div>
-                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Oluşturuldu</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">Randevu Tarihi</RadzenText>
                                         <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
-                                            @appointment.CreatedDate?.ToString("dd.MM.yyyy HH:mm")
+                                            @appointment.AppointmentDate.ToString("dd.MM.yyyy HH:mm")
                                         </RadzenText>
                                     </div>
 
@@ -372,7 +372,7 @@
                 Randevu detaylarını görmek için giriş yapmanız gerekmektedir.
             </RadzenText>
             <RadzenButton Text="Giriş Yap" Icon="login" ButtonStyle="ButtonStyle.Primary"
-                        Click='() => Navigation.NavigateTo("/login")' Style="margin-top: 24px;" />
+                        Click="@(() => Navigation.NavigateTo("/login"))" Style="margin-top: 24px;" />
         </RadzenCard>
     </NotAuthorized>
 </AuthorizeView>
