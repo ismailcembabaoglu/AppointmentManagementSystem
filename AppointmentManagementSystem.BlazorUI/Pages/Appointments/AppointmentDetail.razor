@@ -332,7 +332,7 @@
                                     @if (appointment.Status != "Pending")
                                     {
                                         <div style="position: relative; padding-left: 32px;">
-                                            <div style="position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: @GetStatusColor(appointment.Status); border: 2px solid white;"></div>
+                                            <div style="@($"position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: {GetStatusColor(appointment.Status)}; border: 2px solid white;")"></div>
                                             <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">@GetStatusText(appointment.Status)</RadzenText>
                                             <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
                                                 Güncellendi

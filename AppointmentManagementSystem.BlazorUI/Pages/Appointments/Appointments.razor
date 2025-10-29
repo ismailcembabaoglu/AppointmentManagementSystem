@@ -83,7 +83,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                     @foreach (var appointment in filteredAppointments)
                     {
-                        <RadzenCard Style="border-left: 4px solid @GetStatusColor(appointment.Status); cursor: pointer; transition: all 0.3s ease;"
+                        <RadzenCard Style="@($"border-left: 4px solid {GetStatusColor(appointment.Status)}; cursor: pointer; transition: all 0.3s ease;")"
                                    @onclick="@(() => ViewDetails(appointment.Id))"
                                    class="appointment-card">
                             <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
@@ -168,32 +168,32 @@
                                 <!-- Actions -->
                                 <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.End">
                                     <RadzenButton Text="Detay" Icon="visibility" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light"
-                                                Click="@((args) => { args.StopPropagation(); ViewDetails(appointment.Id); })" />
+                                                Click="@(() => ViewDetails(appointment.Id))" />
 
                                     @if (userRole == "Business" && appointment.Status == "Pending")
                                     {
                                         <RadzenButton Text="Onayla" Icon="check" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Success"
-                                                    Click="@((args) => { args.StopPropagation(); UpdateStatus(appointment.Id, "Confirmed"); })" />
+                                                    Click="@(() => UpdateStatus(appointment.Id, "Confirmed"))" />
                                         <RadzenButton Text="Reddet" Icon="close" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger"
-                                                    Click="@((args) => { args.StopPropagation(); UpdateStatus(appointment.Id, "Cancelled"); })" />
+                                                    Click="@(() => UpdateStatus(appointment.Id, "Cancelled"))" />
                                     }
 
                                     @if (userRole == "Business" && appointment.Status == "Confirmed")
                                     {
                                         <RadzenButton Text="Tamamla" Icon="done_all" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Info"
-                                                    Click="@((args) => { args.StopPropagation(); UpdateStatus(appointment.Id, "Completed"); })" />
+                                                    Click="@(() => UpdateStatus(appointment.Id, "Completed"))" />
                                     }
 
                                     @if (userRole == "Customer" && appointment.Status == "Completed" && !appointment.Rating.HasValue)
                                     {
                                         <RadzenButton Text="Değerlendir" Icon="star" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Warning"
-                                                    Click="@((args) => { args.StopPropagation(); ShowRatingDialog(appointment.Id); })" />
+                                                    Click="@(() => ShowRatingDialog(appointment.Id))" />
                                     }
 
                                     @if (appointment.Status == "Pending" || appointment.Status == "Confirmed")
                                     {
                                         <RadzenButton Text="İptal" Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
-                                                    Click="@((args) => { args.StopPropagation(); CancelAppointment(appointment.Id); })" />
+                                                    Click="@(() => CancelAppointment(appointment.Id))" />
                                     }
                                 </RadzenStack>
                             </RadzenStack>
