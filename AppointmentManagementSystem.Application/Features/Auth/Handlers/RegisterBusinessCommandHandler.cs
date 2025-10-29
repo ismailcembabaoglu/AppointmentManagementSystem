@@ -113,7 +113,10 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 var businessPhoto = new BusinessPhoto
                 {
                     BusinessId = business.Id,
-                    Base64Data = dto.BusinessPhotoBase64
+                    FileName = $"business_{business.Id}_photo.jpg",
+                    Base64Data = dto.BusinessPhotoBase64,
+                    ContentType = "image/jpeg",
+                    FileSize = dto.BusinessPhotoBase64.Length
                 };
                 await _businessPhotoRepository.AddAsync(businessPhoto);
             }
@@ -148,12 +151,17 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 await _unitOfWork.SaveChangesAsync(); // Save to get employee ID
 
                 // Add Employee Photos
+                int photoIndex = 0;
                 foreach (var photoBase64 in employeeDto.PhotosBase64)
                 {
+                    photoIndex++;
                     var employeePhoto = new EmployeePhoto
                     {
                         EmployeeId = employee.Id,
-                        Base64Data = photoBase64
+                        FileName = $"employee_{employee.Id}_photo_{photoIndex}.jpg",
+                        Base64Data = photoBase64,
+                        ContentType = "image/jpeg",
+                        FileSize = photoBase64.Length
                     };
                     await _employeePhotoRepository.AddAsync(employeePhoto);
                 }
