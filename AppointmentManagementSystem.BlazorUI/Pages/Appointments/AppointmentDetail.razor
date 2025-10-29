@@ -210,7 +210,7 @@
                                             <RadzenColumn Size="6" SizeSM="4" SizeMD="3">
                                                 <div style="position: relative; padding-top: 100%; border-radius: 8px; overflow: hidden; cursor: pointer;"
                                                      @onclick="@(() => ShowPhotoDialog(photoUrl))">
-                                                    <img src="@photoUrl" alt="Randevu fotoğrafı"
+                                                    <img src="@GetPhotoDataUri(photoUrl)" alt="Randevu fotoğrafı"
                                                          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
                                                          class="photo-hover" />
                                                 </div>
@@ -524,12 +524,26 @@
 
     private async Task ShowPhotoDialog(string photoUrl)
     {
+        var photoDataUri = GetPhotoDataUri(photoUrl);
         await DialogService.OpenAsync("Fotoğraf",
             ds =>
             @<div style="text-align: center;">
-                <img src="@photoUrl" alt="Randevu fotoğrafı" style="max-width: 100%; max-height: 80vh; border-radius: 8px;" />
+                <img src="@photoDataUri" alt="Randevu fotoğrafı" style="max-width: 100%; max-height: 80vh; border-radius: 8px;" />
             </div>,
             new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
+    }
+
+    private string GetPhotoDataUri(string base64Data)
+    {
+        if (string.IsNullOrEmpty(base64Data))
+            return "";
+
+        // Check if already has data URI prefix
+        if (base64Data.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+            return base64Data;
+
+        // Add data URI prefix for Base64 images
+        return $"data:image/jpeg;base64,{base64Data}";
     }
 
     private string GetStatusColor(string status) => status switch
