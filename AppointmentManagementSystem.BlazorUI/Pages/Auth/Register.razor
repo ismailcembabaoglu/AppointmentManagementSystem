@@ -14,7 +14,7 @@
 @inject DialogService DialogService
 
 <div class="auth-container" style="padding: 2rem 0;">
-    <RadzenCard Style="@($"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;")">
+    <RadzenCard Style="@cardStyle">
         <RadzenStack Orientation="Orientation.Vertical" Gap="24px">
             <!-- Header -->
             <div style="text-align: center;">
@@ -33,10 +33,8 @@
 
                     <RadzenRow Gap="16px">
                         <RadzenColumn Size="12" SizeMD="6">
-                            <RadzenCard @onclick="@(() => SelectRole("Customer"))"
-                                       Style="cursor: pointer; border: 2px solid var(--rz-border-color); transition: all 0.3s ease; height: 100%;"
-                                       @onmouseover="@(() => {})"
-                                       @onmouseout="@(() => {})">
+                            <RadzenCard onclick="@(() => SelectRole("Customer"))"
+                                       Style="cursor: pointer; border: 2px solid var(--rz-border-color); transition: all 0.3s ease; height: 100%;">
                                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
                                     <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
                                         <RadzenIcon Icon="person" Style="color: white; font-size: 40px;" />
@@ -51,16 +49,14 @@
 
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenCard @onclick="@(() => SelectRole("Business"))"
-                                       Style="cursor: pointer; border: 2px solid var(--rz-border-color); transition: all 0.3s ease; height: 100%;"
-                                       @onmouseover="@(() => {})"
-                                       @onmouseout="@(() => {})">
+                                       Style="cursor: pointer; border: 2px solid var(--rz-border-color); transition: all 0.3s ease; height: 100%;">
                                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
                                     <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center;">
                                         <RadzenIcon Icon="business" Style="color: white; font-size: 40px;" />
                                     </div>
                                     <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">İşletme</RadzenText>
                                     <RadzenText TextStyle="TextStyle.Body2" Style="text-align: center; color: var(--rz-text-secondary-color);">
-                                        İşletmenizi oluşturun, hizmetler ekleyin ve randevuları yönetin
+                                        İşletmenizi kaydedin ve müşterilerinize hizmet verin
                                     </RadzenText>
                                 </RadzenStack>
                             </RadzenCard>
@@ -117,19 +113,22 @@
                                 var stepIndex = i;
                                 var isCompleted = stepIndex < currentBusinessStep;
                                 var isCurrent = stepIndex == currentBusinessStep;
+                                var stepColor = isCompleted ? "white" : (isCurrent ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)");
+                                var textColor = isCurrent ? "var(--rz-primary)" : "white";
+                                var displayStyle = stepIndex < 3 ? "block" : "none";
 
                                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="8px" Style="flex: 1;">
-                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: @(isCompleted ? "white" : isCurrent ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)"); display: flex; align-items: center; justify-content: center; z-index: 1;">
+                                    <div style="@($"width: 40px; height: 40px; border-radius: 50%; background: {stepColor}; display: flex; align-items: center; justify-content: center; z-index: 1;")">
                                         @if (isCompleted)
                                         {
                                             <RadzenIcon Icon="check" Style="color: var(--rz-primary); font-size: 20px;" />
                                         }
                                         else
                                         {
-                                            <RadzenText Style="@($"color: {(isCurrent ? "var(--rz-primary)" : "white")}; font-weight: 600; margin: 0;")">@(stepIndex + 1)</RadzenText>
+                                            <RadzenText Style="@($"color: {textColor}; font-weight: 600; margin: 0;")">@(stepIndex + 1)</RadzenText>
                                         }
                                     </div>
-                                    <RadzenText Style="@($"color: white; font-size: 12px; text-align: center; display: {(stepIndex < 3 ? "block" : "none")};")">
+                                    <RadzenText Style="@($"color: white; font-size: 12px; text-align: center; display: {displayStyle};")">
                                         @businessStepTitles[stepIndex]
                                     </RadzenText>
                                 </RadzenStack>
@@ -141,7 +140,7 @@
                     <RadzenCard Style="margin-bottom: 16px;">
                         @if (currentBusinessStep == 0)
                         {
-                            <!-- Step 1: Kullanıcı ve İşletme Bilgileri -->
+                            <!-- Step 1: User and Business Info -->
                             <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                                 <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Kullanıcı ve İşletme Bilgileri</RadzenText>
 
@@ -241,7 +240,7 @@
                         }
                         else if (currentBusinessStep == 1)
                         {
-                            <!-- Step 2: Hizmetler -->
+                            <!-- Step 2: Services -->
                             <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                                     <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Hizmetler</RadzenText>
@@ -281,17 +280,17 @@
                         }
                         else if (currentBusinessStep == 2)
                         {
-                            <!-- Step 3: Çalışanlar -->
+                            <!-- Step 3: Employees -->
                             <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                                     <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Çalışanlar</RadzenText>
-                                    <RadzenButton Text="Yeni Çalışan Ekle" Icon="person_add" ButtonStyle="ButtonStyle.Success" Click="@AddEmployee" Size="ButtonSize.Small" />
+                                    <RadzenButton Text="Yeni Çalışan Ekle" Icon="add" ButtonStyle="ButtonStyle.Success" Click="@AddEmployee" Size="ButtonSize.Small" />
                                 </RadzenStack>
 
                                 @if (!employees.Any())
                                 {
                                     <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
-                                        Henüz çalışan eklenmedi. "Yeni Çalışan Ekle" butonuna tıklayarak çalışan ekleyin. (Opsiyonel)
+                                        Henüz çalışan eklenmedi. "Yeni Çalışan Ekle" butonuna tıklayarak çalışan ekleyebilirsiniz (opsiyonel).
                                     </RadzenAlert>
                                 }
                                 else
@@ -299,35 +298,31 @@
                                     <RadzenRow Gap="16px">
                                         @foreach (var employee in employees)
                                         {
-                                            <RadzenColumn Size="12" SizeSM="6" SizeMD="4">
+                                            <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
                                                 <RadzenCard Style="height: 100%;">
                                                     <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                                                         @if (employee.Photos.Any())
                                                         {
-                                                            <img src="data:image/jpeg;base64,@employee.Photos.First()"
-                                                                 style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;"
-                                                                 alt="@employee.Name" />
-                                                        }
-                                                        else
-                                                        {
-                                                            <div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                                                <RadzenText TextStyle="TextStyle.DisplayH3" Style="color: white; margin: 0;">
-                                                                    @employee.Name.Substring(0, 1).ToUpper()
-                                                                </RadzenText>
+                                                            <div style="width: 100%; height: 150px; overflow: hidden; border-radius: 8px;">
+                                                                <img src="@employee.Photos.First()" alt="@employee.Name" style="width: 100%; height: 100%; object-fit: cover;" />
                                                             </div>
                                                         }
                                                         <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">@employee.Name</RadzenText>
                                                         @if (!string.IsNullOrEmpty(employee.Specialization))
                                                         {
-                                                            <RadzenBadge Text="@employee.Specialization" BadgeStyle="BadgeStyle.Primary" Shade="Shade.Lighter" />
+                                                            <RadzenBadge Text="@employee.Specialization" BadgeStyle="BadgeStyle.Secondary" />
                                                         }
                                                         @if (!string.IsNullOrEmpty(employee.Description))
                                                         {
-                                                            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">@employee.Description</RadzenText>
+                                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">@employee.Description</RadzenText>
+                                                        }
+                                                        @if (employee.Photos.Count > 1)
+                                                        {
+                                                            <RadzenText TextStyle="TextStyle.Caption">@employee.Photos.Count fotoğraf</RadzenText>
                                                         }
                                                         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Style="margin-top: auto;">
-                                                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Click="@(() => EditEmployee(employee))" Style="width: 100%;" />
-                                                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => RemoveEmployee(employee))" Style="width: 100%;" />
+                                                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Click="@(() => EditEmployee(employee))" Style="flex: 1;" />
+                                                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="@(() => RemoveEmployee(employee))" Style="flex: 1;" />
                                                         </RadzenStack>
                                                     </RadzenStack>
                                                 </RadzenCard>
@@ -339,11 +334,11 @@
                         }
                         else if (currentBusinessStep == 3)
                         {
-                            <!-- Step 4: Özet -->
+                            <!-- Step 4: Summary -->
                             <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                                 <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">Kayıt Özeti</RadzenText>
 
-                                <!-- Kullanıcı Bilgileri -->
+                                <!-- User Info -->
                                 <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin-bottom: 12px;">👤 Kullanıcı Bilgileri</RadzenText>
                                     <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
@@ -353,7 +348,7 @@
                                     </RadzenStack>
                                 </RadzenCard>
 
-                                <!-- İşletme Bilgileri -->
+                                <!-- Business Info -->
                                 <RadzenCard Style="background: linear-gradient(135deg, #2ecc7115 0%, #2ecc7125 100%);">
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin-bottom: 12px;">🏢 İşletme Bilgileri</RadzenText>
                                     <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
@@ -374,7 +369,7 @@
                                     </RadzenStack>
                                 </RadzenCard>
 
-                                <!-- Hizmetler -->
+                                <!-- Services -->
                                 <RadzenCard Style="background: linear-gradient(135deg, #3498db15 0%, #3498db25 100%);">
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin-bottom: 12px;">🛠️ Hizmetler (@services.Count adet)</RadzenText>
                                     @if (services.Any())
@@ -392,7 +387,7 @@
                                     }
                                 </RadzenCard>
 
-                                <!-- Çalışanlar -->
+                                <!-- Employees -->
                                 <RadzenCard Style="background: linear-gradient(135deg, #f39c1215 0%, #f39c1225 100%);">
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin-bottom: 12px;">👥 Çalışanlar (@employees.Count adet)</RadzenText>
                                     @if (employees.Any())
@@ -485,6 +480,8 @@
     private List<ServiceModel> services = new();
     private List<EmployeeModel> employees = new();
 
+    private string cardStyle => $"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;";
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
@@ -544,7 +541,6 @@
 
         if (result != null)
         {
-            // Dialog returns ServiceDialog.ServiceModel, map to Register.ServiceModel
             dynamic dialogModel = result;
             var newService = new ServiceModel
             {
@@ -572,7 +568,6 @@
 
         if (result != null)
         {
-            // Dialog returns ServiceDialog.ServiceModel, map to Register.ServiceModel
             dynamic dialogModel = result;
             var updatedService = new ServiceModel
             {
@@ -582,7 +577,6 @@
                 DurationMinutes = dialogModel.DurationMinutes
             };
 
-            // Update the existing service
             var index = services.IndexOf(service);
             if (index >= 0)
             {
@@ -611,7 +605,6 @@
 
         if (result != null)
         {
-            // Dialog returns EmployeeDialog.EmployeeModel, map to Register.EmployeeModel
             dynamic dialogModel = result;
             var newEmployee = new EmployeeModel
             {
@@ -639,7 +632,6 @@
 
         if (result != null)
         {
-            // Dialog returns EmployeeDialog.EmployeeModel, map to Register.EmployeeModel
             dynamic dialogModel = result;
             var updatedEmployee = new EmployeeModel
             {
@@ -649,7 +641,6 @@
                 Photos = new List<string>(dialogModel.Photos)
             };
 
-            // Update the existing employee
             var index = employees.IndexOf(employee);
             if (index >= 0)
             {
@@ -706,7 +697,6 @@
 
     private async Task HandleBusinessRegister()
     {
-        // Final validation
         if (!services.Any())
         {
             NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "En az bir hizmet eklemelisiniz.");
@@ -718,15 +708,11 @@
 
         try
         {
-            // Build comprehensive business registration DTO
             var registerBusinessDto = new RegisterBusinessDto
             {
-                // User info
                 Name = registerDto.Name,
                 Email = registerDto.Email,
                 Password = registerDto.Password,
-
-                // Business info
                 BusinessName = businessInfo.Name,
                 CategoryId = businessInfo.CategoryId,
                 BusinessDescription = businessInfo.Description,
@@ -738,11 +724,7 @@
                 District = businessInfo.District,
                 Latitude = businessInfo.Latitude,
                 Longitude = businessInfo.Longitude,
-
-                // Business photo
                 BusinessPhotoBase64 = businessPhoto?.Base64Data,
-
-                // Services
                 Services = services.Select(s => new RegisterBusinessServiceDto
                 {
                     Name = s.Name,
@@ -750,8 +732,6 @@
                     Price = s.Price,
                     DurationMinutes = s.DurationMinutes
                 }).ToList(),
-
-                // Employees
                 Employees = employees.Select(e => new RegisterBusinessEmployeeDto
                 {
                     Name = e.Name,
