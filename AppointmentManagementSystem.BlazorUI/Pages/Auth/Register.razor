@@ -15,7 +15,7 @@
 @inject DialogService DialogService
 
 <div class="auth-container" style="padding: 2rem 0;">
-    <RadzenCard Style="max-width: @(selectedRole == "Business" ? "1200px" : "550px"); width: 95%; margin: 0 auto;">
+    <RadzenCard Style="@($"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;")">
         <RadzenStack Orientation="Orientation.Vertical" Gap="24px">
             <!-- Header -->
             <div style="text-align: center;">
@@ -127,10 +127,10 @@
                                         }
                                         else
                                         {
-                                            <RadzenText Style="color: @(isCurrent ? "var(--rz-primary)" : "white"); font-weight: 600; margin: 0;">@(stepIndex + 1)</RadzenText>
+                                            <RadzenText Style="@($"color: {(isCurrent ? "var(--rz-primary)" : "white")}; font-weight: 600; margin: 0;")">@(stepIndex + 1)</RadzenText>
                                         }
                                     </div>
-                                    <RadzenText Style="color: white; font-size: 12px; text-align: center; display: @(stepIndex < 3 ? "block" : "none");">
+                                    <RadzenText Style="@($"color: white; font-size: 12px; text-align: center; display: {(stepIndex < 3 ? "block" : "none")};")">
                                         @businessStepTitles[stepIndex]
                                     </RadzenText>
                                 </RadzenStack>
@@ -368,7 +368,7 @@
                                         {
                                             <RadzenText><strong>Telefon:</strong> @businessInfo.Phone</RadzenText>
                                         }
-                                        @if (businessPhoto != null)
+                                        @if (businessPhoto is not null)
                                         {
                                             <RadzenText><strong>Fotoğraf:</strong> Eklendi ✓</RadzenText>
                                         }
@@ -753,20 +753,4 @@
         }
     }
 
-    // Models
-    public class ServiceModel
-    {
-        public string Name { get; set; } = "";
-        public string? Description { get; set; }
-        public decimal? Price { get; set; }
-        public int DurationMinutes { get; set; }
-    }
-
-    public class EmployeeModel
-    {
-        public string Name { get; set; } = "";
-        public string? Specialization { get; set; }
-        public string? Description { get; set; }
-        public List<string> Photos { get; set; } = new();
-    }
 }

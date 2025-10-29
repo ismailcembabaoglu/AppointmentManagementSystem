@@ -1,5 +1,6 @@
 @using Radzen
 @using AppointmentManagementSystem.BlazorUI.Components
+@using static AppointmentManagementSystem.BlazorUI.Components.FileUploadComponent
 
 <RadzenCard Style="width: 700px; max-width: 100%;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
@@ -113,11 +114,12 @@
         }
     }
 
-    private void HandlePhotosUploaded(List<string> base64Photos)
+    private void HandlePhotosUploaded(List<UploadedFileModel> uploadedFiles)
     {
+        var base64Photos = uploadedFiles.Select(f => f.Base64Data).ToList();
         model.Photos.AddRange(base64Photos);
         NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
-            $"{base64Photos.Count} fotoğraf eklendi.");
+            $"{uploadedFiles.Count} fotoğraf eklendi.");
         StateHasChanged();
     }
 
