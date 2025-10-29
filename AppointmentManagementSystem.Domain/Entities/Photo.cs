@@ -16,7 +16,9 @@ namespace AppointmentManagementSystem.Domain.Entities
 
         public long FileSize { get; set; }
 
-        // Base64 encoded image data (alternative to FilePath for storing images directly in database)
+        /// <summary>
+        /// Base64 encoded image data for storing images directly in database
+        /// </summary>
         public string? Base64Data { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using AppointmentManagementSystem.API.Middleware;
 using AppointmentManagementSystem.Application;
 using AppointmentManagementSystem.Infrastructure;
 using AppointmentManagementSystem.Infrastructure.Data;
@@ -74,14 +75,11 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero // Token süresi için tolerans sýfýr
+        ClockSkew = TimeSpan.Zero // Token sï¿½resi iï¿½in tolerans sï¿½fï¿½r
     };
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = options.DefaultPolicy;
-});
+builder.Services.AddAuthorization();
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -97,6 +95,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// Global exception handling middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

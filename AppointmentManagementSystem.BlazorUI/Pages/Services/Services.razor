@@ -37,7 +37,11 @@
                 <Columns>
                     <RadzenDataGridColumn TItem="ServiceDto" Property="Name" Title="Hizmet Adı" />
                     <RadzenDataGridColumn TItem="ServiceDto" Property="BusinessName" Title="İşletme" />
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="Price" Title="Fiyat" Format="C" />
+                    <RadzenDataGridColumn TItem="ServiceDto" Property="Price" Title="Fiyat">
+                        <Template Context="service">
+                            @(service.Price?.ToString("C") ?? "-")
+                        </Template>
+                    </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="ServiceDto" Property="DurationMinutes" Title="Süre (dk)" />
                     <RadzenDataGridColumn TItem="ServiceDto" Property="IsActive" Title="Aktif" />
                     <RadzenDataGridColumn TItem="ServiceDto" Title="İşlemler" Width="150px">

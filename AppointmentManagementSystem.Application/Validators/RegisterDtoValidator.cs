@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using FluentValidation;
 
 namespace AppointmentManagementSystem.Application.Validators
@@ -8,21 +8,20 @@ namespace AppointmentManagementSystem.Application.Validators
         public RegisterDtoValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("İsim alanı boş olamaz.")
-                .MaximumLength(100).WithMessage("İsim en fazla 100 karakter olabilir.");
+                .NotEmpty().WithMessage("Ad gereklidir.")
+                .MaximumLength(100).WithMessage("Ad en fazla 100 karakter olabilir.");
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("E-posta alanı boş olamaz.")
-                .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+                .NotEmpty().WithMessage("E-posta adresi gereklidir.")
+                .EmailAddress().WithMessage("Geçersiz e-posta adresi.");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Şifre alanı boş olamaz.")
+                .NotEmpty().WithMessage("Şifre gereklidir.")
                 .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır.");
 
             RuleFor(x => x.Role)
-                .NotEmpty().WithMessage("Rol alanı boş olamaz.")
-                .Must(role => role == "Customer" || role == "Business")
-                .WithMessage("Rol 'Customer' veya 'Business' olmalıdır.");
+                .NotEmpty().WithMessage("Rol seçimi gereklidir.")
+                .Must(x => x == "Customer" || x == "Business").WithMessage("Geçersiz rol. Sadece 'Customer' veya 'Business' seçilebilir.");
         }
     }
 }

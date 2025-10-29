@@ -26,6 +26,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             var query = new GetCategoryByIdQuery { Id = id };
@@ -38,6 +39,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpGet("{id:int}/businesses")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetBusinessesByCategory(int id)
         {
             var query = new GetBusinessesByCategoryQuery { CategoryId = id };
