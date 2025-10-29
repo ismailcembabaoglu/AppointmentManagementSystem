@@ -89,7 +89,7 @@
     public bool IsEdit { get; set; } = false;
 
     [Parameter]
-    public EmployeeModel? EmployeeToEdit { get; set; }
+    public object? EmployeeToEdit { get; set; }
 
     [Inject]
     public DialogService DialogService { get; set; } = default!;
@@ -104,12 +104,13 @@
     {
         if (IsEdit && EmployeeToEdit != null)
         {
+            dynamic source = EmployeeToEdit;
             model = new EmployeeModel
             {
-                Name = EmployeeToEdit.Name,
-                Specialization = EmployeeToEdit.Specialization,
-                Description = EmployeeToEdit.Description,
-                Photos = new List<string>(EmployeeToEdit.Photos)
+                Name = source.Name,
+                Specialization = source.Specialization,
+                Description = source.Description,
+                Photos = new List<string>(source.Photos)
             };
         }
     }

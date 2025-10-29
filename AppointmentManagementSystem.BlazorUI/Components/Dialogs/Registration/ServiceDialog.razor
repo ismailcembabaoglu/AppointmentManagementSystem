@@ -75,7 +75,7 @@
     public bool IsEdit { get; set; } = false;
 
     [Parameter]
-    public ServiceModel? ServiceToEdit { get; set; }
+    public object? ServiceToEdit { get; set; }
 
     [Inject]
     public DialogService DialogService { get; set; } = default!;
@@ -88,12 +88,13 @@
     {
         if (IsEdit && ServiceToEdit != null)
         {
+            dynamic source = ServiceToEdit;
             model = new ServiceModel
             {
-                Name = ServiceToEdit.Name,
-                Description = ServiceToEdit.Description,
-                Price = ServiceToEdit.Price,
-                DurationMinutes = ServiceToEdit.DurationMinutes
+                Name = source.Name,
+                Description = source.Description,
+                Price = source.Price,
+                DurationMinutes = source.DurationMinutes
             };
         }
     }

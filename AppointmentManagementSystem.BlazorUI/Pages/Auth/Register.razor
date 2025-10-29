@@ -3,11 +3,10 @@
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Components
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Registration
 @using Radzen
 @using static AppointmentManagementSystem.BlazorUI.Components.FileUploadComponent
-@using static AppointmentManagementSystem.BlazorUI.Components.Dialogs.Registration.ServiceDialog
-@using static AppointmentManagementSystem.BlazorUI.Components.Dialogs.Registration.EmployeeDialog
 @inject IApiService ApiService
 @inject ICategoryApiService CategoryApiService
 @inject NotificationService NotificationService
@@ -543,9 +542,18 @@
             parameters,
             new DialogOptions { Width = "600px", Height = "auto" });
 
-        if (result != null && result is ServiceModel updatedService)
+        if (result != null)
         {
-            services.Add(updatedService);
+            // Dialog returns ServiceDialog.ServiceModel, map to Register.ServiceModel
+            dynamic dialogModel = result;
+            var newService = new ServiceModel
+            {
+                Name = dialogModel.Name,
+                Description = dialogModel.Description,
+                Price = dialogModel.Price,
+                DurationMinutes = dialogModel.DurationMinutes
+            };
+            services.Add(newService);
             StateHasChanged();
         }
     }
@@ -562,8 +570,18 @@
             parameters,
             new DialogOptions { Width = "600px", Height = "auto" });
 
-        if (result != null && result is ServiceModel updatedService)
+        if (result != null)
         {
+            // Dialog returns ServiceDialog.ServiceModel, map to Register.ServiceModel
+            dynamic dialogModel = result;
+            var updatedService = new ServiceModel
+            {
+                Name = dialogModel.Name,
+                Description = dialogModel.Description,
+                Price = dialogModel.Price,
+                DurationMinutes = dialogModel.DurationMinutes
+            };
+
             // Update the existing service
             var index = services.IndexOf(service);
             if (index >= 0)
@@ -591,9 +609,18 @@
             parameters,
             new DialogOptions { Width = "700px", Height = "auto" });
 
-        if (result != null && result is EmployeeModel updatedEmployee)
+        if (result != null)
         {
-            employees.Add(updatedEmployee);
+            // Dialog returns EmployeeDialog.EmployeeModel, map to Register.EmployeeModel
+            dynamic dialogModel = result;
+            var newEmployee = new EmployeeModel
+            {
+                Name = dialogModel.Name,
+                Specialization = dialogModel.Specialization,
+                Description = dialogModel.Description,
+                Photos = new List<string>(dialogModel.Photos)
+            };
+            employees.Add(newEmployee);
             StateHasChanged();
         }
     }
@@ -610,8 +637,18 @@
             parameters,
             new DialogOptions { Width = "700px", Height = "auto" });
 
-        if (result != null && result is EmployeeModel updatedEmployee)
+        if (result != null)
         {
+            // Dialog returns EmployeeDialog.EmployeeModel, map to Register.EmployeeModel
+            dynamic dialogModel = result;
+            var updatedEmployee = new EmployeeModel
+            {
+                Name = dialogModel.Name,
+                Specialization = dialogModel.Specialization,
+                Description = dialogModel.Description,
+                Photos = new List<string>(dialogModel.Photos)
+            };
+
             // Update the existing employee
             var index = employees.IndexOf(employee);
             if (index >= 0)
@@ -753,4 +790,20 @@
         }
     }
 
+    // Models for Registration
+    public class ServiceModel
+    {
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public decimal? Price { get; set; }
+        public int DurationMinutes { get; set; }
+    }
+
+    public class EmployeeModel
+    {
+        public string Name { get; set; } = "";
+        public string? Specialization { get; set; }
+        public string? Description { get; set; }
+        public List<string> Photos { get; set; } = new();
+    }
 }
