@@ -15,22 +15,77 @@
 }
 
 <div class="main-container">
-    <!-- HEADER -->
-    <div class="app-header">
-        <div class="header-content">
-            <div class="header-left">
-                <button class="menu-btn" @onclick="ToggleSidebar">
-                    <i class="material-icons">menu</i>
-                </button>
-                <div class="brand-logo">@GetBrandName()</div>
+    <!-- HEADER - PREMIUM -->
+    <div class="app-header-premium">
+        <div class="header-container">
+            <!-- Left Section -->
+            <div class="header-left-section">
+                <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light" 
+                            Click="ToggleSidebar" Size="ButtonSize.Large"
+                            class="menu-toggle-btn" Variant="Variant.Text" />
+                
+                <div class="header-brand">
+                    <RadzenIcon Icon="calendar_month" Style="font-size: 28px; color: #667eea;" />
+                    <div class="brand-text">
+                        <div class="brand-title">@GetBrandName()</div>
+                        <div class="brand-subtitle">Appointment System</div>
+                    </div>
+                </div>
             </div>
-            <div class="header-right">
+
+            <!-- Center Section - Search (Optional) -->
+            <div class="header-center-section">
+                <div class="search-wrapper">
+                    <RadzenIcon Icon="search" Style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px;" />
+                    <input type="text" placeholder="Ara..." class="search-input" />
+                </div>
+            </div>
+
+            <!-- Right Section -->
+            <div class="header-right-section">
                 @if (currentUser != null && currentUser.Identity.IsAuthenticated)
                 {
-                    <button class="user-btn" @onclick="OpenProfile">
-                        <i class="material-icons">person</i>
-                        <span class="user-name">@GetShortName(currentUser.Identity.Name)</span>
-                    </button>
+                    <!-- Notifications -->
+                    <RadzenButton Icon="notifications" ButtonStyle="ButtonStyle.Light" 
+                                Variant="Variant.Text" Size="ButtonSize.Large"
+                                class="header-icon-btn">
+                        <RadzenBadge Text="3" BadgeStyle="BadgeStyle.Danger" 
+                                   Style="position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px;" />
+                    </RadzenButton>
+
+                    <!-- Messages -->
+                    <RadzenButton Icon="mail" ButtonStyle="ButtonStyle.Light" 
+                                Variant="Variant.Text" Size="ButtonSize.Large"
+                                class="header-icon-btn" />
+
+                    <!-- Divider -->
+                    <div class="header-divider"></div>
+
+                    <!-- User Profile -->
+                    <RadzenButton Click="OpenProfile" class="header-user-btn" ButtonStyle="ButtonStyle.Light" Variant="Variant.Text">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                            <div class="header-avatar">
+                                <span>@GetShortName(currentUser.Identity.Name)</span>
+                                <div class="avatar-status-dot"></div>
+                            </div>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0" class="user-info-text" AlignItems="AlignItems.Start">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0; font-weight: 600; color: #1e293b; line-height: 1.2;">
+                                    @GetShortName(currentUser.Identity.Name)
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; color: #64748b; font-size: 11px; line-height: 1.2;">
+                                    @GetUserRole()
+                                </RadzenText>
+                            </RadzenStack>
+                            <RadzenIcon Icon="keyboard_arrow_down" Style="font-size: 20px; color: #64748b;" />
+                        </RadzenStack>
+                    </RadzenButton>
+                }
+                else
+                {
+                    <RadzenButton Text="Giriş Yap" Icon="login" 
+                                ButtonStyle="ButtonStyle.Primary"
+                                Click="@(() => Navigation.NavigateTo("/login"))"
+                                Style="font-weight: 600;" />
                 }
             </div>
         </div>
