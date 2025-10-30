@@ -168,7 +168,7 @@
 </style>
 
 @code {
-    private bool sidebarVisible = false; // Default closed on mobile
+    private bool sidebarVisible = false;
     private ClaimsPrincipal? currentUser;
     private bool isMobile = false;
 
@@ -176,31 +176,12 @@
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         currentUser = authState.User;
-        
-        // Check if mobile (simplified - in production use JS interop)
-        CheckIfMobile();
-    }
-
-    private void CheckIfMobile()
-    {
-        // Simplified mobile detection
-        // In production, use JS interop to get actual window width
-        isMobile = true; // Default to mobile-first
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Start with sidebar closed on mobile
-            sidebarVisible = false;
-            StateHasChanged();
-        }
     }
 
     private void ToggleSidebar()
     {
         sidebarVisible = !sidebarVisible;
+        StateHasChanged();
     }
 
     private async Task Logout()
