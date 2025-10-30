@@ -35,6 +35,8 @@
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    overflow-y: auto !important; /* Dikey scroll aktif */
+    height: auto !important;
 }
 
 /* Sidebar kapalı iken body margin sıfır */
@@ -47,6 +49,12 @@
 /* Base styles for mobile (< 768px) */
 body {
     font-size: 14px;
+    overflow-x: hidden;
+    overflow-y: auto !important; /* Body scroll aktif */
+}
+
+html, body {
+    height: 100%;
     overflow-x: hidden;
 }
 
@@ -74,6 +82,8 @@ body {
         padding: 8px !important;
         width: 100% !important;
         margin-left: 0 !important;
+        overflow-y: auto !important; /* Scroll aktif */
+        height: auto !important;
     }
     
     .rz-card {
@@ -162,11 +172,13 @@ body {
         width: 280px !important;
     }
     
-    /* Body tam genişlik desktop'ta da */
+    /* Body tam genişlik desktop'ta da + scroll */
     .rz-body {
         width: 100% !important;
         max-width: 100% !important;
         margin-left: 0 !important;
+        overflow-y: auto !important;
+        height: auto !important;
     }
     
     /* Layout flex yapısı */
