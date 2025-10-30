@@ -112,6 +112,27 @@
 <RadzenTooltip />
 
 <style>
+    /* Layout tam sayfa düzeni */
+    .rz-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* Body tam genişlik */
+    .rz-body {
+        flex: 1;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar kapalı iken body tam genişlik */
+    .rz-sidebar-collapsed + .rz-body {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
     /* Mobile responsive header */
     @@media (min-width: 768px) {
         .brand-name {
@@ -129,6 +150,19 @@
         .rz-button {
             min-height: 44px !important;
             min-width: 44px !important;
+        }
+        
+        /* Sidebar tam sayfa overlay */
+        .rz-sidebar {
+            position: fixed !important;
+            z-index: 1000;
+            height: 100vh;
+        }
+        
+        /* Body tam genişlik mobilde */
+        .rz-body {
+            width: 100% !important;
+            margin-left: 0 !important;
         }
     }
 </style>
