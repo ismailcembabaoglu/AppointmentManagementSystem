@@ -82,9 +82,9 @@
                         <!-- Action Buttons -->
                         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
                             <RadzenButton Text="Düzenle" Icon="edit" ButtonStyle="ButtonStyle.Secondary" 
-                                        Click="@(args => ShowEditDialog(service))" Style="flex: 1;" data-testid="edit-service-@service.Id" />
+                                        Click="@(args => ShowEditDialog(service))" Style="flex: 1;" data-testid="@($"edit-service-{service.Id}")" />
                             <RadzenButton Text="Sil" Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
-                                        Click="@(args => DeleteService(service.Id))" Style="flex: 1;" data-testid="delete-service-@service.Id" />
+                                        Click="@(args => DeleteService(service.Id))" Style="flex: 1;" data-testid="@($"delete-service-{service.Id}")" />
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
