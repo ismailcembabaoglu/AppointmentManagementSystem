@@ -1,38 +1,126 @@
-﻿ Radzen Custom Theme 
+/* Radzen Custom Theme */
 :root {
     --rz-primary: #3f51b5;
     --rz-primary-light: #757de8;
+    --rz-primary-lighter: #e8eaf6;
     --rz-primary-dark: #002984;
     --rz-primary-contrast: #ffffff;
     --rz-success: #4caf50;
+    --rz-success-lighter: #e8f5e9;
     --rz-info: #2196f3;
+    --rz-info-lighter: #e3f2fd;
     --rz-warning: #ff9800;
+    --rz-warning-lighter: #fff3e0;
     --rz-danger: #f44336;
+    --rz-danger-lighter: #ffebee;
+    --rz-secondary-lighter: #f5f5f5;
 }
 
- Responsive improvements 
+/* Mobile-First Responsive Design */
+/* Base styles for mobile (< 768px) */
+body {
+    font-size: 14px;
+}
+
+.rz-card {
+    margin-bottom: 1rem;
+    border-radius: 12px;
+}
+
+/* Touch-friendly buttons for mobile */
+.rz-button {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.rz-button-sm {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Responsive grid adjustments */
 @media (max-width: 768px) {
+    .rz-body {
+        padding: 8px !important;
+    }
+    
     .rz-card {
-        margin-bottom: 1rem;
+        margin-bottom: 12px;
+        padding: 16px;
     }
     
     .rz-form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 16px;
+    }
+
+    /* Make data grids scrollable on mobile */
+    .rz-datatable {
+        overflow-x: auto;
+    }
+
+    /* Stack columns on mobile */
+    .rz-g {
+        margin: 0 -8px;
+    }
+
+    .rz-g > div {
+        padding: 0 8px;
+    }
+
+    /* Dialog responsive */
+    .rz-dialog {
+        max-width: 95% !important;
+        margin: 10px;
+    }
+
+    /* Sidebar auto-collapse on mobile */
+    .rz-sidebar {
+        width: 280px !important;
+    }
+
+    /* Header adjustments */
+    .rz-header {
+        padding: 12px 16px !important;
     }
 }
 
- Dashboard cards 
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .rz-body {
+        padding: 16px !important;
+    }
+
+    .rz-sidebar {
+        width: 260px !important;
+    }
+}
+
+/* Desktop (> 1024px) */
+@media (min-width: 1024px) {
+    body {
+        font-size: 15px;
+    }
+
+    .rz-sidebar {
+        width: 280px !important;
+    }
+}
+
+/* Dashboard cards */
 .dashboard-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
+    border-radius: 16px;
 }
 
-    .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
 
- Auth pages 
+/* Auth pages */
 .auth-container {
     min-height: 100vh;
     display: flex;
@@ -50,7 +138,7 @@
     margin: 0 auto;
 }
 
- Loading animation 
+/* Loading animation */
 .loading-container {
     display: flex;
     justify-content: center;
@@ -59,19 +147,108 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
- Panel menu improvements 
+/* Panel menu improvements */
 .rz-panel-menu-item {
     border-radius: 8px !important;
     margin: 4px 8px !important;
     transition: all 0.3s ease !important;
+    font-size: 15px !important;
+    padding: 12px 16px !important;
 }
 
-    .rz-panel-menu-item:hover {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        transform: translateX(5px);
+.rz-panel-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(5px);
+}
+
+.rz-panel-menu-item.rz-active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Mobile: Larger touch targets */
+@media (max-width: 768px) {
+    .rz-panel-menu-item {
+        min-height: 48px !important;
+        font-size: 16px !important;
     }
 
-    .rz-panel-menu-item.rz-active {
-        background-color: rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
+    .rz-button {
+        font-size: 15px;
     }
+}
+
+/* Form inputs responsive */
+.rz-textbox,
+.rz-textarea,
+.rz-dropdown {
+    font-size: 14px;
+    padding: 10px 12px;
+}
+
+@media (max-width: 768px) {
+    .rz-textbox,
+    .rz-textarea,
+    .rz-dropdown {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+    }
+}
+
+/* Card hover effects */
+.service-card,
+.employee-card,
+.appointment-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.service-card:hover,
+.employee-card:hover,
+.appointment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive tables - convert to cards on mobile */
+@media (max-width: 768px) {
+    .rz-datatable-data tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .rz-datatable-data tbody td {
+        display: block;
+        text-align: right;
+        padding: 8px;
+        border: none;
+    }
+
+    .rz-datatable-data tbody td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+    }
+}
+
+/* Notification positioning */
+@media (max-width: 768px) {
+    .rz-notification {
+        width: 90% !important;
+        left: 5% !important;
+    }
+}
+
+/* Dialog mobile optimization */
+@media (max-width: 768px) {
+    .rz-dialog-content {
+        padding: 16px !important;
+    }
+
+    .rz-dialog-title {
+        font-size: 18px !important;
+    }
+}
