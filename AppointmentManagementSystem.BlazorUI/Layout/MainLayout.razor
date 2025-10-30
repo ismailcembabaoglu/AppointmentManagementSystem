@@ -9,29 +9,29 @@
 @inject DialogService DialogService
 
 <RadzenLayout>
-    <RadzenHeader Style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 60px;">
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-                    <RadzenColumn>
-                        <RadzenRow AlignItems="AlignItems.Center">
-                            <RadzenButton Text="" Icon="menu" ButtonStyle="ButtonStyle.Light"
-                                          Click="ToggleSidebar" Size="ButtonSize.Large" />
-                        </RadzenRow>
-                    </RadzenColumn>
-                    <RadzenColumn class="text-end">
-                        @if (currentUser != null && currentUser.Identity.IsAuthenticated)
-                        {
-                            <RadzenButton Text="@GetShortName(currentUser.Identity.Name)"
-                                          ButtonStyle="ButtonStyle.Primary"
-                                          Icon="person"
-                                          Click="@(args => DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } }))"
-                                          Size="ButtonSize.Small" />
-                        }
-                    </RadzenColumn>
-                </RadzenRow>
-            </RadzenColumn>
-        </RadzenRow>
+    <RadzenHeader Style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 12px 16px;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="12px">
+            <!-- Left: Menu Button + Brand -->
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light"
+                              Click="ToggleSidebar" Size="ButtonSize.Medium" 
+                              Style="@(isMobile ? "min-width: 44px; height: 44px;" : "")" />
+                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600; color: #3f51b5; display: none;" class="brand-name">
+                    @GetBrandName()
+                </RadzenText>
+            </RadzenStack>
+
+            <!-- Right: User Profile -->
+            @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+            {
+                <RadzenButton Text="@GetShortName(currentUser.Identity.Name)"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Icon="person"
+                              Click="@(args => DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } }))"
+                              Size="ButtonSize.Small"
+                              Style="@(isMobile ? "min-width: 44px; height: 44px; padding: 8px 12px;" : "")" />
+            }
+        </RadzenStack>
     </RadzenHeader>
     <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
         <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
@@ -93,22 +93,16 @@
             </RadzenStack>
         </RadzenStack>
     </RadzenSidebar>
-    <RadzenBody Style="padding: 16px;">
-        <div class="rz-p-4">
-            @Body
-        </div>
+    <RadzenBody Style="@(isMobile ? "padding: 8px;" : "padding: 16px;")">
+        @Body
     </RadzenBody>
 
-    <RadzenFooter Style="background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 16px;">
-        <RadzenRow>
-            <RadzenColumn>
-                <div class="text-center text-muted">
-                    <RadzenText TextStyle="TextStyle.Body2" Size="TextStyleSize.Small">
-                        © 2024 Appointment Management System
-                    </RadzenText>
-                </div>
-            </RadzenColumn>
-        </RadzenRow>
+    <RadzenFooter Style="background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 12px 16px;">
+        <div class="text-center">
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: #6c757d; margin: 0; font-size: 0.875rem;">
+                © 2024 Appointment Management System
+            </RadzenText>
+        </div>
     </RadzenFooter>
 </RadzenLayout>
 
@@ -117,14 +111,57 @@
 <RadzenNotification />
 <RadzenTooltip />
 
+<style>
+    /* Mobile responsive header */
+    @@media (min-width: 768px) {
+        .brand-name {
+            display: block !important;
+        }
+    }
+
+    /* Ensure proper spacing on all screens */
+    .rz-body {
+        min-height: calc(100vh - 140px);
+    }
+
+    /* Touch-friendly buttons on mobile */
+    @@media (max-width: 768px) {
+        .rz-button {
+            min-height: 44px !important;
+            min-width: 44px !important;
+        }
+    }
+</style>
+
 @code {
-    private bool sidebarVisible = true;
+    private bool sidebarVisible = false; // Default closed on mobile
     private ClaimsPrincipal? currentUser;
+    private bool isMobile = false;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         currentUser = authState.User;
+        
+        // Check if mobile (simplified - in production use JS interop)
+        CheckIfMobile();
+    }
+
+    private void CheckIfMobile()
+    {
+        // Simplified mobile detection
+        // In production, use JS interop to get actual window width
+        isMobile = true; // Default to mobile-first
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Start with sidebar closed on mobile
+            sidebarVisible = false;
+            StateHasChanged();
+        }
     }
 
     private void ToggleSidebar()
@@ -147,6 +184,21 @@
             return "K";
 
         var names = fullName.Split(' ');
-        return names.Length > 0 ? names[0].Substring(0, 1) : fullName.Substring(0, 1);
+        return names.Length > 0 ? names[0].Substring(0, 1).ToUpper() : fullName.Substring(0, 1).ToUpper();
+    }
+
+    private string GetBrandName()
+    {
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch
+            {
+                "Business" => "İşletme Paneli",
+                "Customer" => "Randevu Sistemi",
+                _ => "AMS"
+            };
+        }
+        return "Randevu Yönetimi";
     }
 }
