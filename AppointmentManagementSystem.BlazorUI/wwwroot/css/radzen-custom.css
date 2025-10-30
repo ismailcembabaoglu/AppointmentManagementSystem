@@ -16,10 +16,38 @@
     --rz-secondary-lighter: #f5f5f5;
 }
 
+/* Layout Fix - Body tam genişlik */
+.rz-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.rz-body-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.rz-body {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Sidebar kapalı iken body margin sıfır */
+.rz-sidebar + .rz-body,
+.rz-body {
+    margin-left: 0 !important;
+}
+
 /* Mobile-First Responsive Design */
 /* Base styles for mobile (< 768px) */
 body {
     font-size: 14px;
+    overflow-x: hidden;
 }
 
 .rz-card {
