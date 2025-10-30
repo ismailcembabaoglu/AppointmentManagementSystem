@@ -33,6 +33,12 @@
             }
         </RadzenStack>
     </RadzenHeader>
+
+    <!-- Mobile Backdrop (overlay kararması) -->
+    @if (sidebarVisible)
+    {
+        <div class="sidebar-backdrop" @onclick="ToggleSidebar"></div>
+    }
     <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
         <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
             <RadzenPanelMenu Style="flex: 1; background: transparent; border: none;">
@@ -127,10 +133,34 @@
         overflow-x: hidden;
     }
 
+    /* Sidebar transition */
+    .rz-sidebar {
+        transition: transform 0.3s ease-in-out, left 0.3s ease-in-out !important;
+    }
+
     /* Sidebar kapalı iken body tam genişlik */
     .rz-sidebar-collapsed + .rz-body {
         width: 100%;
         margin-left: 0 !important;
+    }
+
+    /* Sidebar backdrop (mobil) */
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1045;
+        animation: fadeIn 0.3s ease-in-out;
+        cursor: pointer;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     /* Mobile responsive header */
@@ -140,11 +170,6 @@
         }
     }
 
-    /* Ensure proper spacing on all screens */
-    .rz-body {
-        min-height: calc(100vh - 140px);
-    }
-
     /* Touch-friendly buttons on mobile */
     @@media (max-width: 768px) {
         .rz-button {
@@ -152,11 +177,19 @@
             min-width: 44px !important;
         }
         
-        /* Sidebar tam sayfa overlay */
+        /* Sidebar backdrop görünür */
+        .sidebar-backdrop {
+            display: block;
+        }
+        
+        /* Sidebar mobilde overlay olarak */
         .rz-sidebar {
             position: fixed !important;
-            z-index: 1000;
-            height: 100vh;
+            z-index: 1050 !important;
+            height: 100vh !important;
+            top: 0 !important;
+            left: 0 !important;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15) !important;
         }
         
         /* Body tam genişlik mobilde */
@@ -165,10 +198,22 @@
             margin-left: 0 !important;
         }
     }
+
+    /* Desktop - Sidebar yanında */
+    @@media (min-width: 769px) {
+        .rz-sidebar {
+            position: relative !important;
+            height: calc(100vh - 60px) !important;
+        }
+        
+        .sidebar-backdrop {
+            display: none !important;
+        }
+    }
 </style>
 
 @code {
-    private bool sidebarVisible = false; // Default closed on mobile
+    private bool sidebarVisible = false;
     private ClaimsPrincipal? currentUser;
     private bool isMobile = false;
 
@@ -176,31 +221,12 @@
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         currentUser = authState.User;
-        
-        // Check if mobile (simplified - in production use JS interop)
-        CheckIfMobile();
-    }
-
-    private void CheckIfMobile()
-    {
-        // Simplified mobile detection
-        // In production, use JS interop to get actual window width
-        isMobile = true; // Default to mobile-first
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Start with sidebar closed on mobile
-            sidebarVisible = false;
-            StateHasChanged();
-        }
     }
 
     private void ToggleSidebar()
     {
         sidebarVisible = !sidebarVisible;
+        StateHasChanged();
     }
 
     private async Task Logout()
