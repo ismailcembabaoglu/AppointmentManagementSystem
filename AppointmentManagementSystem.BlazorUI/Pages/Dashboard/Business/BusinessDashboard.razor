@@ -1,67 +1,252 @@
-﻿@page "/dashboard/business"
+@page "/dashboard/business"
 @attribute [Authorize(Roles = "Business")]
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IBusinessApiService BusinessApiService
+@inject IServiceApiService ServiceApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject IAppointmentApiService AppointmentApiService
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+
 <PageTitle>İşletme Dashboard</PageTitle>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1>İşletme Dashboard</h1>
-            <p>Hoş geldiniz, @(business?.Name??"")!</p>
-        </div>
-    </div>
+@if (isLoading)
+{
+    <RadzenCard Style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+            <RadzenText TextStyle="TextStyle.H6">Dashboard yükleniyor...</RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+}
+else if (business == null)
+{
+    <RadzenCard>
+        <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
+            İşletme bilgileriniz yüklenemedi. Lütfen daha sonra tekrar deneyin.
+        </RadzenAlert>
+    </RadzenCard>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px 0;">
+        <!-- Header Card -->
+        <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">🏢 @business.Name</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1" Style="opacity: 0.95; margin: 0;">İşletme Dashboard</RadzenText>
+                @if (!string.IsNullOrEmpty(business.CategoryName))
+                {
+                    <RadzenBadge Text="@business.CategoryName" BadgeStyle="BadgeStyle.Light" Style="width: fit-content; margin-top: 8px;" />
+                }
+            </RadzenStack>
+        </RadzenCard>
 
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Randevular</h5>
-                    <p class="card-text">Tüm randevuları yönetin.</p>
-                    <RadzenButton Text="Randevuları Görüntüle" ButtonStyle="ButtonStyle.Primary" />
-                </div>
-            </div>
-        </div>
+        <!-- Statistics Cards -->
+        <RadzenRow Gap="16px">
+            <RadzenColumn Size="12" SizeSM="6" SizeLG="3">
+                <RadzenCard class="dashboard-card" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; height: 100%;">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                            <RadzenText TextStyle="TextStyle.Overline" Style="opacity: 0.9; margin: 0;">TOPLAM RANDEVU</RadzenText>
+                            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700;">@totalAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="opacity: 0.8; margin: 0;">Tüm zamanlar</RadzenText>
+                        </RadzenStack>
+                        <div Style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="event" Style="font-size: 32px;" />
+                        </div>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
 
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Hizmetler</h5>
-                    <p class="card-text">Hizmetleri yönetin.</p>
-                    <RadzenButton Text="Hizmetleri Yönet" ButtonStyle="ButtonStyle.Success" />
-                </div>
-            </div>
-        </div>
+            <RadzenColumn Size="12" SizeSM="6" SizeLG="3">
+                <RadzenCard class="dashboard-card" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; height: 100%;">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                            <RadzenText TextStyle="TextStyle.Overline" Style="opacity: 0.9; margin: 0;">AKTIF HİZMETLER</RadzenText>
+                            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700;">@activeServicesCount</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="opacity: 0.8; margin: 0;">Yayında</RadzenText>
+                        </RadzenStack>
+                        <div Style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="work" Style="font-size: 32px;" />
+                        </div>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
 
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Çalışanlar</h5>
-                    <p class="card-text">Çalışanları yönetin.</p>
-                    <RadzenButton Text="Çalışanları Yönet" ButtonStyle="ButtonStyle.Info" />
-                </div>
-            </div>
-        </div>
+            <RadzenColumn Size="12" SizeSM="6" SizeLG="3">
+                <RadzenCard class="dashboard-card" Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; height: 100%;">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                            <RadzenText TextStyle="TextStyle.Overline" Style="opacity: 0.9; margin: 0;">ÇALIŞANLAR</RadzenText>
+                            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700;">@activeEmployeesCount</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="opacity: 0.8; margin: 0;">Aktif personel</RadzenText>
+                        </RadzenStack>
+                        <div Style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="group" Style="font-size: 32px;" />
+                        </div>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
 
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">İstatistikler</h5>
-                    <p class="card-text">İşletme istatistiklerini görüntüleyin.</p>
-                    <RadzenButton Text="İstatistikleri Gör" ButtonStyle="ButtonStyle.Warning" />
+            <RadzenColumn Size="12" SizeSM="6" SizeLG="3">
+                <RadzenCard class="dashboard-card" Style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; height: 100%;">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                            <RadzenText TextStyle="TextStyle.Overline" Style="opacity: 0.9; margin: 0;">BU AY</RadzenText>
+                            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700;">@thisMonthAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" Style="opacity: 0.8; margin: 0;">Randevu sayısı</RadzenText>
+                        </RadzenStack>
+                        <div Style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="calendar_month" Style="font-size: 32px;" />
+                        </div>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <!-- Charts and Recent Appointments -->
+        <RadzenRow Gap="16px">
+            <!-- Appointment Status Chart -->
+            <RadzenColumn Size="12" SizeLG="8">
+                <RadzenCard Style="height: 100%;">
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📊 Randevu Durumları</RadzenText>
+                    @if (appointments.Any())
+                    {
+                        <RadzenChart Style="height: 300px;">
+                            <RadzenDonutSeries Data="@appointmentStatusData" CategoryProperty="Status" ValueProperty="Count" 
+                                             Title="Randevu Durumları" Fills="@chartColors" />
+                            <RadzenLegend Visible="true" Position="LegendPosition.Right" />
+                        </RadzenChart>
+                    }
+                    else
+                    {
+                        <div Style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <RadzenText TextStyle="TextStyle.Body1" Style="color: var(--rz-text-secondary-color);">Henüz randevu bulunmamaktadır</RadzenText>
+                        </div>
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+
+            <!-- Quick Actions -->
+            <RadzenColumn Size="12" SizeLG="4">
+                <RadzenCard Style="height: 100%;">
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 16px 0; font-weight: 600;">⚡ Hızlı İşlemler</RadzenText>
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenButton Text="Yeni Hizmet Ekle" Icon="add" ButtonStyle="ButtonStyle.Primary" 
+                                    Click="@(() => Navigation.NavigateTo("/services"))" Style="width: 100%; justify-content: flex-start;" Size="ButtonSize.Large" data-testid="add-service-btn" />
+                        <RadzenButton Text="Yeni Çalışan Ekle" Icon="person_add" ButtonStyle="ButtonStyle.Success" 
+                                    Click="@(() => Navigation.NavigateTo("/employees"))" Style="width: 100%; justify-content: flex-start;" Size="ButtonSize.Large" data-testid="add-employee-btn" />
+                        <RadzenButton Text="Randevuları Görüntüle" Icon="event" ButtonStyle="ButtonStyle.Info" 
+                                    Click="@(() => Navigation.NavigateTo("/appointments"))" Style="width: 100%; justify-content: flex-start;" Size="ButtonSize.Large" data-testid="view-appointments-btn" />
+                        <RadzenButton Text="İşletme Ayarları" Icon="settings" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined"
+                                    Click="@(() => Navigation.NavigateTo($"/businesses/{businessId}"))" Style="width: 100%; justify-content: flex-start;" Size="ButtonSize.Large" />
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <!-- Recent Appointments -->
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px" Style="margin-bottom: 20px;">
+                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">🕒 Son Randevular</RadzenText>
+                <RadzenButton Text="Tümünü Gör" Icon="arrow_forward" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                            Click="@(() => Navigation.NavigateTo("/appointments"))" />
+            </RadzenStack>
+
+            @if (recentAppointments.Any())
+            {
+                <div class="appointments-grid">
+                    @foreach (var appointment in recentAppointments)
+                    {
+                        <RadzenCard class="appointment-card" @onclick="@(() => Navigation.NavigateTo($"/appointments/{appointment.Id}"))" Style="cursor: pointer;">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">@appointment.ServiceName</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">@appointment.CustomerName</RadzenText>
+                                    </RadzenStack>
+                                    <RadzenBadge Text="@GetStatusText(appointment.Status)" BadgeStyle="@GetStatusBadgeStyle(appointment.Status)" />
+                                </RadzenStack>
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" Wrap="FlexWrap.Wrap">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                        <RadzenIcon Icon="calendar_today" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">@appointment.AppointmentDate.ToString("dd.MM.yyyy")</RadzenText>
+                                    </RadzenStack>
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                        <RadzenIcon Icon="schedule" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">@($"{appointment.StartTime.Hours:00}:{appointment.StartTime.Minutes:00}")</RadzenText>
+                                    </RadzenStack>
+                                    @if (!string.IsNullOrEmpty(appointment.EmployeeName))
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="person" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">@appointment.EmployeeName</RadzenText>
+                                        </RadzenStack>
+                                    }
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenCard>
+                    }
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+            }
+            else
+            {
+                <div Style="text-align: center; padding: 40px 20px;">
+                    <RadzenIcon Icon="event_busy" Style="font-size: 48px; color: var(--rz-text-disabled-color); opacity: 0.5;" />
+                    <RadzenText TextStyle="TextStyle.Body1" Style="color: var(--rz-text-secondary-color); margin-top: 12px;">Henüz randevu bulunmamaktadır</RadzenText>
+                </div>
+            }
+        </RadzenCard>
+    </RadzenStack>
+}
+
+<style>
+    .appointments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .appointment-card {
+        transition: all 0.3s ease;
+    }
+
+    .appointment-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+
+    @@media (max-width: 768px) {
+        .appointments-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 @code {
     private int businessId = 0;
     private BusinessDto? business;
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private List<AppointmentDto> appointments = new();
+    private List<AppointmentDto> recentAppointments = new();
+    private bool isLoading = true;
+
+    // Statistics
+    private int totalAppointments = 0;
+    private int activeServicesCount = 0;
+    private int activeEmployeesCount = 0;
+    private int thisMonthAppointments = 0;
+
+    // Chart data
+    private List<DataItem> appointmentStatusData = new();
+    private string[] chartColors = new[] { "#ffc107", "#2ecc71", "#3498db", "#e74c3c" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,9 +259,23 @@
             if (!string.IsNullOrEmpty(businessIdClaim) && int.TryParse(businessIdClaim, out int id))
             {
                 businessId = id;
-                await LoadBusinessData();
+                await LoadDashboardData();
             }
         }
+
+        isLoading = false;
+    }
+
+    private async Task LoadDashboardData()
+    {
+        await Task.WhenAll(
+            LoadBusinessData(),
+            LoadServices(),
+            LoadEmployees(),
+            LoadAppointments()
+        );
+
+        CalculateStatistics();
     }
 
     private async Task LoadBusinessData()
@@ -90,5 +289,78 @@
             }
         }
     }
-}
 
+    private async Task LoadServices()
+    {
+        var response = await ServiceApiService.GetAllServicesAsync(businessId);
+        if (response.Success)
+        {
+            services = response.Data ?? new List<ServiceDto>();
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        var response = await EmployeeApiService.GetAllEmployeesAsync(businessId);
+        if (response.Success)
+        {
+            employees = response.Data ?? new List<EmployeeDto>();
+        }
+    }
+
+    private async Task LoadAppointments()
+    {
+        var response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: businessId);
+        if (response.Success)
+        {
+            appointments = response.Data ?? new List<AppointmentDto>();
+            recentAppointments = appointments
+                .OrderByDescending(a => a.AppointmentDate)
+                .Take(6)
+                .ToList();
+        }
+    }
+
+    private void CalculateStatistics()
+    {
+        totalAppointments = appointments.Count;
+        activeServicesCount = services.Count(s => s.IsActive);
+        activeEmployeesCount = employees.Count(e => e.IsActive);
+        
+        var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        thisMonthAppointments = appointments.Count(a => a.AppointmentDate >= startOfMonth);
+
+        // Prepare chart data
+        appointmentStatusData = new List<DataItem>
+        {
+            new DataItem { Status = "Bekliyor", Count = appointments.Count(a => a.Status == "Pending") },
+            new DataItem { Status = "Onaylandı", Count = appointments.Count(a => a.Status == "Confirmed") },
+            new DataItem { Status = "Tamamlandı", Count = appointments.Count(a => a.Status == "Completed") },
+            new DataItem { Status = "İptal", Count = appointments.Count(a => a.Status == "Cancelled") }
+        };
+    }
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => "Bekliyor",
+        "Confirmed" => "Onaylandı",
+        "Completed" => "Tamamlandı",
+        "Cancelled" => "İptal",
+        _ => status
+    };
+
+    private BadgeStyle GetStatusBadgeStyle(string status) => status switch
+    {
+        "Pending" => BadgeStyle.Warning,
+        "Confirmed" => BadgeStyle.Success,
+        "Completed" => BadgeStyle.Info,
+        "Cancelled" => BadgeStyle.Danger,
+        _ => BadgeStyle.Secondary
+    };
+
+    public class DataItem
+    {
+        public string Status { get; set; } = "";
+        public int Count { get; set; }
+    }
+}
