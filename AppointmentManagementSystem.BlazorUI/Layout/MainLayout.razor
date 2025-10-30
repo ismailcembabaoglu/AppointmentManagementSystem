@@ -125,12 +125,14 @@
         min-height: 100vh;
     }
 
-    /* Body tam genişlik */
+    /* Body tam genişlik + scroll */
     .rz-body {
         flex: 1;
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: auto !important; /* Dikey scroll aktif */
+        height: auto !important;
     }
 
     /* Sidebar transition */
