@@ -171,7 +171,7 @@
     {
         var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Yeni Çalışan",
             new Dictionary<string, object>() { { "isEdit", false }, { "PreselectedBusinessId", businessId } },
-            new DialogOptions() { Width = "90%", MaxWidth = "500px", Resizable = true, Draggable = true });
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
 
         if (result is true)
         {
@@ -183,7 +183,7 @@
     {
         var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Çalışan Düzenle",
             new Dictionary<string, object>() { { "isEdit", true }, { "EmployeeId", employee.Id }, { "PreselectedBusinessId", businessId } },
-            new DialogOptions() { Width = "90%", MaxWidth = "500px", Resizable = true, Draggable = true });
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
 
         if (result is true)
         {
