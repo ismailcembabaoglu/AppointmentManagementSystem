@@ -36,25 +36,30 @@
     <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
         <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
             <RadzenPanelMenu Style="flex: 1; background: transparent; border: none;">
-                <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard">
-                    <RadzenPanelMenuItem Text="Genel Dashboard" Path="dashboard" Icon="dashboard" />
+                <!-- Business Menu -->
+                <AuthorizeView Roles="Business">
+                    <RadzenPanelMenuItem Text="Dashboard" Path="dashboard/business" Icon="dashboard" />
+                    <RadzenPanelMenuItem Text="Randevular" Path="appointments" Icon="event" />
+                    <RadzenPanelMenuItem Text="Hizmetler" Path="services" Icon="work" />
+                    <RadzenPanelMenuItem Text="Çalışanlar" Path="employees" Icon="group" />
+                </AuthorizeView>
 
-                    <AuthorizeView Roles="Customer">
-                        <RadzenPanelMenuItem Text="Müşteri Paneli" Path="dashboard/customer" Icon="person" />
-                        <RadzenPanelMenuItem Text="Randevularım" Path="appointments" Icon="event" />
-                    </AuthorizeView>
+                <!-- Customer Menu -->
+                <AuthorizeView Roles="Customer">
+                    <RadzenPanelMenuItem Text="Dashboard" Path="dashboard/customer" Icon="dashboard" />
+                    <RadzenPanelMenuItem Text="Randevularım" Path="appointments" Icon="event" />
+                    <RadzenPanelMenuItem Text="Kategoriler" Path="categories" Icon="category" />
+                    <RadzenPanelMenuItem Text="İşletmeler" Path="businesses" Icon="store" />
+                </AuthorizeView>
 
-                    <AuthorizeView Roles="Business">
-                        <RadzenPanelMenuItem Text="İşletme Paneli" Path="dashboard/business" Icon="business" />
-                        <RadzenPanelMenuItem Text="Hizmetler" Path="services" Icon="work" />
-                        <RadzenPanelMenuItem Text="Çalışanlar" Path="employees" Icon="group" />
-                        <RadzenPanelMenuItem Text="Randevular" Path="appointments" Icon="event" />
-                    </AuthorizeView>
-                </RadzenPanelMenuItem>
-
-                <!-- Yeni menü öğeleri -->
-                <RadzenPanelMenuItem Text="Kategoriler" Path="categories" Icon="category" />
-                <RadzenPanelMenuItem Text="İşletmeler" Path="businesses" Icon="store" />
+                <!-- Admin/Guest Menu (fallback) -->
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <RadzenPanelMenuItem Text="Ana Sayfa" Path="/" Icon="home" />
+                        <RadzenPanelMenuItem Text="Kategoriler" Path="categories" Icon="category" />
+                        <RadzenPanelMenuItem Text="İşletmeler" Path="businesses" Icon="store" />
+                    </NotAuthorized>
+                </AuthorizeView>
             </RadzenPanelMenu>
 
             <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 16px;">
