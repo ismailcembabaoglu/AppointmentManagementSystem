@@ -1,0 +1,15 @@
+@page "/businesses/category/{CategoryId:int}"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject ICategoryApiService CategoryApiService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<PageTitle>İşletmeler</PageTitle>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px;">
+    <!-- Header --
+>
