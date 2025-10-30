@@ -35,6 +35,8 @@
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    overflow-y: auto !important; /* Dikey scroll aktif */
+    height: auto !important;
 }
 
 /* Sidebar kapalı iken body margin sıfır */
@@ -47,6 +49,12 @@
 /* Base styles for mobile (< 768px) */
 body {
     font-size: 14px;
+    overflow-x: hidden;
+    overflow-y: auto !important; /* Body scroll aktif */
+}
+
+html, body {
+    height: 100%;
     overflow-x: hidden;
 }
 
