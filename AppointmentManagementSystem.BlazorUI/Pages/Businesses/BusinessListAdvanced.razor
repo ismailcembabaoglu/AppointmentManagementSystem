@@ -36,28 +36,28 @@
                 <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
                     <RadzenLabel Text="Kategori" />
                     <RadzenDropDown @bind-Value="selectedCategoryId" Data="@categories" TextProperty="Name" ValueProperty="Id" 
-                                  Placeholder="Tüm Kategoriler" Style="width: 100%;" Change="@((int? args) => ApplyFilters())" AllowClear="true" />
+                                  Placeholder="Tüm Kategoriler" Style="width: 100%;" Change="@(() => ApplyFilters())" AllowClear="true" />
                 </RadzenColumn>
 
                 <!-- City -->
                 <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
                     <RadzenLabel Text="İl" />
                     <RadzenDropDown @bind-Value="selectedCity" Data="@cities" Placeholder="Tüm İller" Style="width: 100%;" 
-                                  Change="@((string args) => { selectedDistrict = null; LoadDistricts(); ApplyFilters(); })" AllowClear="true" AllowFiltering="true" />
+                                  Change="@(() => { selectedDistrict = null; LoadDistricts(); ApplyFilters(); })" AllowClear="true" AllowFiltering="true" />
                 </RadzenColumn>
 
                 <!-- District -->
                 <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
                     <RadzenLabel Text="İlçe" />
                     <RadzenDropDown @bind-Value="selectedDistrict" Data="@districts" Placeholder="Tüm İlçeler" Style="width: 100%;" 
-                                  Disabled="@(string.IsNullOrEmpty(selectedCity))" Change="@((string args) => ApplyFilters())" AllowClear="true" AllowFiltering="true" />
+                                  Disabled="@(string.IsNullOrEmpty(selectedCity))" Change="@(() => ApplyFilters())" AllowClear="true" AllowFiltering="true" />
                 </RadzenColumn>
 
                 <!-- Service Type -->
                 <RadzenColumn Size="12" SizeSM="6" SizeMD="3">
                     <RadzenLabel Text="Hizmet Türü" />
                     <RadzenDropDown @bind-Value="selectedServiceType" Data="@serviceTypes" Placeholder="Tüm Hizmetler" Style="width: 100%;" 
-                                  Change="@((string args) => ApplyFilters())" AllowClear="true" />
+                                  Change="@(() => ApplyFilters())" AllowClear="true" />
                 </RadzenColumn>
             </RadzenRow>
 
