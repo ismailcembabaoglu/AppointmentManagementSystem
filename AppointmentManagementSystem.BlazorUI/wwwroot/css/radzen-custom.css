@@ -83,6 +83,12 @@ body {
     /* Header adjustments */
     .rz-header {
         padding: 12px 16px !important;
+        height: auto !important;
+    }
+
+    /* Remove double padding from pages */
+    .rz-body > div {
+        padding: 0 !important;
     }
 }
 
