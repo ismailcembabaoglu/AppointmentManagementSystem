@@ -1,71 +1,49 @@
-﻿@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
 @inject IEmployeeApiService EmployeeApiService
-@inject IBusinessApiService BusinessApiService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenCard Style="min-width: 400px;">
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 20px;">
+    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">@(isEdit ? "Çalışan Düzenle" : "Yeni Çalışan")</RadzenText>
+    
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-        <h3>@(isEdit ? "Çalışan Düzenle" : "Yeni Çalışan")</h3>
-        
-        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-            <div>
-                <RadzenLabel Text="Ad Soyad *" />
-                <RadzenTextBox @bind-Value="employeeDto.Name" Placeholder="Çalışan adını girin" />
-                @if (!string.IsNullOrEmpty(nameError))
-                {
-                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@nameError</RadzenText>
-                }
-            </div>
+        <div>
+            <RadzenLabel Text="Ad Soyad *" Style="margin-bottom: 8px; display: block;" />
+            <RadzenTextBox @bind-Value="employeeDto.Name" Placeholder="Çalışan adını girin" Style="width: 100%;" />
+            @if (!string.IsNullOrEmpty(nameError))
+            {
+                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@nameError</RadzenText>
+            }
+        </div>
 
-            <div>
-                <RadzenLabel Text="Uzmanlık" />
-                <RadzenTextBox @bind-Value="employeeDto.Specialization" Placeholder="Uzmanlık alanı" />
-            </div>
+        <div>
+            <RadzenLabel Text="Uzmanlık" Style="margin-bottom: 8px; display: block;" />
+            <RadzenTextBox @bind-Value="employeeDto.Specialization" Placeholder="Uzmanlık alanı" Style="width: 100%;" />
+        </div>
 
-            <div>
-                <RadzenLabel Text="Açıklama" />
-                <RadzenTextArea @bind-Value="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" />
-            </div>
+        <div>
+            <RadzenLabel Text="Açıklama" Style="margin-bottom: 8px; display: block;" />
+            <RadzenTextArea @bind-Value="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" Style="width: 100%;" />
+        </div>
 
-            <div>
-                <RadzenLabel Text="İşletme *" />
-                @if (businessesLoading)
-                {
-                    <RadzenLoader Size="LoaderSize.Small" />
-                }
-                else
-                {
-                    <RadzenDropDown @bind-Value="employeeDto.BusinessId" 
-                                  Data="businesses" 
-                                  TextProperty="Name" 
-                                  ValueProperty="Id" 
-                                  Placeholder="İşletme seçin" />
-                }
-                @if (!string.IsNullOrEmpty(businessError))
-                {
-                    <RadzenText TextStyle="TextStyle.Caption" Size="TextStyleSize.Small">@businessError</RadzenText>
-                }
-            </div>
-
-            <div>
-                <RadzenCheckBox @bind-Value="employeeDto.IsActive" />
-                <RadzenLabel Text="Aktif" class="ms-2" />
-            </div>
-        </RadzenStack>
-
-        <div class="d-flex justify-content-end gap-2">
-            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" />
-            <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
-                        ButtonStyle="ButtonStyle.Primary" 
-                        Click="Save" 
-                        Disabled="isSaving" />
+        <div>
+            <RadzenCheckBox @bind-Value="employeeDto.IsActive" />
+            <RadzenLabel Text="Aktif" Style="margin-left: 8px;" />
         </div>
     </RadzenStack>
-</RadzenCard>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" JustifyContent="JustifyContent.End" Wrap="FlexWrap.Wrap" Style="margin-top: 8px;">
+        <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" Style="min-width: 120px;" />
+        <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
+                    ButtonStyle="ButtonStyle.Primary" 
+                    Click="Save" 
+                    Disabled="isSaving"
+                    Style="min-width: 120px;" />
+    </RadzenStack>
+</RadzenStack>
 
 @code {
     [Parameter]
@@ -78,18 +56,13 @@
     public int? PreselectedBusinessId { get; set; } = null;
 
     private CreateEmployeeDto employeeDto = new();
-    private List<BusinessDto> businesses = new();
-    private bool businessesLoading = true;
     private bool isSaving = false;
     
     // Validation errors
     private string nameError = "";
-    private string businessError = "";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBusinesses();
-        
         if (PreselectedBusinessId.HasValue && PreselectedBusinessId.Value > 0)
         {
             employeeDto.BusinessId = PreselectedBusinessId.Value;
@@ -101,17 +74,6 @@
         {
             await LoadEmployeeForEdit();
         }
-    }
-
-    private async Task LoadBusinesses()
-    {
-        businessesLoading = true;
-        var response = await BusinessApiService.GetAllBusinessesAsync();
-        if (response.Success)
-        {
-            businesses = response.Data ?? new List<BusinessDto>();
-        }
-        businessesLoading = false;
     }
 
     private async Task LoadEmployeeForEdit()
@@ -177,7 +139,6 @@
     private bool Validate()
     {
         nameError = "";
-        businessError = "";
 
         bool isValid = true;
 
@@ -189,7 +150,7 @@
 
         if (employeeDto.BusinessId <= 0)
         {
-            businessError = "İşletme seçimi gereklidir.";
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme bilgisi bulunamadı.");
             isValid = false;
         }
 
