@@ -82,6 +82,8 @@ html, body {
         padding: 8px !important;
         width: 100% !important;
         margin-left: 0 !important;
+        overflow-y: auto !important; /* Scroll aktif */
+        height: auto !important;
     }
     
     .rz-card {
