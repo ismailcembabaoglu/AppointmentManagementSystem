@@ -39,126 +39,183 @@
     <!-- SIDEBAR -->
     <div class="app-sidebar @(sidebarExpanded ? "expanded" : "collapsed")">
         <div class="sidebar-content">
-            <!-- Logo Section -->
-            <div class="sidebar-logo">
-                <div class="logo-icon">
-                    <i class="material-icons">event_available</i>
-                </div>
-                <div class="logo-text">
-                    <div class="logo-title">AMS</div>
-                    <div class="logo-subtitle">Randevu Sistemi</div>
+            <!-- Logo Section - Premium -->
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon-premium">
+                        <RadzenIcon Icon="calendar_today" Style="font-size: 32px; color: white;" />
+                        <div class="logo-pulse"></div>
+                    </div>
+                    <div class="logo-info">
+                        <div class="logo-brand">Appointment</div>
+                        <div class="logo-tagline">Management System</div>
+                    </div>
                 </div>
             </div>
 
-            <RadzenStack Orientation="Orientation.Vertical" Gap="8px" Style="flex: 1; padding: 16px 8px;">
+            <!-- Navigation Section -->
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0" Style="flex: 1; padding: 24px 12px; overflow-y: auto;">
                 <!-- Business Menu -->
                 <AuthorizeView Roles="Business">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                        <div class="menu-section-title">İŞLETME YÖNETİMİ</div>
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="business_center" Style="font-size: 14px;" />
+                            <span>İşletme Yönetimi</span>
+                        </div>
                         
-                        <NavLink href="dashboard/business" class="nav-item-modern" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="dashboard" Style="font-size: 22px;" />
-                            <span class="nav-text">Dashboard</span>
-                            <span class="nav-badge">Ana</span>
-                        </NavLink>
-                        
-                        <NavLink href="appointments" class="nav-item-modern">
-                            <RadzenIcon Icon="event" Style="font-size: 22px;" />
-                            <span class="nav-text">Randevular</span>
-                        </NavLink>
-                        
-                        <NavLink href="services" class="nav-item-modern">
-                            <RadzenIcon Icon="work" Style="font-size: 22px;" />
-                            <span class="nav-text">Hizmetler</span>
-                        </NavLink>
-                        
-                        <NavLink href="employees" class="nav-item-modern">
-                            <RadzenIcon Icon="group" Style="font-size: 22px;" />
-                            <span class="nav-text">Çalışanlar</span>
-                        </NavLink>
-                    </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/business" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_note" />
+                                </div>
+                                <span class="nav-label">Randevular</span>
+                                <RadzenBadge Text="12" BadgeStyle="BadgeStyle.Light" Style="margin-left: auto; font-size: 10px;" />
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="services" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="room_service" />
+                                </div>
+                                <span class="nav-label">Hizmetler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="employees" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="groups" />
+                                </div>
+                                <span class="nav-label">Çalışanlar</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                        </RadzenStack>
+                    </div>
                 </AuthorizeView>
 
                 <!-- Customer Menu -->
                 <AuthorizeView Roles="Customer">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                        <div class="menu-section-title">MÜŞTERİ PANELİ</div>
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="person" Style="font-size: 14px;" />
+                            <span>Müşteri Paneli</span>
+                        </div>
                         
-                        <NavLink href="dashboard/customer" class="nav-item-modern" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="dashboard" Style="font-size: 22px;" />
-                            <span class="nav-text">Dashboard</span>
-                        </NavLink>
-                        
-                        <NavLink href="appointments" class="nav-item-modern">
-                            <RadzenIcon Icon="event" Style="font-size: 22px;" />
-                            <span class="nav-text">Randevularım</span>
-                        </NavLink>
-                        
-                        <NavLink href="categories" class="nav-item-modern">
-                            <RadzenIcon Icon="category" Style="font-size: 22px;" />
-                            <span class="nav-text">Kategoriler</span>
-                        </NavLink>
-                        
-                        <NavLink href="businesses" class="nav-item-modern">
-                            <RadzenIcon Icon="store" Style="font-size: 22px;" />
-                            <span class="nav-text">İşletmeler</span>
-                        </NavLink>
-                    </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/customer" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_available" />
+                                </div>
+                                <span class="nav-label">Randevularım</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="categories" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="category" />
+                                </div>
+                                <span class="nav-label">Kategoriler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="businesses" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="store" />
+                                </div>
+                                <span class="nav-label">İşletmeler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                        </RadzenStack>
+                    </div>
                 </AuthorizeView>
 
                 <!-- Guest Menu -->
                 <AuthorizeView>
                     <NotAuthorized>
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                            <div class="menu-section-title">KEŞFET</div>
+                        <div class="nav-section">
+                            <div class="section-label">
+                                <RadzenIcon Icon="explore" Style="font-size: 14px;" />
+                                <span>Keşfet</span>
+                            </div>
                             
-                            <NavLink href="/" class="nav-item-modern" Match="NavLinkMatch.All">
-                                <RadzenIcon Icon="home" Style="font-size: 22px;" />
-                                <span class="nav-text">Ana Sayfa</span>
-                            </NavLink>
-                            
-                            <NavLink href="categories" class="nav-item-modern">
-                                <RadzenIcon Icon="category" Style="font-size: 22px;" />
-                                <span class="nav-text">Kategoriler</span>
-                            </NavLink>
-                            
-                            <NavLink href="businesses" class="nav-item-modern">
-                                <RadzenIcon Icon="store" Style="font-size: 22px;" />
-                                <span class="nav-text">İşletmeler</span>
-                            </NavLink>
-                        </RadzenStack>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                                <NavLink href="/" class="nav-link-premium" Match="NavLinkMatch.All">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="home" />
+                                    </div>
+                                    <span class="nav-label">Ana Sayfa</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                <NavLink href="categories" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="category" />
+                                    </div>
+                                    <span class="nav-label">Kategoriler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                <NavLink href="businesses" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="store" />
+                                    </div>
+                                    <span class="nav-label">İşletmeler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                            </RadzenStack>
+                        </div>
                     </NotAuthorized>
                 </AuthorizeView>
             </RadzenStack>
 
-            <!-- User Info Card - Modern -->
-            <div class="sidebar-footer-modern">
+            <!-- User Profile - Premium -->
+            <div class="sidebar-user-section">
                 @if (currentUser != null && currentUser.Identity.IsAuthenticated)
                 {
-                    <RadzenCard class="user-card-modern">
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
-                            <div class="user-avatar-modern">
-                                <RadzenIcon Icon="person" Style="font-size: 24px; color: white;" />
+                    <div class="user-profile-premium">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center" Style="flex: 1; min-width: 0;">
+                            <div class="user-avatar-premium">
+                                <div class="avatar-inner">@GetShortName(currentUser.Identity.Name)</div>
+                                <div class="avatar-status"></div>
                             </div>
                             <RadzenStack Orientation="Orientation.Vertical" Gap="2px" Style="flex: 1; min-width: 0;">
-                                <RadzenText TextStyle="TextStyle.Caption" Style="color: rgba(255,255,255,0.7); margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Hoş geldiniz</RadzenText>
-                                <RadzenText TextStyle="TextStyle.Body2" Style="color: white; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@currentUser.Identity.Name</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: white; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    @currentUser.Identity.Name
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" Style="color: rgba(255,255,255,0.7); margin: 0; font-size: 11px;">
+                                    @GetUserRole()
+                                </RadzenText>
                             </RadzenStack>
-                            <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Danger" 
-                                        Size="ButtonSize.Small" Variant="Variant.Text"
-                                        Click="Logout" Style="min-width: auto; color: rgba(255,255,255,0.9);"
-                                        title="Çıkış Yap" />
                         </RadzenStack>
-                    </RadzenCard>
+                        <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Danger" 
+                                    Size="ButtonSize.Small" Variant="Variant.Text"
+                                    Click="Logout" Style="min-width: 40px; height: 40px; color: white;"
+                                    title="Çıkış Yap" />
+                    </div>
                 }
                 else
                 {
-                    <RadzenCard class="user-card-modern">
+                    <div class="login-section-premium">
                         <RadzenButton Text="Giriş Yap" Icon="login" 
                                     ButtonStyle="ButtonStyle.Light" 
                                     Click="@(() => Navigation.NavigateTo("/login"))"
-                                    Style="width: 100%;" />
-                    </RadzenCard>
+                                    Style="width: 100%; font-weight: 600;" />
+                    </div>
                 }
             </div>
         </div>
@@ -283,176 +340,297 @@
     }
 
     /* ========================
-       SIDEBAR
+       SIDEBAR - PREMIUM DESIGN
        ======================== */
     .app-sidebar {
         position: fixed;
         top: 57px;
         left: 0;
-        width: 280px;
+        width: 300px;
         height: calc(100vh - 57px);
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         z-index: 999;
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden;
         box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+    }
+
+    .app-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.5;
     }
 
     .app-sidebar.expanded {
         transform: translateX(0);
-        box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+        box-shadow: 8px 0 40px rgba(0,0,0,0.3);
     }
 
     .sidebar-content {
+        position: relative;
         display: flex;
         flex-direction: column;
         height: 100%;
+        z-index: 1;
     }
 
-    /* Logo Section */
-    .sidebar-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 20px 16px;
-        background: rgba(0,0,0,0.1);
+    /* ========================
+       LOGO HEADER - PREMIUM
+       ======================== */
+    .sidebar-header {
+        padding: 28px 20px;
+        background: rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .logo-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.2);
+    .logo-container {
         display: flex;
         align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(10px);
+        gap: 16px;
     }
 
-    .logo-icon .material-icons {
-        font-size: 28px;
-        color: white;
-    }
-
-    .logo-text {
-        flex: 1;
-    }
-
-    .logo-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: white;
-        letter-spacing: 0.5px;
-    }
-
-    .logo-subtitle {
-        font-size: 11px;
-        color: rgba(255,255,255,0.8);
-        font-weight: 500;
-    }
-
-    /* Menu Section Title */
-    .menu-section-title {
-        font-size: 11px;
-        font-weight: 700;
-        color: rgba(255,255,255,0.6);
-        padding: 16px 16px 8px 16px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-    }
-
-    /* Modern Nav Item */
-    .nav-item-modern {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        margin: 0 8px;
-        color: rgba(255,255,255,0.9);
-        text-decoration: none;
-        border-radius: 12px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 500;
+    .logo-icon-premium {
         position: relative;
-        overflow: hidden;
-    }
-
-    .nav-item-modern::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: white;
-        transform: scaleY(0);
-        transition: transform 0.3s;
-    }
-
-    .nav-item-modern:hover {
-        background: rgba(255,255,255,0.15);
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .nav-item-modern:hover::before {
-        transform: scaleY(1);
-    }
-
-    .nav-item-modern.active {
-        background: rgba(255,255,255,0.25);
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .nav-item-modern.active::before {
-        transform: scaleY(1);
-    }
-
-    .nav-text {
-        flex: 1;
-    }
-
-    .nav-badge {
-        font-size: 10px;
-        padding: 2px 8px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Footer Modern */
-    .sidebar-footer-modern {
-        padding: 16px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        background: rgba(0,0,0,0.1);
-    }
-
-    .user-card-modern {
-        background: rgba(255,255,255,0.15) !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
-        backdrop-filter: blur(10px);
-        border-radius: 16px !important;
-        padding: 12px !important;
-    }
-
-    .user-avatar-modern {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
         background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .logo-pulse {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 16px;
+        border: 2px solid rgba(255,255,255,0.5);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0;
+        }
+    }
+
+    .logo-info {
+        flex: 1;
+    }
+
+    .logo-brand {
+        font-size: 20px;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .logo-tagline {
+        font-size: 11px;
+        color: rgba(255,255,255,0.8);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+
+    /* ========================
+       NAVIGATION SECTION
+       ======================== */
+    .nav-section {
+        margin-bottom: 28px;
+    }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.6);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+    }
+
+    /* ========================
+       NAV LINKS - PREMIUM
+       ======================== */
+    .nav-link-premium {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        margin: 0 8px;
+        color: rgba(255,255,255,0.85);
+        text-decoration: none;
+        border-radius: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-link-premium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .nav-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.1);
+        transition: all 0.3s;
+        font-size: 20px;
+    }
+
+    .nav-label {
+        flex: 1;
+    }
+
+    .nav-indicator {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) scaleY(0);
+        width: 4px;
+        height: 24px;
+        background: white;
+        border-radius: 0 4px 4px 0;
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .nav-link-premium:hover {
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .nav-link-premium:hover::before {
+        opacity: 1;
+    }
+
+    .nav-link-premium:hover .nav-icon-wrapper {
+        background: rgba(255,255,255,0.25);
+        transform: scale(1.05) rotate(5deg);
+    }
+
+    .nav-link-premium.active {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .nav-link-premium.active::before {
+        opacity: 1;
+    }
+
+    .nav-link-premium.active .nav-icon-wrapper {
+        background: rgba(255,255,255,0.3);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .nav-link-premium.active .nav-indicator {
+        transform: translateY(-50%) scaleY(1);
+    }
+
+    /* ========================
+       USER SECTION - PREMIUM
+       ======================== */
+    .sidebar-user-section {
+        padding: 20px;
+        background: rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .user-profile-premium {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+    }
+
+    .user-profile-premium:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .user-avatar-premium {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        flex-shrink: 0;
+    }
+
+    .avatar-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .avatar-status {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        background: #4ade80;
+        border-radius: 50%;
+        border: 3px solid rgba(102, 126, 234, 1);
+        box-shadow: 0 2px 8px rgba(74, 222, 128, 0.5);
+    }
+
+    .login-section-premium {
+        padding: 4px;
     }
 
     /* ========================
@@ -535,6 +713,7 @@
             top: 0;
             transform: translateX(0) !important;
             box-shadow: none;
+            width: 300px;
         }
 
         .main-container {
@@ -548,13 +727,12 @@
         }
 
         .app-sidebar {
-            width: 280px;
-            height: calc(100vh - 57px);
             order: 2;
+            height: calc(100vh - 57px);
         }
 
         .app-body {
-            width: calc(100% - 280px);
+            width: calc(100% - 300px);
             order: 3;
             height: calc(100vh - 57px);
         }
@@ -643,5 +821,21 @@
             };
         }
         return "Randevu Yönetimi";
+    }
+
+    private string GetUserRole()
+    {
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch
+            {
+                "Business" => "İşletme Sahibi",
+                "Customer" => "Müşteri",
+                "Admin" => "Yönetici",
+                _ => "Kullanıcı"
+            };
+        }
+        return "Misafir";
     }
 }
