@@ -72,6 +72,8 @@ body {
 @media (max-width: 768px) {
     .rz-body {
         padding: 8px !important;
+        width: 100% !important;
+        margin-left: 0 !important;
     }
     
     .rz-card {
@@ -103,9 +105,19 @@ body {
         margin: 10px;
     }
 
-    /* Sidebar auto-collapse on mobile */
+    /* Sidebar mobilde overlay */
     .rz-sidebar {
         width: 280px !important;
+        position: fixed !important;
+        z-index: 1050 !important;
+        top: 0;
+        left: 0;
+        height: 100vh;
+    }
+    
+    /* Sidebar kapalı iken body tam genişlik */
+    .rz-sidebar:not(.rz-sidebar-expanded) {
+        transform: translateX(-100%);
     }
 
     /* Header adjustments */
@@ -124,6 +136,7 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
     .rz-body {
         padding: 16px !important;
+        width: 100% !important;
     }
 
     .rz-sidebar {
