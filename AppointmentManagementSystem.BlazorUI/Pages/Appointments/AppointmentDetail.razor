@@ -543,7 +543,7 @@
             return base64Data;
 
         // Add data URI prefix for Base64 images
-        return $"data:image/jpeg;base64,{base64Data}";
+        return $"{base64Data}";
     }
 
     private string GetStatusColor(string status) => status switch

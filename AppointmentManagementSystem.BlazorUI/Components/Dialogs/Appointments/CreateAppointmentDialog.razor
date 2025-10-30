@@ -708,6 +708,7 @@
                 EmployeeId = selectedEmployeeId,
                 AppointmentDate = appointmentDateTime,
                 StartTime = selectedTimeSlot.Value,
+                PhotosBase64 = uploadedPhotos.Select(p => p.Base64Data).ToList(),
                 Notes = $"Toplam {selectedServices.Count} hizmet seçildi." +
                        (uploadedPhotos.Any() ? $" {uploadedPhotos.Count} fotoğraf yüklendi." : "")
             };

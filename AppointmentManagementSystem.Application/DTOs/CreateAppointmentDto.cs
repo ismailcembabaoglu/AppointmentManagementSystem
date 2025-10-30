@@ -23,5 +23,6 @@ namespace AppointmentManagementSystem.Application.DTOs
 
         [MaxLength(1000)]
         public string? Notes { get; set; }
+        public List<string> PhotosBase64 { get; set; } = new();
     }
 }

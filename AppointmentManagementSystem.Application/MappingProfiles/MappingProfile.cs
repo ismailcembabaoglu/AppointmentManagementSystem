@@ -56,6 +56,7 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
                 .ForMember(dest => dest.CreatedByBusinessUserId, opt => opt.Ignore())
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.Review, opt => opt.Ignore())
+                .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(dest => dest.RatingDate, opt => opt.Ignore());
 
             // User mappings

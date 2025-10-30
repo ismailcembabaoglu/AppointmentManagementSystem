@@ -1,6 +1,7 @@
 ﻿using Blazored.LocalStorage; // BU SATIRI EKLE
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 
 namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
@@ -51,9 +52,18 @@ namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
 
         private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
         {
+            if (string.IsNullOrWhiteSpace(jwt) || !jwt.Contains('.'))
+                return new List<Claim>();
+
             var payload = jwt.Split('.')[1];
+
+            // URL-safe Base64 düzeltmesi
+            payload = payload.Replace('-', '+').Replace('_', '/');
+
             var jsonBytes = ParseBase64WithoutPadding(payload);
-            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+            var json = Encoding.UTF8.GetString(jsonBytes);
+
+            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
             var claims = new List<Claim>();
 
             if (keyValuePairs != null)
@@ -62,8 +72,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
                 {
                     if (kvp.Value is JsonElement element && element.ValueKind == JsonValueKind.Array)
                     {
-                        var roles = element.EnumerateArray();
-                        foreach (var role in roles)
+                        foreach (var role in element.EnumerateArray())
                         {
                             claims.Add(new Claim(ClaimTypes.Role, role.GetString() ?? string.Empty));
                         }

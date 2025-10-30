@@ -255,6 +255,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     FilePath = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    Base64Data = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -280,6 +281,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     FilePath = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    Base64Data = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhotoType = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     AppointmentId = table.Column<int>(type: "int", nullable: true),
                     BusinessId = table.Column<int>(type: "int", nullable: true),
@@ -319,9 +321,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "Icon", "IsDeleted", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 2, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6272), "Güzellik ve bakım hizmetleri", "spa", false, "Güzellik Merkezi", null },
-                    { 3, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6274), "Diş sağlığı hizmetleri", "local_hospital", false, "Diş Hekimi", null },
-                    { 4, new DateTime(2025, 10, 22, 23, 56, 52, 71, DateTimeKind.Utc).AddTicks(6276), "Tıbbi estetik hizmetleri", "healing", false, "Tıbbi Estetik", null }
+                    { 1, new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(272), "Erkek Berber Hizmetleri", "healing", false, "Berber", null },
+                    { 2, new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(275), "Güzellik ve bakım hizmetleri", "spa", false, "Güzellik Merkezi", null },
+                    { 3, new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(277), "Diş sağlığı hizmetleri", "local_hospital", false, "Diş Hekimi", null },
+                    { 4, new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(278), "Tıbbi estetik hizmetleri", "healing", false, "Tıbbi Estetik", null }
                 });
 
             migrationBuilder.CreateIndex(

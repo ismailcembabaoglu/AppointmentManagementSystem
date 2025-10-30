@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppointmentDbContext))]
-    [Migration("20251023183141_v2")]
-    partial class v2
+    [Migration("20251029195310_v1")]
+    partial class v1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -264,7 +264,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 10, 23, 18, 31, 41, 188, DateTimeKind.Utc).AddTicks(2757),
+                            CreatedAt = new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(272),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -273,7 +273,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 10, 23, 18, 31, 41, 188, DateTimeKind.Utc).AddTicks(2760),
+                            CreatedAt = new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(275),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -282,7 +282,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 10, 23, 18, 31, 41, 188, DateTimeKind.Utc).AddTicks(2762),
+                            CreatedAt = new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(277),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -291,7 +291,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 10, 23, 18, 31, 41, 188, DateTimeKind.Utc).AddTicks(2763),
+                            CreatedAt = new DateTime(2025, 10, 29, 19, 53, 9, 919, DateTimeKind.Utc).AddTicks(278),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -355,6 +355,9 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Base64Data")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ContentType")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -406,6 +409,9 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Base64Data")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContentType")
                         .HasMaxLength(100)

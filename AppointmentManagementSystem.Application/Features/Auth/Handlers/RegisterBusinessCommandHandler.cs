@@ -120,7 +120,9 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                     FileSize = dto.BusinessPhotoBase64.Length
                 };
                 await _businessPhotoRepository.AddAsync(businessPhoto);
+                await _unitOfWork.SaveChangesAsync();
             }
+
 
             // Create Services
             foreach (var serviceDto in dto.Services)
@@ -136,10 +138,10 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                     IsActive = true
                 };
                 await _serviceRepository.AddAsync(service);
+                await _unitOfWork.SaveChangesAsync();
             }
 
             // Save services and business photo
-            await _unitOfWork.SaveChangesAsync();
 
             // Create Employees
             if (dto.Employees != null && dto.Employees.Any())
@@ -152,6 +154,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                         Specialization = employeeDto.Specialization,
                         Description = employeeDto.Description,
                         BusinessId = business.Id,
+                        Business=business,
                         IsActive = employeeDto.IsActive
                     };
                     await _employeeRepository.AddAsync(employee);
@@ -176,14 +179,13 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                                     FileSize = photoBase64.Length
                                 };
                                 await _employeePhotoRepository.AddAsync(employeePhoto);
+                                await _unitOfWork.SaveChangesAsync();
                             }
                         }
                     }
                 }
             }
 
-            // Final save for employee photos
-            await _unitOfWork.SaveChangesAsync();
 
             // Generate token
             var token = _jwtTokenGenerator.GenerateToken(user);
