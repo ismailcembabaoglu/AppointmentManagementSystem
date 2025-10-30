@@ -153,6 +153,24 @@ body {
     .rz-sidebar {
         width: 280px !important;
     }
+    
+    /* Body tam genişlik desktop'ta da */
+    .rz-body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    /* Layout flex yapısı */
+    .rz-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .rz-body-container {
+        display: flex;
+        flex: 1;
+    }
 }
 
 /* Dashboard cards */
