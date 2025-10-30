@@ -39,126 +39,183 @@
     <!-- SIDEBAR -->
     <div class="app-sidebar @(sidebarExpanded ? "expanded" : "collapsed")">
         <div class="sidebar-content">
-            <!-- Logo Section -->
-            <div class="sidebar-logo">
-                <div class="logo-icon">
-                    <i class="material-icons">event_available</i>
-                </div>
-                <div class="logo-text">
-                    <div class="logo-title">AMS</div>
-                    <div class="logo-subtitle">Randevu Sistemi</div>
+            <!-- Logo Section - Premium -->
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon-premium">
+                        <RadzenIcon Icon="calendar_today" Style="font-size: 32px; color: white;" />
+                        <div class="logo-pulse"></div>
+                    </div>
+                    <div class="logo-info">
+                        <div class="logo-brand">Appointment</div>
+                        <div class="logo-tagline">Management System</div>
+                    </div>
                 </div>
             </div>
 
-            <RadzenStack Orientation="Orientation.Vertical" Gap="8px" Style="flex: 1; padding: 16px 8px;">
+            <!-- Navigation Section -->
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0" Style="flex: 1; padding: 24px 12px; overflow-y: auto;">
                 <!-- Business Menu -->
                 <AuthorizeView Roles="Business">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                        <div class="menu-section-title">İŞLETME YÖNETİMİ</div>
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="business_center" Style="font-size: 14px;" />
+                            <span>İşletme Yönetimi</span>
+                        </div>
                         
-                        <NavLink href="dashboard/business" class="nav-item-modern" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="dashboard" Style="font-size: 22px;" />
-                            <span class="nav-text">Dashboard</span>
-                            <span class="nav-badge">Ana</span>
-                        </NavLink>
-                        
-                        <NavLink href="appointments" class="nav-item-modern">
-                            <RadzenIcon Icon="event" Style="font-size: 22px;" />
-                            <span class="nav-text">Randevular</span>
-                        </NavLink>
-                        
-                        <NavLink href="services" class="nav-item-modern">
-                            <RadzenIcon Icon="work" Style="font-size: 22px;" />
-                            <span class="nav-text">Hizmetler</span>
-                        </NavLink>
-                        
-                        <NavLink href="employees" class="nav-item-modern">
-                            <RadzenIcon Icon="group" Style="font-size: 22px;" />
-                            <span class="nav-text">Çalışanlar</span>
-                        </NavLink>
-                    </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/business" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_note" />
+                                </div>
+                                <span class="nav-label">Randevular</span>
+                                <RadzenBadge Text="12" BadgeStyle="BadgeStyle.Light" Style="margin-left: auto; font-size: 10px;" />
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="services" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="room_service" />
+                                </div>
+                                <span class="nav-label">Hizmetler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="employees" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="groups" />
+                                </div>
+                                <span class="nav-label">Çalışanlar</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                        </RadzenStack>
+                    </div>
                 </AuthorizeView>
 
                 <!-- Customer Menu -->
                 <AuthorizeView Roles="Customer">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                        <div class="menu-section-title">MÜŞTERİ PANELİ</div>
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="person" Style="font-size: 14px;" />
+                            <span>Müşteri Paneli</span>
+                        </div>
                         
-                        <NavLink href="dashboard/customer" class="nav-item-modern" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="dashboard" Style="font-size: 22px;" />
-                            <span class="nav-text">Dashboard</span>
-                        </NavLink>
-                        
-                        <NavLink href="appointments" class="nav-item-modern">
-                            <RadzenIcon Icon="event" Style="font-size: 22px;" />
-                            <span class="nav-text">Randevularım</span>
-                        </NavLink>
-                        
-                        <NavLink href="categories" class="nav-item-modern">
-                            <RadzenIcon Icon="category" Style="font-size: 22px;" />
-                            <span class="nav-text">Kategoriler</span>
-                        </NavLink>
-                        
-                        <NavLink href="businesses" class="nav-item-modern">
-                            <RadzenIcon Icon="store" Style="font-size: 22px;" />
-                            <span class="nav-text">İşletmeler</span>
-                        </NavLink>
-                    </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/customer" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_available" />
+                                </div>
+                                <span class="nav-label">Randevularım</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="categories" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="category" />
+                                </div>
+                                <span class="nav-label">Kategoriler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="businesses" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="store" />
+                                </div>
+                                <span class="nav-label">İşletmeler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                        </RadzenStack>
+                    </div>
                 </AuthorizeView>
 
                 <!-- Guest Menu -->
                 <AuthorizeView>
                     <NotAuthorized>
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                            <div class="menu-section-title">KEŞFET</div>
+                        <div class="nav-section">
+                            <div class="section-label">
+                                <RadzenIcon Icon="explore" Style="font-size: 14px;" />
+                                <span>Keşfet</span>
+                            </div>
                             
-                            <NavLink href="/" class="nav-item-modern" Match="NavLinkMatch.All">
-                                <RadzenIcon Icon="home" Style="font-size: 22px;" />
-                                <span class="nav-text">Ana Sayfa</span>
-                            </NavLink>
-                            
-                            <NavLink href="categories" class="nav-item-modern">
-                                <RadzenIcon Icon="category" Style="font-size: 22px;" />
-                                <span class="nav-text">Kategoriler</span>
-                            </NavLink>
-                            
-                            <NavLink href="businesses" class="nav-item-modern">
-                                <RadzenIcon Icon="store" Style="font-size: 22px;" />
-                                <span class="nav-text">İşletmeler</span>
-                            </NavLink>
-                        </RadzenStack>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                                <NavLink href="/" class="nav-link-premium" Match="NavLinkMatch.All">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="home" />
+                                    </div>
+                                    <span class="nav-label">Ana Sayfa</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                <NavLink href="categories" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="category" />
+                                    </div>
+                                    <span class="nav-label">Kategoriler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                <NavLink href="businesses" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="store" />
+                                    </div>
+                                    <span class="nav-label">İşletmeler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                            </RadzenStack>
+                        </div>
                     </NotAuthorized>
                 </AuthorizeView>
             </RadzenStack>
 
-            <!-- User Info Card - Modern -->
-            <div class="sidebar-footer-modern">
+            <!-- User Profile - Premium -->
+            <div class="sidebar-user-section">
                 @if (currentUser != null && currentUser.Identity.IsAuthenticated)
                 {
-                    <RadzenCard class="user-card-modern">
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
-                            <div class="user-avatar-modern">
-                                <RadzenIcon Icon="person" Style="font-size: 24px; color: white;" />
+                    <div class="user-profile-premium">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center" Style="flex: 1; min-width: 0;">
+                            <div class="user-avatar-premium">
+                                <div class="avatar-inner">@GetShortName(currentUser.Identity.Name)</div>
+                                <div class="avatar-status"></div>
                             </div>
                             <RadzenStack Orientation="Orientation.Vertical" Gap="2px" Style="flex: 1; min-width: 0;">
-                                <RadzenText TextStyle="TextStyle.Caption" Style="color: rgba(255,255,255,0.7); margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Hoş geldiniz</RadzenText>
-                                <RadzenText TextStyle="TextStyle.Body2" Style="color: white; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@currentUser.Identity.Name</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: white; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    @currentUser.Identity.Name
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" Style="color: rgba(255,255,255,0.7); margin: 0; font-size: 11px;">
+                                    @GetUserRole()
+                                </RadzenText>
                             </RadzenStack>
-                            <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Danger" 
-                                        Size="ButtonSize.Small" Variant="Variant.Text"
-                                        Click="Logout" Style="min-width: auto; color: rgba(255,255,255,0.9);"
-                                        title="Çıkış Yap" />
                         </RadzenStack>
-                    </RadzenCard>
+                        <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Danger" 
+                                    Size="ButtonSize.Small" Variant="Variant.Text"
+                                    Click="Logout" Style="min-width: 40px; height: 40px; color: white;"
+                                    title="Çıkış Yap" />
+                    </div>
                 }
                 else
                 {
-                    <RadzenCard class="user-card-modern">
+                    <div class="login-section-premium">
                         <RadzenButton Text="Giriş Yap" Icon="login" 
                                     ButtonStyle="ButtonStyle.Light" 
                                     Click="@(() => Navigation.NavigateTo("/login"))"
-                                    Style="width: 100%;" />
-                    </RadzenCard>
+                                    Style="width: 100%; font-weight: 600;" />
+                    </div>
                 }
             </div>
         </div>
