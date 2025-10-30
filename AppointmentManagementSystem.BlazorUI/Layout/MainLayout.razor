@@ -9,29 +9,29 @@
 @inject DialogService DialogService
 
 <RadzenLayout>
-    <RadzenHeader Style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 60px;">
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-                    <RadzenColumn>
-                        <RadzenRow AlignItems="AlignItems.Center">
-                            <RadzenButton Text="" Icon="menu" ButtonStyle="ButtonStyle.Light"
-                                          Click="ToggleSidebar" Size="ButtonSize.Large" />
-                        </RadzenRow>
-                    </RadzenColumn>
-                    <RadzenColumn class="text-end">
-                        @if (currentUser != null && currentUser.Identity.IsAuthenticated)
-                        {
-                            <RadzenButton Text="@GetShortName(currentUser.Identity.Name)"
-                                          ButtonStyle="ButtonStyle.Primary"
-                                          Icon="person"
-                                          Click="@(args => DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } }))"
-                                          Size="ButtonSize.Small" />
-                        }
-                    </RadzenColumn>
-                </RadzenRow>
-            </RadzenColumn>
-        </RadzenRow>
+    <RadzenHeader Style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 12px 16px;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="12px">
+            <!-- Left: Menu Button + Brand -->
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light"
+                              Click="ToggleSidebar" Size="ButtonSize.Medium" 
+                              Style="@(isMobile ? "min-width: 44px; height: 44px;" : "")" />
+                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600; color: #3f51b5; display: none;" class="brand-name">
+                    @GetBrandName()
+                </RadzenText>
+            </RadzenStack>
+
+            <!-- Right: User Profile -->
+            @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+            {
+                <RadzenButton Text="@GetShortName(currentUser.Identity.Name)"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Icon="person"
+                              Click="@(args => DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } }))"
+                              Size="ButtonSize.Small"
+                              Style="@(isMobile ? "min-width: 44px; height: 44px; padding: 8px 12px;" : "")" />
+            }
+        </RadzenStack>
     </RadzenHeader>
     <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
         <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
