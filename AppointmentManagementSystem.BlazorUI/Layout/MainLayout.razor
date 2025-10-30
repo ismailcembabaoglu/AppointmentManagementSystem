@@ -33,6 +33,12 @@
             }
         </RadzenStack>
     </RadzenHeader>
+
+    <!-- Mobile Backdrop (overlay kararması) -->
+    @if (sidebarVisible)
+    {
+        <div class="sidebar-backdrop" @onclick="ToggleSidebar"></div>
+    }
     <RadzenSidebar @bind-Expanded="@sidebarVisible" Responsive="true" Style="background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);">
         <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%;">
             <RadzenPanelMenu Style="flex: 1; background: transparent; border: none;">
