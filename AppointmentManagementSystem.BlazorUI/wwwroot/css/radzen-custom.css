@@ -16,10 +16,38 @@
     --rz-secondary-lighter: #f5f5f5;
 }
 
+/* Layout Fix - Body tam genişlik */
+.rz-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.rz-body-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.rz-body {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Sidebar kapalı iken body margin sıfır */
+.rz-sidebar + .rz-body,
+.rz-body {
+    margin-left: 0 !important;
+}
+
 /* Mobile-First Responsive Design */
 /* Base styles for mobile (< 768px) */
 body {
     font-size: 14px;
+    overflow-x: hidden;
 }
 
 .rz-card {
@@ -44,6 +72,8 @@ body {
 @media (max-width: 768px) {
     .rz-body {
         padding: 8px !important;
+        width: 100% !important;
+        margin-left: 0 !important;
     }
     
     .rz-card {
@@ -75,9 +105,19 @@ body {
         margin: 10px;
     }
 
-    /* Sidebar auto-collapse on mobile */
+    /* Sidebar mobilde overlay */
     .rz-sidebar {
         width: 280px !important;
+        position: fixed !important;
+        z-index: 1050 !important;
+        top: 0;
+        left: 0;
+        height: 100vh;
+    }
+    
+    /* Sidebar kapalı iken body tam genişlik */
+    .rz-sidebar:not(.rz-sidebar-expanded) {
+        transform: translateX(-100%);
     }
 
     /* Header adjustments */
@@ -96,6 +136,7 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
     .rz-body {
         padding: 16px !important;
+        width: 100% !important;
     }
 
     .rz-sidebar {
@@ -111,6 +152,24 @@ body {
 
     .rz-sidebar {
         width: 280px !important;
+    }
+    
+    /* Body tam genişlik desktop'ta da */
+    .rz-body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    /* Layout flex yapısı */
+    .rz-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .rz-body-container {
+        display: flex;
+        flex: 1;
     }
 }
 
