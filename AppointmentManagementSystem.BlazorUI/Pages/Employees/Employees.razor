@@ -42,7 +42,7 @@
         <div class="employees-grid">
             @foreach (var employee in employees)
             {
-                <RadzenCard class="employee-card" data-testid="@($"employee-card-{employee.Id}")"
+                <RadzenCard class="employee-card" data-testid="@($"employee-card-{employee.Id}")">
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="height: 100%;">
                         <!-- Employee Header -->
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
