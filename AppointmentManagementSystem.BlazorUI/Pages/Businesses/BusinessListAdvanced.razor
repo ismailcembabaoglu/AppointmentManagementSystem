@@ -65,14 +65,14 @@
                 <!-- Price Range -->
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenLabel Text="@($"Fiyat Aralığı: {minPrice}₺ - {maxPrice}₺")" />
-                    <RadzenSlider @bind-Value="@minPrice" Min="0" Max="5000" Step="50" Style="width: 100%;" Change="@(args => ApplyFilters())" />
-                    <RadzenSlider @bind-Value="@maxPrice" Min="0" Max="5000" Step="50" Style="width: 100%; margin-top: 8px;" Change="@(args => ApplyFilters())" />
+                    <RadzenSlider @bind-Value="@minPrice" Min="0" Max="5000" Step="50" Style="width: 100%;" Change="@((int args) => ApplyFilters())" />
+                    <RadzenSlider @bind-Value="@maxPrice" Min="0" Max="5000" Step="50" Style="width: 100%; margin-top: 8px;" Change="@((int args) => ApplyFilters())" />
                 </RadzenColumn>
 
                 <!-- Distance -->
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenLabel Text="@($"Mesafe: {maxDistance} km")" />
-                    <RadzenSlider @bind-Value="@maxDistance" Min="0" Max="50" Step="5" Style="width: 100%;" Change="@(args => ApplyFilters())" />
+                    <RadzenSlider @bind-Value="@maxDistance" Min="0" Max="50" Step="5" Style="width: 100%;" Change="@((int args) => ApplyFilters())" />
                 </RadzenColumn>
             </RadzenRow>
 
