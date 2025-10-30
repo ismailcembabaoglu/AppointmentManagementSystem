@@ -20,5 +20,7 @@ namespace AppointmentManagementSystem.Application.DTOs
 
         [Required]
         public int BusinessId { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }
