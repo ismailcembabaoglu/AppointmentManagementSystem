@@ -42,7 +42,7 @@
         <div class="services-grid">
             @foreach (var service in services)
             {
-                <RadzenCard class="service-card" data-testid="@($"service-card-{service.Id}")"
+                <RadzenCard class="service-card" data-testid="@($"service-card-{service.Id}")">
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="height: 100%;">
                         <!-- Service Header -->
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
