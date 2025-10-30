@@ -75,9 +75,9 @@
                         <!-- Action Buttons -->
                         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap" Style="margin-top: auto;">
                             <RadzenButton Text="Düzenle" Icon="edit" ButtonStyle="ButtonStyle.Secondary" 
-                                        Click="@(args => ShowEditDialog(employee))" Style="flex: 1;" data-testid="edit-employee-@employee.Id" />
+                                        Click="@(args => ShowEditDialog(employee))" Style="flex: 1;" data-testid="@($"edit-employee-{employee.Id}")" />
                             <RadzenButton Text="Sil" Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
-                                        Click="@(args => DeleteEmployee(employee.Id))" Style="flex: 1;" data-testid="delete-employee-@employee.Id" />
+                                        Click="@(args => DeleteEmployee(employee.Id))" Style="flex: 1;" data-testid="@($"delete-employee-{employee.Id}")" />
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
