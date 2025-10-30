@@ -291,153 +291,168 @@
         left: 0;
         width: 280px;
         height: calc(100vh - 57px);
-        background: linear-gradient(180deg, #3f51b5 0%, #1a237e 100%);
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 999;
         overflow-y: auto;
         overflow-x: hidden;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
     }
 
     .app-sidebar.expanded {
         transform: translateX(0);
-        box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.2);
     }
 
     .sidebar-content {
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding: 16px 0;
     }
 
-    .sidebar-nav {
+    /* Logo Section */
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 16px;
+        background: rgba(0,0,0,0.1);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .logo-icon .material-icons {
+        font-size: 28px;
+        color: white;
+    }
+
+    .logo-text {
         flex: 1;
-        padding: 0 8px;
     }
 
-    .nav-item {
+    .logo-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .logo-subtitle {
+        font-size: 11px;
+        color: rgba(255,255,255,0.8);
+        font-weight: 500;
+    }
+
+    /* Menu Section Title */
+    .menu-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.6);
+        padding: 16px 16px 8px 16px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Modern Nav Item */
+    .nav-item-modern {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 12px 16px;
-        margin-bottom: 4px;
+        margin: 0 8px;
         color: rgba(255,255,255,0.9);
         text-decoration: none;
-        border-radius: 8px;
-        transition: all 0.2s;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         font-size: 15px;
-    }
-
-    .nav-item:hover {
-        background: rgba(255,255,255,0.1);
-        transform: translateX(4px);
-    }
-
-    .nav-item.active {
-        background: rgba(255,255,255,0.2);
-        color: white;
         font-weight: 500;
+        position: relative;
+        overflow: hidden;
     }
 
-    .nav-item .material-icons {
-        font-size: 20px;
+    .nav-item-modern::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: white;
+        transform: scaleY(0);
+        transition: transform 0.3s;
     }
 
-    .sidebar-footer {
-        padding: 16px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+    .nav-item-modern:hover {
+        background: rgba(255,255,255,0.15);
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .user-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 8px;
+    .nav-item-modern:hover::before {
+        transform: scaleY(1);
     }
 
-    .user-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-        min-width: 0;
-    }
-
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .nav-item-modern.active {
+        background: rgba(255,255,255,0.25);
         color: white;
         font-weight: 600;
-        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .user-details {
+    .nav-item-modern.active::before {
+        transform: scaleY(1);
+    }
+
+    .nav-text {
         flex: 1;
-        min-width: 0;
     }
 
-    .user-welcome {
-        font-size: 11px;
-        color: rgba(255,255,255,0.7);
+    .nav-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .user-fullname {
-        font-size: 14px;
-        color: white;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* Footer Modern */
+    .sidebar-footer-modern {
+        padding: 16px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        background: rgba(0,0,0,0.1);
     }
 
-    .logout-btn {
-        width: 36px;
-        height: 36px;
-        border: none;
-        background: rgba(255,255,255,0.1);
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
+    .user-card-modern {
+        background: rgba(255,255,255,0.15) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 16px !important;
+        padding: 12px !important;
+    }
+
+    .user-avatar-modern {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
-    }
-
-    .logout-btn:hover {
-        background: rgba(255,255,255,0.2);
-    }
-
-    .logout-btn .material-icons {
-        font-size: 20px;
-    }
-
-    .login-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border: none;
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-        width: 100%;
-        justify-content: center;
-        transition: background 0.2s;
-    }
-
-    .login-btn:hover {
-        background: rgba(255,255,255,0.3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     /* ========================
