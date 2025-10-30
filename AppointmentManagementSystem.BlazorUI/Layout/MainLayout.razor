@@ -822,4 +822,20 @@
         }
         return "Randevu Yönetimi";
     }
+
+    private string GetUserRole()
+    {
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch
+            {
+                "Business" => "İşletme Sahibi",
+                "Customer" => "Müşteri",
+                "Admin" => "Yönetici",
+                _ => "Kullanıcı"
+            };
+        }
+        return "Misafir";
+    }
 }
