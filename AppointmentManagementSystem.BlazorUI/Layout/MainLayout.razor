@@ -127,6 +127,11 @@
         overflow-x: hidden;
     }
 
+    /* Sidebar transition */
+    .rz-sidebar {
+        transition: transform 0.3s ease-in-out, left 0.3s ease-in-out !important;
+    }
+
     /* Sidebar kapalı iken body tam genişlik */
     .rz-sidebar-collapsed + .rz-body {
         width: 100%;
@@ -152,17 +157,40 @@
             min-width: 44px !important;
         }
         
-        /* Sidebar tam sayfa overlay */
+        /* Sidebar mobilde overlay olarak */
         .rz-sidebar {
             position: fixed !important;
-            z-index: 1000;
-            height: 100vh;
+            z-index: 1050 !important;
+            height: 100vh !important;
+            top: 0 !important;
+            left: 0 !important;
+            transition: transform 0.3s ease-in-out !important;
         }
         
         /* Body tam genişlik mobilde */
         .rz-body {
             width: 100% !important;
             margin-left: 0 !important;
+        }
+        
+        /* Sidebar overlay backdrop */
+        .rz-sidebar-expanded::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+        }
+    }
+
+    /* Desktop - Sidebar yanında */
+    @@media (min-width: 769px) {
+        .rz-sidebar {
+            position: relative !important;
+            height: calc(100vh - 60px) !important;
         }
     }
 </style>
