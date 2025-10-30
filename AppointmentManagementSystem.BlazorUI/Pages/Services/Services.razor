@@ -1,78 +1,157 @@
-﻿@page "/services"
+@page "/services"
+@attribute [Authorize(Roles = "Business")]
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Services
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Radzen
 @inject IServiceApiService ServiceApiService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Hizmetler</PageTitle>
 
-<RadzenCard>
-    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Hizmetler</h2>
-            <AuthorizeView Roles="Business">
-                <RadzenButton Text="Yeni Hizmet" ButtonStyle="ButtonStyle.Success" 
-                            Click="ShowCreateDialog" Icon="add" />
-            </AuthorizeView>
-        </div>
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px 0;">
+    <!-- Header Card -->
+    <RadzenCard Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="16px">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">🛠️ Hizmetler</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1" Style="opacity: 0.95; margin: 0;">İşletmenize ait hizmetleri yönetin</RadzenText>
+            </RadzenStack>
+            <RadzenButton Text="Yeni Hizmet" Icon="add" ButtonStyle="ButtonStyle.Light" 
+                        Click="ShowCreateDialog" Size="ButtonSize.Large" data-testid="add-service-btn" />
+        </RadzenStack>
+    </RadzenCard>
 
-        @if (isLoading)
-        {
-            <div class="text-center">
-                <RadzenLoader />
-                <p>Yükleniyor...</p>
-            </div>
+    @if (isLoading)
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.H6">Hizmetler yükleniyor...</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else if (services.Any())
+    {
+        <!-- Mobile-First Grid Layout -->
+        <div class="services-grid">
+            @foreach (var service in services)
+            {
+                <RadzenCard class="service-card" data-testid="service-card-@service.Id">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="height: 100%;">
+                        <!-- Service Header -->
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">@service.Name</RadzenText>
+                                @if (!string.IsNullOrEmpty(service.Description))
+                                {
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        @service.Description
+                                    </RadzenText>
+                                }
+                            </RadzenStack>
+                            <RadzenBadge Text="@(service.IsActive ? "Aktif" : "Pasif")" 
+                                       BadgeStyle="@(service.IsActive ? BadgeStyle.Success : BadgeStyle.Secondary)" />
+                        </RadzenStack>
+
+                        <!-- Service Details -->
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="8px" Style="flex: 1;">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                <RadzenIcon Icon="schedule" Style="font-size: 20px; color: var(--rz-primary);" />
+                                <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
+                                    <strong>Süre:</strong> @service.DurationMinutes dakika
+                                </RadzenText>
+                            </RadzenStack>
+
+                            @if (service.Price.HasValue)
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="payments" Style="font-size: 20px; color: var(--rz-success);" />
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
+                                        <strong>Fiyat:</strong> @service.Price.Value.ToString("C")
+                                    </RadzenText>
+                                </RadzenStack>
+                            }
+                        </RadzenStack>
+
+                        <!-- Action Buttons -->
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                            <RadzenButton Text="Düzenle" Icon="edit" ButtonStyle="ButtonStyle.Secondary" 
+                                        Click="@(args => ShowEditDialog(service))" Style="flex: 1;" data-testid="edit-service-@service.Id" />
+                            <RadzenButton Text="Sil" Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                        Click="@(args => DeleteService(service.Id))" Style="flex: 1;" data-testid="delete-service-@service.Id" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            }
+        </div>
+    }
+    else
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="work_off" Style="font-size: 64px; color: var(--rz-text-disabled-color); opacity: 0.5;" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); text-align: center;">Henüz hizmet bulunmamaktadır</RadzenText>
+                <RadzenButton Text="İlk Hizmeti Ekle" Icon="add" ButtonStyle="ButtonStyle.Primary" 
+                            Click="ShowCreateDialog" data-testid="add-first-service-btn" />
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+<style>
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .service-card {
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+
+    @media (max-width: 768px) {
+        .services-grid {
+            grid-template-columns: 1fr;
         }
-        else if (services.Any())
-        {
-            <RadzenDataGrid Data="@services" 
-                           TItem="ServiceDto" 
-                           AllowPaging="true" 
-                           AllowSorting="true"
-                           PageSize="10">
-                <Columns>
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="Name" Title="Hizmet Adı" />
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="BusinessName" Title="İşletme" />
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="Price" Title="Fiyat">
-                        <Template Context="service">
-                            @(service.Price?.ToString("C") ?? "-")
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="DurationMinutes" Title="Süre (dk)" />
-                    <RadzenDataGridColumn TItem="ServiceDto" Property="IsActive" Title="Aktif" />
-                    <RadzenDataGridColumn TItem="ServiceDto" Title="İşlemler" Width="150px">
-                        <Template Context="service">
-                            <AuthorizeView Roles="Business">
-                                <RadzenButton Text="Düzenle" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" 
-                                            Click="@(args => ShowEditDialog(service))" Icon="edit" />
-                                <RadzenButton Text="Sil" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
-                                            Click="@(args => DeleteService(service.Id))" Icon="delete" class="ms-1" />
-                            </AuthorizeView>
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Columns>
-            </RadzenDataGrid>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                <p>Henüz hizmet bulunmamaktadır.</p>
-            </div>
-        }
-    </RadzenStack>
-</RadzenCard>
+    }
+</style>
 
 @code {
     private List<ServiceDto> services = new();
     private bool isLoading = true;
+    private int businessId = 0;
 
     protected override async Task OnInitializedAsync()
     {
+        await GetBusinessId();
         await LoadServices();
+    }
+
+    private async Task GetBusinessId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var businessIdClaim = user.FindFirst("businessId")?.Value;
+            if (!string.IsNullOrEmpty(businessIdClaim) && int.TryParse(businessIdClaim, out int id))
+            {
+                businessId = id;
+            }
+        }
     }
 
     private async Task LoadServices()
@@ -80,7 +159,7 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await ServiceApiService.GetAllServicesAsync();
+        var response = await ServiceApiService.GetAllServicesAsync(businessId);
         if (response.Success)
         {
             services = response.Data ?? new List<ServiceDto>();
@@ -98,19 +177,20 @@
     private async Task ShowCreateDialog()
     {
         var result = await DialogService.OpenAsync<CreateServiceDialog>("Yeni Hizmet",
-            new Dictionary<string, object>() { { "isEdit", false } },
-            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+            new Dictionary<string, object>() { { "isEdit", false }, { "PreselectedBusinessId", businessId } },
+            new DialogOptions() { Width = "90%", MaxWidth = "500px", Resizable = true, Draggable = true });
 
         if (result is true)
         {
             await LoadServices();
         }
     }
+
     private async Task ShowEditDialog(ServiceDto service)
     {
         var result = await DialogService.OpenAsync<CreateServiceDialog>("Hizmet Düzenle",
-            new Dictionary<string, object>() { { "isEdit", true }, { "ServiceId", service.Id }, { "BusinessId", service.BusinessId } },
-            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+            new Dictionary<string, object>() { { "isEdit", true }, { "ServiceId", service.Id }, { "PreselectedBusinessId", businessId } },
+            new DialogOptions() { Width = "90%", MaxWidth = "500px", Resizable = true, Draggable = true });
 
         if (result is true)
         {
@@ -120,7 +200,9 @@
 
     private async Task DeleteService(int serviceId)
     {
-        var result = await DialogService.Confirm("Bu hizmeti silmek istediğinize emin misiniz?", "Hizmet Sil", new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+        var result = await DialogService.Confirm("Bu hizmeti silmek istediğinize emin misiniz?", "Hizmet Sil", 
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+        
         if (result.HasValue && result.Value)
         {
             var response = await ServiceApiService.DeleteServiceAsync(serviceId);
