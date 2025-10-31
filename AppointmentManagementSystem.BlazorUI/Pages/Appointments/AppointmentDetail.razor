@@ -478,41 +478,28 @@
 
     private async Task ShowRatingDialog()
     {
-        // Reset values before opening dialog
-        ratingValue = 0;
-        reviewText = "";
-        
-        var result = await DialogService.OpenAsync("Randevuyu Değerlendir",
-            ds =>
-            @<div style="padding: 20px;">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                    <div style="text-align: center;">
-                        <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
-                            Lütfen randevunuzu değerlendirin
-                        </RadzenText>
-                        <RadzenRating @bind-Value="@ratingValue" Stars="5" />
-                        @if (ratingValue > 0)
-                        {
-                            <RadzenText TextStyle="TextStyle.Caption" Style="margin-top: 8px; color: var(--rz-success);">
-                                @ratingValue yıldız seçildi
-                            </RadzenText>
-                        }
-                    </div>
-                    <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
-                        <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="() => ds.Close(false)" />
-                        <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmitRating(ds)" />
-                    </RadzenStack>
-                </RadzenStack>
-            </div>,
+        var result = await DialogService.OpenAsync<RatingDialog>("Randevuyu Değerlendir",
+            new Dictionary<string, object>()
+            {
+                { "Rating", 0 },
+                { "Review", "" }
+            },
             new DialogOptions { Width = "500px", Height = "auto" });
 
-        if (result == true)
+        if (result != null)
         {
+            var ratingData = ((int rating, string review))result;
+            
+            if (ratingData.rating == 0)
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
+                return;
+            }
+
             var ratingDto = new AddAppointmentRatingDto
             {
-                Rating = ratingValue,
-                Review = reviewText
+                Rating = ratingData.rating,
+                Review = ratingData.review
             };
 
             var response = await AppointmentApiService.AddAppointmentRatingAsync(Id, ratingDto);
@@ -526,22 +513,6 @@
                 NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Değerlendirme kaydedilemedi.");
             }
         }
-    }
-
-    private void OnSubmitRating(DialogService dialogService)
-    {
-        if (ratingValue == 0)
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
-            return;
-        }
-        dialogService.Close(true);
-    }
-
-    private void OnRatingChanged(int value)
-    {
-        ratingValue = value;
-        StateHasChanged();
     }
 
     private async Task ShowPhotoDialog(string photoUrl)
