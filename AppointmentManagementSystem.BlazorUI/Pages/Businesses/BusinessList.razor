@@ -210,8 +210,23 @@
     private string searchTerm = "";
     private bool isLoading = true;
 
+    // Filter variables
+    private string? selectedCity;
+    private string? selectedDistrict;
+    private double? selectedRating;
+    private List<string> cities = new();
+    private List<string> districts = new();
+    private List<RatingOption> ratingOptions = new();
+
+    public class RatingOption
+    {
+        public string Text { get; set; } = string.Empty;
+        public double Value { get; set; }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        InitializeFilters();
         await LoadCategoryName();
         await LoadBusinesses();
     }
@@ -219,6 +234,59 @@
     protected override async Task OnParametersSetAsync()
     {
         await LoadCategoryName();
+        await LoadBusinesses();
+    }
+
+    private void InitializeFilters()
+    {
+        // Load cities
+        cities = TurkishCityService.GetAllCities();
+
+        // Initialize rating options
+        ratingOptions = new List<RatingOption>
+        {
+            new RatingOption { Text = "⭐ 1+ Yıldız", Value = 1.0 },
+            new RatingOption { Text = "⭐⭐ 2+ Yıldız", Value = 2.0 },
+            new RatingOption { Text = "⭐⭐⭐ 3+ Yıldız", Value = 3.0 },
+            new RatingOption { Text = "⭐⭐⭐⭐ 4+ Yıldız", Value = 4.0 },
+            new RatingOption { Text = "⭐⭐⭐⭐⭐ 4.5+ Yıldız", Value = 4.5 }
+        };
+    }
+
+    private void OnCityChanged()
+    {
+        // Reset district when city changes
+        selectedDistrict = null;
+        
+        // Load districts for selected city
+        if (!string.IsNullOrEmpty(selectedCity))
+        {
+            districts = TurkishCityService.GetDistrictsByCity(selectedCity);
+        }
+        else
+        {
+            districts = new List<string>();
+        }
+        
+        StateHasChanged();
+    }
+
+    private bool HasActiveFilters()
+    {
+        return !string.IsNullOrWhiteSpace(searchTerm) ||
+               !string.IsNullOrEmpty(selectedCity) ||
+               !string.IsNullOrEmpty(selectedDistrict) ||
+               selectedRating.HasValue;
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = "";
+        selectedCity = null;
+        selectedDistrict = null;
+        selectedRating = null;
+        districts = new List<string>();
+        
         await LoadBusinesses();
     }
 
@@ -253,20 +321,39 @@
         StateHasChanged();
     }
 
-    private void OnSearchChanged(string value)
+    private async Task ApplyFilters()
     {
-        searchTerm = value ?? "";
-        if (string.IsNullOrWhiteSpace(searchTerm))
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await BusinessApiService.GetAllBusinessesAsync(
+            categoryId: CategoryId,
+            searchTerm: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+            city: selectedCity,
+            district: selectedDistrict,
+            minRating: selectedRating
+        );
+
+        if (response.Success)
         {
-            filteredBusinesses = businesses;
+            filteredBusinesses = response.Data ?? new List<BusinessDto>();
+            
+            if (filteredBusinesses.Count == 0)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Info, 
+                    "Bilgi", 
+                    "Seçilen filtrelere uygun işletme bulunamadı."
+                );
+            }
         }
         else
         {
-            filteredBusinesses = businesses.Where(b => 
-                b.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (!string.IsNullOrEmpty(b.Description) && b.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-            ).ToList();
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            filteredBusinesses = new List<BusinessDto>();
         }
+
+        isLoading = false;
         StateHasChanged();
     }
 
