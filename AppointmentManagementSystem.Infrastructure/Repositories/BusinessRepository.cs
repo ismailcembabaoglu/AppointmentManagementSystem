@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Domain.Entities;
+using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AppointmentManagementSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
         {
         }
 
-        public async Task<IEnumerable<Business>> GetAllWithDetailsAsync(int? categoryId = null, string? searchTerm = null)
+        public async Task<IEnumerable<Business>> GetAllWithDetailsAsync(int? categoryId = null, string? searchTerm = null, string? city = null, string? district = null)
         {
             var query = _dbSet
                 .Include(b => b.Category)
@@ -23,11 +23,17 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
 
             if (!string.IsNullOrEmpty(searchTerm))
                 query = query.Where(b => b.Name.Contains(searchTerm) ||
-                                       b.Description.Contains(searchTerm) ||
-                                       b.City.Contains(searchTerm));
+                                       (b.Description != null && b.Description.Contains(searchTerm)) ||
+                                       (b.City != null && b.City.Contains(searchTerm)));
+
+            if (!string.IsNullOrEmpty(city))
+                query = query.Where(b => b.City == city);
+
+            if (!string.IsNullOrEmpty(district))
+                query = query.Where(b => b.District == district);
 
             return await query
-                .Where(b => b.IsActive && !b.IsDeleted) // ISDELETED EKLENDİ
+                .Where(b => b.IsActive && !b.IsDeleted)
                 .ToListAsync();
         }
 
@@ -44,14 +50,14 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
             return await _dbSet
                 .Include(b => b.Category)
                 .Include(b => b.Photos)
-                .Where(b => b.CategoryId == categoryId && b.IsActive && !b.IsDeleted) // ISDELETED EKLENDİ
+                .Where(b => b.CategoryId == categoryId && b.IsActive && !b.IsDeleted)
                 .ToListAsync();
         }
 
         public async Task<double?> GetAverageRatingAsync(int businessId)
         {
             var appointments = await _context.Set<Appointment>()
-                .Where(a => a.BusinessId == businessId && a.Rating.HasValue && !a.IsDeleted) // ISDELETED EKLENDİ
+                .Where(a => a.BusinessId == businessId && a.Rating.HasValue && !a.IsDeleted)
                 .ToListAsync();
 
             if (!appointments.Any())

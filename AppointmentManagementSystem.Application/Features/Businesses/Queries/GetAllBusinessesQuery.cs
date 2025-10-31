@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using MediatR;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Queries
@@ -7,5 +7,8 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Queries
     {
         public int? CategoryId { get; set; }
         public string? SearchTerm { get; set; }
+        public string? City { get; set; }
+        public string? District { get; set; }
+        public double? MinRating { get; set; }
     }
 }
