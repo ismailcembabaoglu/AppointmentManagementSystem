@@ -15,6 +15,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         Task<ApiResponse<List<ServiceDto>>> GetServicesByBusinessAsync(int businessId);
         Task<ApiResponse<List<EmployeeDto>>> GetEmployeesByBusinessAsync(int businessId);
         Task<ApiResponse<List<AppointmentDto>>> GetAppointmentsByBusinessAsync(int businessId);
+        Task<ApiResponse<List<BusinessReviewDto>>> GetBusinessReviewsAsync(int businessId);
         Task<ApiResponse<BusinessDto>> CreateBusinessAsync(CreateBusinessDto createBusinessDto);
         Task<ApiResponse<BusinessDto?>> UpdateBusinessAsync(int id, CreateBusinessDto updateBusinessDto);
         Task<ApiResponse<bool>> DeleteBusinessAsync(int id);
