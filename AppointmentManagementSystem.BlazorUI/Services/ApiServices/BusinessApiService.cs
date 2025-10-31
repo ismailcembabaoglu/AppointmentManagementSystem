@@ -97,6 +97,19 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             }
         }
 
+        public async Task<ApiResponse<List<BusinessReviewDto>>> GetBusinessReviewsAsync(int businessId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/businesses/{businessId}/reviews");
+                return await HandleApiResponse<List<BusinessReviewDto>>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<BusinessReviewDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+        }
+
         public async Task<ApiResponse<BusinessDto>> CreateBusinessAsync(CreateBusinessDto createBusinessDto)
         {
             try
