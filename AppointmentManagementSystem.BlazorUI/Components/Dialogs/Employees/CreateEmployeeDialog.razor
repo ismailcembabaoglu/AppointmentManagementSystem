@@ -2,12 +2,11 @@
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
-@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Forms
 @inject IEmployeeApiService EmployeeApiService
 @inject IPhotoApiService PhotoApiService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
-@inject IJSRuntime JSRuntime
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 20px;">
     <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">@(isEdit ? "Çalışan Düzenle" : "Yeni Çalışan")</RadzenText>
