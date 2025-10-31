@@ -236,47 +236,64 @@ else if (business != null)
                             <!-- Rating Summary -->
                             <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="8px" AlignItems="AlignItems.Center">
-                                    <RadzenText TextStyle="TextStyle.DisplayH3" Style="margin: 0; font-weight: 700;">4.5</RadzenText>
-                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px">
-                                        @for (int i = 0; i < 5; i++)
-                                        {
-                                            <RadzenIcon Icon="star" Style="color: #fbbf24; font-size: 24px;" />
-                                        }
-                                    </RadzenStack>
+                                    <RadzenText TextStyle="TextStyle.DisplayH3" Style="margin: 0; font-weight: 700;">
+                                        @(business.AverageRating?.ToString("0.0") ?? "0.0")
+                                    </RadzenText>
+                                    <RadzenRating Value="@((int)Math.Round(business.AverageRating ?? 0))" ReadOnly="true" Stars="5" />
                                     <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                        124 değerlendirme
+                                        @business.TotalRatings değerlendirme
                                     </RadzenText>
                                 </RadzenStack>
                             </RadzenCard>
 
-                            <!-- Sample Reviews -->
-                            @for (int i = 0; i < 3; i++)
+                            <!-- Reviews List -->
+                            @if (reviews.Any())
                             {
-                                <RadzenCard>
-                                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
-                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
-                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                                                    <RadzenText TextStyle="TextStyle.Body1" Style="color: white; margin: 0; font-weight: 600;">A</RadzenText>
-                                                </div>
-                                                <RadzenStack Orientation="Orientation.Vertical" Gap="2px">
-                                                    <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">Ahmet Y.</RadzenText>
-                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px">
-                                                        @for (int j = 0; j < 5; j++)
+                                @foreach (var review in reviews)
+                                {
+                                    <RadzenCard>
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                                                <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                                        <RadzenText TextStyle="TextStyle.Body1" Style="color: white; margin: 0; font-weight: 600;">
+                                                            @review.CustomerName.Substring(0, 1).ToUpper()
+                                                        </RadzenText>
+                                                    </div>
+                                                    <RadzenStack Orientation="Orientation.Vertical" Gap="2px">
+                                                        <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">
+                                                            @review.CustomerName
+                                                        </RadzenText>
+                                                        <RadzenRating Value="@review.Rating" ReadOnly="true" Stars="5" />
+                                                        @if (!string.IsNullOrEmpty(review.ServiceName))
                                                         {
-                                                            <RadzenIcon Icon="star" Style="color: #fbbf24; font-size: 14px;" />
+                                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                                @review.ServiceName
+                                                            </RadzenText>
                                                         }
                                                     </RadzenStack>
                                                 </RadzenStack>
+                                                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                    @GetTimeAgo(review.RatingDate)
+                                                </RadzenText>
                                             </RadzenStack>
-                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                                2 gün önce
-                                            </RadzenText>
+                                            @if (!string.IsNullOrEmpty(review.Review))
+                                            {
+                                                <RadzenText TextStyle="TextStyle.Body2" Style="line-height: 1.6; margin: 0;">
+                                                    @review.Review
+                                                </RadzenText>
+                                            }
                                         </RadzenStack>
-                                        <RadzenText TextStyle="TextStyle.Body2" Style="line-height: 1.6; margin: 0;">
-                                            Çok memnun kaldım. Personel ilgili ve işini çok iyi yapıyor. Kesinlikle tavsiye ederim!
-                                        </RadzenText>
-                                    </RadzenStack>
+                                    </RadzenCard>
+                                }
+                            }
+                            else
+                            {
+                                <RadzenCard Style="padding: 40px; text-align: center;">
+                                    <RadzenIcon Icon="rate_review" Style="font-size: 48px; color: var(--rz-text-disabled-color); margin-bottom: 16px;" />
+                                    <RadzenText TextStyle="TextStyle.Body1" Style="color: var(--rz-text-secondary-color);">
+                                        Henüz değerlendirme yapılmamış
+                                    </RadzenText>
                                 </RadzenCard>
                             }
                         </RadzenStack>
