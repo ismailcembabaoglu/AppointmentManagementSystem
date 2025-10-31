@@ -103,12 +103,9 @@
 
     private CreateEmployeeDto employeeDto = new();
     private bool isSaving = false;
-    private double uploadProgress = 0;
     
-    // Photo handling
+    // Photo handling - base64 strings
     private List<string> selectedPhotos = new();
-    private List<string> selectedPhotoBase64 = new();
-    private List<string> uploadedPhotos = new();
     
     // Validation errors
     private string nameError = "";
@@ -142,55 +139,15 @@
                 BusinessId = employee.BusinessId,
                 IsActive = employee.IsActive
             };
-            
-            // Load existing photos
-            uploadedPhotos = employee.PhotoUrls ?? new List<string>();
         }
     }
 
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    private void HandlePhotosUploaded(List<UploadedFileModel> uploadedFiles)
     {
-        selectedPhotos.Clear();
-        selectedPhotoBase64.Clear();
-
-        var maxFileSize = 5 * 1024 * 1024; // 5MB
-        var maxFiles = 10;
-
-        if (e.FileCount > maxFiles)
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", $"En fazla {maxFiles} fotoğraf yükleyebilirsiniz.");
-            return;
-        }
-
-        foreach (var file in e.GetMultipleFiles(maxFiles))
-        {
-            try
-            {
-                if (file.Size > maxFileSize)
-                {
-                    NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", 
-                        $"{file.Name} dosyası çok büyük. Maksimum 5MB olmalıdır.");
-                    continue;
-                }
-
-                // Read file as base64
-                using var stream = file.OpenReadStream(maxFileSize);
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                var bytes = ms.ToArray();
-                var base64 = Convert.ToBase64String(bytes);
-                var dataUrl = $"data:{file.ContentType};base64,{base64}";
-                
-                selectedPhotos.Add(dataUrl);
-                selectedPhotoBase64.Add(base64);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Hata", 
-                    $"{file.Name} yüklenirken hata oluştu: {ex.Message}");
-            }
-        }
-
+        var base64Photos = uploadedFiles.Select(f => f.Base64Data).ToList();
+        selectedPhotos.AddRange(base64Photos);
+        NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
+            $"{uploadedFiles.Count} fotoğraf eklendi.");
         StateHasChanged();
     }
 
@@ -199,7 +156,6 @@
         if (index >= 0 && index < selectedPhotos.Count)
         {
             selectedPhotos.RemoveAt(index);
-            selectedPhotoBase64.RemoveAt(index);
             StateHasChanged();
         }
     }
@@ -210,7 +166,6 @@
             return;
 
         isSaving = true;
-        uploadProgress = 0;
         StateHasChanged();
 
         try
@@ -236,15 +191,9 @@
             var employeeId = isEdit ? EmployeeId : response.Data!.Id;
 
             // Upload photos if any selected
-            if (selectedPhotoBase64.Any())
+            if (selectedPhotos.Any())
             {
-                uploadProgress = 10;
-                StateHasChanged();
-
-                var totalPhotos = selectedPhotoBase64.Count;
-                var uploadedCount = 0;
-
-                foreach (var photoBase64 in selectedPhotoBase64)
+                foreach (var photoBase64 in selectedPhotos)
                 {
                     try
                     {
@@ -254,27 +203,17 @@
                             FileName = $"employee_{employeeId}_{Guid.NewGuid()}.jpg"
                         };
 
-                        var photoResponse = await PhotoApiService.UploadEmployeePhotoAsync(employeeId, photoDto);
-                        
-                        if (photoResponse.Success)
-                        {
-                            uploadedCount++;
-                            uploadProgress = 10 + (uploadedCount * 90.0 / totalPhotos);
-                            StateHasChanged();
-                        }
+                        await PhotoApiService.UploadEmployeePhotoAsync(employeeId, photoDto);
                     }
                     catch (Exception ex)
                     {
-                        NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", 
-                            $"Bir fotoğraf yüklenirken hata oluştu: {ex.Message}");
+                        // Sadece log, devam et
+                        Console.WriteLine($"Fotoğraf yükleme hatası: {ex.Message}");
                     }
                 }
-
-                if (uploadedCount > 0)
-                {
-                    NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
-                        $"{uploadedCount} fotoğraf yüklendi.");
-                }
+                
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
+                    $"{selectedPhotos.Count} fotoğraf yüklendi.");
             }
 
             NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
@@ -289,7 +228,6 @@
         finally
         {
             isSaving = false;
-            uploadProgress = 0;
             StateHasChanged();
         }
     }
