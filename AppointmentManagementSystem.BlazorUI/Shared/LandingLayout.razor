@@ -1,0 +1,93 @@
+@inherits LayoutComponentBase
+@using Radzen
+
+<RadzenLayout>
+    <!-- Transparent Header -->
+    <RadzenHeader Style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="padding: 16px 24px;">
+            <a href="/" style="text-decoration: none;">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                    <RadzenIcon Icon="event_available" Style="font-size: 32px; color: var(--rz-primary);" />
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 700; color: var(--rz-primary);">
+                        RandevuPro
+                    </RadzenText>
+                </RadzenStack>
+            </a>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" AlignItems="AlignItems.Center">
+                <a href="/categories" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500;">
+                    Kategoriler
+                </a>
+                <a href="/login" style="text-decoration: none;">
+                    <RadzenButton Text="Giriş Yap" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Medium" />
+                </a>
+                <a href="/register" style="text-decoration: none;">
+                    <RadzenButton Text="Kayıt Ol" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                </a>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <!-- Main Content -->
+    <RadzenBody Style="margin-top: 80px; min-height: calc(100vh - 80px);">
+        @Body
+    </RadzenBody>
+
+    <!-- Footer -->
+    <RadzenFooter Style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 48px 24px 24px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <RadzenRow Gap="32px">
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                            <RadzenIcon Icon="event_available" Style="font-size: 32px;" />
+                            <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 700;">
+                                RandevuPro
+                            </RadzenText>
+                        </RadzenStack>
+                        <RadzenText Style="color: rgba(255,255,255,0.8); line-height: 1.6;">
+                            Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin, müşterilerinize daha iyi hizmet verin.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenColumn>
+
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            Hızlı Bağlantılar
+                        </RadzenText>
+                        <a href="/categories" style="color: rgba(255,255,255,0.8); text-decoration: none;">Kategoriler</a>
+                        <a href="/register" style="color: rgba(255,255,255,0.8); text-decoration: none;">İşletme Kaydı</a>
+                        <a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none;">Giriş Yap</a>
+                    </RadzenStack>
+                </RadzenColumn>
+
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            İletişim
+                        </RadzenText>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="email" />
+                            <RadzenText Style="color: rgba(255,255,255,0.8); margin: 0;">
+                                info@randevupro.com
+                            </RadzenText>
+                        </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="phone" />
+                            <RadzenText Style="color: rgba(255,255,255,0.8); margin: 0;">
+                                0850 123 45 67
+                            </RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenDivider Style="margin: 32px 0; background: rgba(255,255,255,0.2);" />
+
+            <RadzenText Style="text-align: center; color: rgba(255,255,255,0.6); margin: 0;">
+                © 2025 RandevuPro. Tüm hakları saklıdır.
+            </RadzenText>
+        </div>
+    </RadzenFooter>
+</RadzenLayout>
