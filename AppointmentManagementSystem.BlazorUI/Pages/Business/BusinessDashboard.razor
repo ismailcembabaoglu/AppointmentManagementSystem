@@ -458,8 +458,7 @@ else
                 Phone = business.Phone,
                 Email = business.Email,
                 Website = business.Website,
-                CategoryId = business.CategoryId,
-                IsActive = business.IsActive
+                CategoryId = business.CategoryId
             };
 
             var response = await BusinessApiService.UpdateBusinessAsync(business.Id, updateDto);
