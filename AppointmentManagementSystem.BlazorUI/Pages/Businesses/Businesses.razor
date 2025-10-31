@@ -1,9 +1,10 @@
-﻿@page "/businesses"
+﻿@page "/businessess"
 @page "/categories/{categoryId:int}/businesses"
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Businesses
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Components.Authorization
 @using Radzen
 @inject IBusinessApiService BusinessApiService
 @inject ICategoryApiService CategoryApiService
