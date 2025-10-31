@@ -78,6 +78,15 @@ namespace AppointmentManagementSystem.API.Controllers
             return OkResponse(result, "İşletmeye ait randevular başarıyla getirildi.");
         }
 
+        [HttpGet("{id:int}/reviews")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetReviews(int id)
+        {
+            var query = new GetBusinessReviewsQuery { BusinessId = id };
+            var result = await _mediator.Send(query);
+            return OkResponse(result, "İşletmeye ait yorumlar başarıyla getirildi.");
+        }
+
         [HttpPost]
         [Authorize(Roles = "Business")]
         public async Task<IActionResult> Create([FromBody] CreateBusinessDto createBusinessDto)
