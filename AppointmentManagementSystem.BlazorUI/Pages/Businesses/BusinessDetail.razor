@@ -356,6 +356,7 @@ else
     private BusinessDto? business;
     private List<ServiceDto> services = new();
     private List<EmployeeDto> employees = new();
+    private List<BusinessReviewDto> reviews = new();
     private bool isLoading = true;
     private int selectedTabIndex = 0;
 
@@ -395,8 +396,33 @@ else
             employees = employeesResponse.Data ?? new List<EmployeeDto>();
         }
 
+        // Load reviews
+        var reviewsResponse = await BusinessApiService.GetBusinessReviewsAsync(BusinessId);
+        if (reviewsResponse.Success)
+        {
+            reviews = reviewsResponse.Data ?? new List<BusinessReviewDto>();
+        }
+
         isLoading = false;
         StateHasChanged();
+    }
+
+    private string GetTimeAgo(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+
+        if (timeSpan.TotalDays > 365)
+            return $"{(int)(timeSpan.TotalDays / 365)} yıl önce";
+        if (timeSpan.TotalDays > 30)
+            return $"{(int)(timeSpan.TotalDays / 30)} ay önce";
+        if (timeSpan.TotalDays > 1)
+            return $"{(int)timeSpan.TotalDays} gün önce";
+        if (timeSpan.TotalHours > 1)
+            return $"{(int)timeSpan.TotalHours} saat önce";
+        if (timeSpan.TotalMinutes > 1)
+            return $"{(int)timeSpan.TotalMinutes} dakika önce";
+        
+        return "Az önce";
     }
 
     private async Task CreateAppointment()
