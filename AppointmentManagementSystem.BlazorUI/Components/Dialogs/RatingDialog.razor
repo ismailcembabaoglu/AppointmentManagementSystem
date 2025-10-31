@@ -1,4 +1,7 @@
 @using Radzen
+@using Radzen.Blazor
+@inject NotificationService NotificationService
+@inject DialogService DialogService
 
 <div style="padding: 20px;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
@@ -6,15 +9,15 @@
             <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
                 Lütfen randevunuzu değerlendirin
             </RadzenText>
-            <RadzenRating @bind-Value="@Rating" Stars="5" />
-            @if (Rating > 0)
+            <RadzenRating @bind-Value="@localRating" Stars="5" Change="@OnRatingChange" />
+            @if (localRating > 0)
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="margin-top: 8px; color: var(--rz-success);">
-                    ✓ @Rating yıldız seçildi
+                    ✓ @localRating yıldız seçildi
                 </RadzenText>
             }
         </div>
-        <RadzenTextArea @bind-Value="@Review" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+        <RadzenTextArea @bind-Value="@localReview" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
             <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="@Cancel" />
             <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="@Submit" />
@@ -23,33 +26,34 @@
 </div>
 
 @code {
-    [Parameter]
-    public int Rating { get; set; } = 0;
-    
-    [Parameter]
-    public string Review { get; set; } = "";
-    
-    [Parameter]
-    public EventCallback OnCancel { get; set; }
-    
-    [Parameter]
-    public EventCallback<(int rating, string review)> OnSubmit { get; set; }
+    private int localRating = 0;
+    private string localReview = "";
 
-    private async Task Cancel()
+    protected override void OnInitialized()
     {
-        await OnCancel.InvokeAsync();
+        localRating = 0;
+        localReview = "";
     }
 
-    private async Task Submit()
+    private void OnRatingChange(int value)
     {
-        if (Rating == 0)
+        localRating = value;
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Submit()
+    {
+        if (localRating == 0)
         {
-            // Bu durumda parent'a bildirim göndereceğiz
-            await OnSubmit.InvokeAsync((0, Review));
+            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
+            return;
         }
-        else
-        {
-            await OnSubmit.InvokeAsync((Rating, Review));
-        }
+        
+        DialogService.Close((localRating, localReview));
     }
 }
