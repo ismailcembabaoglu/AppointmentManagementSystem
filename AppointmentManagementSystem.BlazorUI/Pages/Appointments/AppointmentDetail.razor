@@ -490,18 +490,24 @@
                         <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
                             Lütfen randevunuzu değerlendirin
                         </RadzenText>
-                        <RadzenRating Value="@ratingValue" Change="@(value => OnRatingChanged(value))" Stars="5" />
+                        <RadzenRating @bind-Value="@ratingValue" Stars="5" />
+                        @if (ratingValue > 0)
+                        {
+                            <RadzenText TextStyle="TextStyle.Caption" Style="margin-top: 8px; color: var(--rz-success);">
+                                @ratingValue yıldız seçildi
+                            </RadzenText>
+                        }
                     </div>
                     <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
                         <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="() => ds.Close(false)" />
-                        <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => ds.Close(true)" Disabled="@(ratingValue == 0)" />
+                        <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => OnSubmitRating(ds)" />
                     </RadzenStack>
                 </RadzenStack>
             </div>,
             new DialogOptions { Width = "500px", Height = "auto" });
 
-        if (result == true && ratingValue > 0)
+        if (result == true)
         {
             var ratingDto = new AddAppointmentRatingDto
             {
@@ -520,6 +526,16 @@
                 NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Değerlendirme kaydedilemedi.");
             }
         }
+    }
+
+    private void OnSubmitRating(DialogService dialogService)
+    {
+        if (ratingValue == 0)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
+            return;
+        }
+        dialogService.Close(true);
     }
 
     private void OnRatingChanged(int value)
