@@ -483,14 +483,12 @@
             null,
             new DialogOptions { Width = "500px", Height = "auto" });
 
-        if (result != null)
+        if (result is ValueTuple<int, string> ratingData)
         {
-            var ratingData = ((int rating, string review))result;
-
             var ratingDto = new AddAppointmentRatingDto
             {
-                Rating = ratingData.rating,
-                Review = ratingData.review
+                Rating = ratingData.Item1,
+                Review = ratingData.Item2
             };
 
             var response = await AppointmentApiService.AddAppointmentRatingAsync(Id, ratingDto);
