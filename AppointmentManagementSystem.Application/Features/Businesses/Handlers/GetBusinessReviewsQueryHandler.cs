@@ -1,26 +1,25 @@
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Features.Businesses.Queries;
+using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
-using AppointmentManagementSystem.Infrastructure.Data;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
     public class GetBusinessReviewsQueryHandler : IRequestHandler<GetBusinessReviewsQuery, List<BusinessReviewDto>>
     {
-        private readonly AppointmentDbContext _context;
+        private readonly IRepository<Appointment> _appointmentRepository;
 
-        public GetBusinessReviewsQueryHandler(AppointmentDbContext context)
+        public GetBusinessReviewsQueryHandler(IRepository<Appointment> appointmentRepository)
         {
-            _context = context;
+            _appointmentRepository = appointmentRepository;
         }
 
         public async Task<List<BusinessReviewDto>> Handle(GetBusinessReviewsQuery request, CancellationToken cancellationToken)
         {
-            var reviews = await _context.Set<Domain.Entities.Appointment>()
-                .Include(a => a.Customer)
-                .Include(a => a.Service)
+            var appointments = await _appointmentRepository.GetAllAsync();
+            
+            var reviews = appointments
                 .Where(a => a.BusinessId == request.BusinessId 
                     && a.Rating.HasValue 
                     && !a.IsDeleted
@@ -35,7 +34,7 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
                     RatingDate = a.RatingDate ?? a.UpdatedAt,
                     ServiceName = a.Service != null ? a.Service.Name : ""
                 })
-                .ToListAsync(cancellationToken);
+                .ToList();
 
             return reviews;
         }
