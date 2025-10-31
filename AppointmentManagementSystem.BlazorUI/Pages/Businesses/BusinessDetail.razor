@@ -278,7 +278,7 @@ else if (business != null)
                                                     </RadzenStack>
                                                 </RadzenStack>
                                                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                                    @GetTimeAgo(review.RatingDate)
+                                                    @(review.RatingDate.HasValue ? GetTimeAgo(review.RatingDate.Value) : "")
                                                 </RadzenText>
                                             </RadzenStack>
                                             @if (!string.IsNullOrEmpty(review.Review))
