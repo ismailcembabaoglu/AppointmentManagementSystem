@@ -1,0 +1,62 @@
+@page "/customer/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Customer")]
+@inject NavigationManager Navigation
+
+<PageTitle>Müşteri Paneli</PageTitle>
+
+<RadzenCard Style="max-width: 1200px; margin: 0 auto;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="32px">
+        <!-- Hero -->
+        <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+            <RadzenIcon Icon="account_circle" Style="font-size: 80px; margin-bottom: 16px;" />
+            <RadzenText TextStyle="TextStyle.DisplayH4" Style="color: white; margin: 0;">Hoş Geldiniz!</RadzenText>
+            <RadzenText TextStyle="TextStyle.H6" Style="color: rgba(255,255,255,0.9); margin-top: 8px;">Müşteri Paneliniz</RadzenText>
+        </div>
+
+        <!-- Quick Actions -->
+        <RadzenRow Gap="24px">
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenCard Style="height: 100%; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Navigation.NavigateTo("/categories"))">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="search" Style="color: white; font-size: 40px;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">İşletme Ara</RadzenText>
+                        <RadzenText Style="text-align: center; color: var(--rz-text-secondary-color);">
+                            İhtiyacınız olan hizmeti veren işletmeleri bulun
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenCard Style="height: 100%; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Navigation.NavigateTo("/appointments"))">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="event" Style="color: white; font-size: 40px;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">Randevularım</RadzenText>
+                        <RadzenText Style="text-align: center; color: var(--rz-text-secondary-color);">
+                            Geçmiş ve gelecek randevularınızı görüntüleyin
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenCard Style="height: 100%; cursor: pointer; transition: transform 0.2s;" @onclick="@(() => Navigation.NavigateTo("/profile"))">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="person" Style="color: white; font-size: 40px;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">Profilim</RadzenText>
+                        <RadzenText Style="text-align: center; color: var(--rz-text-secondary-color);">
+                            Profil bilgilerinizi düzenleyin
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenCard>
