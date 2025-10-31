@@ -37,12 +37,11 @@
             <RadzenLabel Text="Fotoğraflar" Style="margin-bottom: 8px; display: block;" />
             <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                 <!-- Upload Button -->
-                <RadzenFileInput @ref="fileInput" 
-                                Multiple="true" 
-                                Accept="image/*"
-                                Change="@OnFileSelected" 
-                                Style="width: 100%;"
-                                ChooseText="Fotoğraf Seç (Birden fazla seçebilirsiniz)" />
+                <InputFile OnChange="@OnFileSelected" 
+                          multiple 
+                          accept="image/*"
+                          class="radzen-file-input"
+                          style="width: 100%; padding: 8px; border: 1px solid var(--rz-border-color); border-radius: 4px; cursor: pointer;" />
                 
                 @if (uploadedPhotos.Any())
                 {
