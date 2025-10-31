@@ -480,22 +480,12 @@
     private async Task ShowRatingDialog()
     {
         var result = await DialogService.OpenAsync<RatingDialog>("Randevuyu Değerlendir",
-            new Dictionary<string, object>()
-            {
-                { "Rating", 0 },
-                { "Review", "" }
-            },
+            null,
             new DialogOptions { Width = "500px", Height = "auto" });
 
         if (result != null)
         {
             var ratingData = ((int rating, string review))result;
-            
-            if (ratingData.rating == 0)
-            {
-                NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
-                return;
-            }
 
             var ratingDto = new AddAppointmentRatingDto
             {
