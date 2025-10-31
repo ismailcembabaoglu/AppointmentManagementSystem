@@ -1,11 +1,16 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 
 namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
 {
     public interface IBusinessApiService
     {
-        Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(int? categoryId = null, string? searchTerm = null);
+        Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
+            int? categoryId = null, 
+            string? searchTerm = null,
+            string? city = null,
+            string? district = null,
+            double? minRating = null);
         Task<ApiResponse<BusinessDto?>> GetBusinessByIdAsync(int id);
         Task<ApiResponse<List<ServiceDto>>> GetServicesByBusinessAsync(int businessId);
         Task<ApiResponse<List<EmployeeDto>>> GetEmployeesByBusinessAsync(int businessId);

@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
@@ -12,16 +12,29 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(int? categoryId = null, string? searchTerm = null)
+        public async Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
+            int? categoryId = null, 
+            string? searchTerm = null,
+            string? city = null,
+            string? district = null,
+            double? minRating = null)
         {
             try
             {
-                var queryString = "";
+                var queryParams = new List<string>();
+                
                 if (categoryId.HasValue)
-                    queryString += $"?categoryId={categoryId.Value}";
+                    queryParams.Add($"categoryId={categoryId.Value}");
                 if (!string.IsNullOrEmpty(searchTerm))
-                    queryString += string.IsNullOrEmpty(queryString) ? $"?search={searchTerm}" : $"&search={searchTerm}";
+                    queryParams.Add($"search={Uri.EscapeDataString(searchTerm)}");
+                if (!string.IsNullOrEmpty(city))
+                    queryParams.Add($"city={Uri.EscapeDataString(city)}");
+                if (!string.IsNullOrEmpty(district))
+                    queryParams.Add($"district={Uri.EscapeDataString(district)}");
+                if (minRating.HasValue)
+                    queryParams.Add($"minRating={minRating.Value}");
 
+                var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
                 var response = await _httpClient.GetAsync($"api/businesses{queryString}");
                 return await HandleApiResponse<List<BusinessDto>>(response);
             }

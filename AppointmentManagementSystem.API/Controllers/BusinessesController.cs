@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.API.Controllers;
+using AppointmentManagementSystem.API.Controllers;
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Features.Businesses.Commands;
 using AppointmentManagementSystem.Application.Features.Businesses.Queries;
@@ -19,12 +19,20 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll([FromQuery] int? categoryId = null, [FromQuery] string? search = null)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int? categoryId = null, 
+            [FromQuery] string? search = null,
+            [FromQuery] string? city = null,
+            [FromQuery] string? district = null,
+            [FromQuery] double? minRating = null)
         {
             var query = new GetAllBusinessesQuery
             {
                 CategoryId = categoryId,
-                SearchTerm = search
+                SearchTerm = search,
+                City = city,
+                District = district,
+                MinRating = minRating
             };
             var result = await _mediator.Send(query);
             return OkResponse(result, "İşletmeler başarıyla getirildi.");
