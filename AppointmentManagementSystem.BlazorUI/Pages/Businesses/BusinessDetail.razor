@@ -50,8 +50,12 @@ else if (business != null)
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" AlignItems="AlignItems.Center" Style="margin-top: 8px;">
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
                         <RadzenIcon Icon="star" Style="color: #fbbf24; font-size: 20px;" />
-                        <RadzenText TextStyle="TextStyle.H6" Style="color: white; margin: 0; font-weight: 600;">4.5</RadzenText>
-                        <RadzenText TextStyle="TextStyle.Body2" Style="color: rgba(255,255,255,0.9); margin: 0;">(124)</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H6" Style="color: white; margin: 0; font-weight: 600;">
+                            @(business.AverageRating?.ToString("0.0") ?? "0.0")
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: rgba(255,255,255,0.9); margin: 0;">
+                            (@business.TotalRatings)
+                        </RadzenText>
                     </RadzenStack>
                     @if (!string.IsNullOrEmpty(business.City))
                     {
