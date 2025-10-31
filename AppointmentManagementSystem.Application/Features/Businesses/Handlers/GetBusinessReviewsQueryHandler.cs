@@ -8,20 +8,19 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
     public class GetBusinessReviewsQueryHandler : IRequestHandler<GetBusinessReviewsQuery, List<BusinessReviewDto>>
     {
-        private readonly IRepository<Appointment> _appointmentRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
 
-        public GetBusinessReviewsQueryHandler(IRepository<Appointment> appointmentRepository)
+        public GetBusinessReviewsQueryHandler(IAppointmentRepository appointmentRepository)
         {
             _appointmentRepository = appointmentRepository;
         }
 
         public async Task<List<BusinessReviewDto>> Handle(GetBusinessReviewsQuery request, CancellationToken cancellationToken)
         {
-            var appointments = await _appointmentRepository.GetAllAsync();
+            var appointments = await _appointmentRepository.GetAllWithDetailsAsync(businessId: request.BusinessId);
             
             var reviews = appointments
-                .Where(a => a.BusinessId == request.BusinessId 
-                    && a.Rating.HasValue 
+                .Where(a => a.Rating.HasValue 
                     && !a.IsDeleted
                     && a.Status == "Completed")
                 .OrderByDescending(a => a.RatingDate)
