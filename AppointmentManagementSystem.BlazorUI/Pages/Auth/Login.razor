@@ -82,6 +82,7 @@
             {
                 await customProvider.MarkUserAsAuthenticated(response.Data.Token);
             }
+            
             NotificationService.Notify(new NotificationMessage()
             {
                 Severity = NotificationSeverity.Success,
@@ -89,7 +90,27 @@
                 Detail = response.Message,
                 Duration = 4000
             });
-            Navigation.NavigateTo("/dashboard");
+            
+            // Role-based yönlendirme
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            
+            if (user.IsInRole("Business"))
+            {
+                Navigation.NavigateTo("/business/dashboard", true);
+            }
+            else if (user.IsInRole("Customer"))
+            {
+                Navigation.NavigateTo("/customer/dashboard", true);
+            }
+            else if (user.IsInRole("Admin"))
+            {
+                Navigation.NavigateTo("/admin/dashboard", true);
+            }
+            else
+            {
+                Navigation.NavigateTo("/dashboard", true);
+            }
         }
         else
         {
