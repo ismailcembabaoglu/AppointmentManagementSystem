@@ -1,4 +1,4 @@
-@page "/businesses/categorys/{CategoryId:int}"
+@page "/businesses/category/{categoryId:int}"
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
@@ -208,6 +208,6 @@
 
     private void NavigateToDetail(int businessId)
     {
-        Navigation.NavigateTo($"/business/{businessId}");
+        Navigation.NavigateTo($"/businesses/{businessId}");
     }
 }
