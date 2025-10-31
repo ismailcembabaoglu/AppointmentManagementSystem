@@ -165,10 +165,10 @@
                                 <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
                                     <RadzenIcon Icon="star" Style="font-size: 16px; color: #fbbf24;" />
                                     <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
-                                        4.5
+                                        @(business.AverageRating?.ToString("F1") ?? "0.0")
                                     </RadzenText>
                                     <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                        (124 değerlendirme)
+                                        (@business.TotalRatings değerlendirme)
                                     </RadzenText>
                                 </RadzenStack>
                             </RadzenStack>
