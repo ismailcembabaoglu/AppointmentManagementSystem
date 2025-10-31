@@ -1,0 +1,302 @@
+@page "/businessd/{BusinessId:int}"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject IServiceApiService ServiceApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject IAppointmentApiService AppointmentApiService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>@business?.Name</PageTitle>
+
+@if (isLoading)
+{
+    <RadzenCard Style="min-height: 600px; display: flex; align-items: center; justify-content: center;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+            <RadzenText TextStyle="TextStyle.H6">Yükleniyor...</RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+}
+else if (business == null)
+{
+    <RadzenCard>
+        <RadzenAlert AlertStyle="AlertStyle.Warning">İşletme bulunamadı.</RadzenAlert>
+    </RadzenCard>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px;">
+        <!-- Business Header -->
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap" Gap="20px">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="20px" Style="flex: 1;">
+                    @if (business.PhotoUrls != null && business.PhotoUrls.Any())
+                    {
+                        <img src="@business.PhotoUrls.First()" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover;" alt="@business.Name" />
+                    }
+                    else
+                    {
+                        <div style="width: 120px; height: 120px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenText TextStyle="TextStyle.DisplayH2" Style="color: white; margin: 0;">@business.Name.Substring(0, 1).ToUpper()</RadzenText>
+                        </div>
+                    }
+                    
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                        <RadzenText TextStyle="TextStyle.H3" Style="margin: 0; font-weight: 700;">@business.Name</RadzenText>
+                        <RadzenBadge Text="@business.CategoryName" BadgeStyle="BadgeStyle.Info" />
+                        
+                        @if (!string.IsNullOrEmpty(business.City))
+                        {
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                <RadzenIcon Icon="location_on" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                    @business.City, @business.District
+                                </RadzenText>
+                            </RadzenStack>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(business.Phone))
+                        {
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                <RadzenIcon Icon="phone" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">@business.Phone</RadzenText>
+                            </RadzenStack>
+                        }
+                        
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="star" Style="font-size: 20px; color: #fbbf24;" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">4.5</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">(124 değerlendirme)</RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenStack>
+                
+                <RadzenButton Text="Geri" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@(() => Navigation.NavigateTo("/businesses"))" />
+            </RadzenStack>
+        </RadzenCard>
+
+        <RadzenRow Gap="20px">
+            <!-- Left: Business Info -->
+            <RadzenColumn Size="12" SizeLG="8">
+                @if (!string.IsNullOrEmpty(business.Description))
+                {
+                    <RadzenCard Style="margin-bottom: 20px;">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 12px 0; font-weight: 600;">Hakkında</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body1" Style="margin: 0;">@business.Description</RadzenText>
+                    </RadzenCard>
+                }
+
+                <!-- Services -->
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 16px 0; font-weight: 600;">Hizmetler</RadzenText>
+                    @if (services.Any())
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            @foreach (var service in services)
+                            {
+                                <RadzenCard Style="background: #f8f9fa;">
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                            <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">@service.Name</RadzenText>
+                                            @if (!string.IsNullOrEmpty(service.Description))
+                                            {
+                                                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">@service.Description</RadzenText>
+                                            }
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px">
+                                                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                    <RadzenIcon Icon="schedule" Style="font-size: 14px;" /> @service.DurationMinutes dk
+                                                </RadzenText>
+                                                @if (service.Price.HasValue)
+                                                {
+                                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-success); margin: 0; font-weight: 600;">
+                                                        @service.Price.Value.ToString("C")
+                                                    </RadzenText>
+                                                }
+                                            </RadzenStack>
+                                        </RadzenStack>
+                                    </RadzenStack>
+                                </RadzenCard>
+                            }
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">Henüz hizmet eklenmemiş</RadzenText>
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+
+            <!-- Right: Booking Form -->
+            <RadzenColumn Size="12" SizeLG="4">
+                <RadzenCard Style="position: sticky; top: 20px;">
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📅 Randevu Al</RadzenText>
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                        <div>
+                            <RadzenLabel Text="Hizmet Seçin *" />
+                            <RadzenDropDown @bind-Value="selectedServiceId" Data="@services" TextProperty="Name" ValueProperty="Id" 
+                                          Placeholder="Hizmet seçin" Style="width: 100%;" Change="@(args => OnServiceChanged())" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Çalışan Seçin *" />
+                            <RadzenDropDown @bind-Value="selectedEmployeeId" Data="@employees" TextProperty="Name" ValueProperty="Id" 
+                                          Placeholder="Çalışan seçin" Style="width: 100%;" Disabled="@(!selectedServiceId.HasValue)" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Tarih Seçin *" />
+                            <RadzenDatePicker @bind-Value="selectedDate" DateFormat="dd/MM/yyyy" 
+                                            Style="width: 100%;" Min="@DateTime.Today" Disabled="@(!selectedEmployeeId.HasValue)" 
+                                            Change="@(args => LoadAvailableTimeSlots())" />
+                        </div>
+
+                        @if (availableTimeSlots.Any())
+                        {
+                            <div>
+                                <RadzenLabel Text="Saat Seçin *" />
+                                <div class="time-slots-grid">
+                                    @foreach (var slot in availableTimeSlots)
+                                    {
+                                        <RadzenButton Text="@slot" ButtonStyle="@(selectedTime == slot ? ButtonStyle.Primary : ButtonStyle.Light)" 
+                                                    Click="@(() => selectedTime = slot)" Style="width: 100%;" />
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div>
+                            <RadzenLabel Text="Notunuz (İsteğe Bağlı)" />
+                            <RadzenTextArea @bind-Value="notes" Rows="3" Placeholder="Özel bir isteğiniz var mı?" Style="width: 100%;" />
+                        </div>
+
+                        <RadzenButton Text="Randevu Oluştur" Icon="event" ButtonStyle="ButtonStyle.Success" 
+                                    Click="CreateAppointment" Disabled="@(!CanCreateAppointment())" Style="width: 100%; font-weight: 600;" Size="ButtonSize.Large" />
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+}
+
+<style>
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        .time-slots-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private BusinessDto? business;
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private List<string> availableTimeSlots = new();
+    private bool isLoading = true;
+
+    // Booking form
+    private int? selectedServiceId;
+    private int? selectedEmployeeId;
+    private DateTime? selectedDate;
+    private string? selectedTime;
+    private string notes = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinessDetails();
+        await LoadServices();
+        isLoading = false;
+    }
+
+    private async Task LoadBusinessDetails()
+    {
+        var response = await BusinessApiService.GetBusinessByIdAsync(BusinessId);
+        if (response.Success)
+        {
+            business = response.Data;
+        }
+    }
+
+    private async Task LoadServices()
+    {
+        var response = await ServiceApiService.GetAllServicesAsync(BusinessId);
+        if (response.Success)
+        {
+            services = (response.Data ?? new List<ServiceDto>()).Where(s => s.IsActive).ToList();
+        }
+    }
+
+    private async Task OnServiceChanged()
+    {
+        if (selectedServiceId.HasValue)
+        {
+            var response = await EmployeeApiService.GetAllEmployeesAsync(BusinessId);
+            if (response.Success)
+            {
+                employees = (response.Data ?? new List<EmployeeDto>()).Where(e => e.IsActive).ToList();
+            }
+        }
+    }
+
+    private void LoadAvailableTimeSlots()
+    {
+        availableTimeSlots = new List<string>
+        {
+            "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+            "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+            "16:00", "16:30", "17:00", "17:30", "18:00"
+        };
+    }
+
+    private bool CanCreateAppointment()
+    {
+        return selectedServiceId.HasValue && 
+               selectedEmployeeId.HasValue && 
+               selectedDate.HasValue && 
+               !string.IsNullOrEmpty(selectedTime);
+    }
+
+    private async Task CreateAppointment()
+    {
+        if (!CanCreateAppointment()) return;
+
+        var timeParts = selectedTime!.Split(':');
+        var startTime = new TimeSpan(int.Parse(timeParts[0]), int.Parse(timeParts[1]), 0);
+
+        var createDto = new CreateAppointmentDto
+        {
+            BusinessId = BusinessId,
+            ServiceId = selectedServiceId!.Value,
+            EmployeeId = selectedEmployeeId!.Value,
+            AppointmentDate = selectedDate!.Value,
+            StartTime = startTime,
+            Notes = notes
+        };
+
+        var response = await AppointmentApiService.CreateAppointmentAsync(createDto);
+        if (response.Success)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevunuz oluşturuldu!");
+            Navigation.NavigateTo("/appointments");
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+        }
+    }
+}
