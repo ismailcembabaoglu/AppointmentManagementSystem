@@ -6,7 +6,7 @@ namespace AppointmentManagementSystem.Application.DTOs
         public string CustomerName { get; set; } = string.Empty;
         public int Rating { get; set; }
         public string? Review { get; set; }
-        public DateTime RatingDate { get; set; }
+        public DateTime? RatingDate { get; set; }
         public string ServiceName { get; set; } = string.Empty;
     }
 }
