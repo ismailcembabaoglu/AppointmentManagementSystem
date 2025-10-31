@@ -1,0 +1,592 @@
+@page "/business/dashboard"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Services
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Employees
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@attribute [Authorize(Roles = "Business")]
+@inject IBusinessApiService BusinessApiService
+@inject IServiceApiService ServiceApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject IPhotoApiService PhotoApiService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>İşletme Yönetimi</PageTitle>
+
+@if (isLoading)
+{
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 40px;">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+        <RadzenText TextStyle="TextStyle.H6">Yükleniyor...</RadzenText>
+    </RadzenStack>
+}
+else if (business == null)
+{
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+            <RadzenText TextStyle="TextStyle.H6">İşletme Bulunamadı</RadzenText>
+            <RadzenText>Bu hesaba bağlı bir işletme bulunamadı. Lütfen destek ekibi ile iletişime geçin.</RadzenText>
+        </RadzenStack>
+    </RadzenAlert>
+}
+else
+{
+    <!-- Hero Section with Business Photo -->
+    <RadzenCard Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 24px; padding: 0; overflow: hidden;">
+        <RadzenRow Gap="0">
+            <RadzenColumn Size="12" SizeMD="4" Style="min-height: 250px;">
+                @if (!string.IsNullOrEmpty(business.PhotoUrl))
+                {
+                    <div style="width: 100%; height: 100%; min-height: 250px; background-image: url('@business.PhotoUrl'); background-size: cover; background-position: center;"></div>
+                }
+                else
+                {
+                    <div style="width: 100%; height: 100%; min-height: 250px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                        <RadzenIcon Icon="business" Style="font-size: 120px; color: rgba(255,255,255,0.5);" />
+                    </div>
+                }
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="8">
+                <div style="padding: 32px;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                        <RadzenText TextStyle="TextStyle.DisplayH4" Style="color: white; margin: 0; font-weight: 700;">
+                            @business.Name
+                        </RadzenText>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" Wrap="FlexWrap.Wrap">
+                            <RadzenBadge Text="@business.CategoryName" BadgeStyle="BadgeStyle.Light" Style="font-size: 14px;" />
+                            @if (business.AverageRating.HasValue && business.AverageRating > 0)
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="star" Style="color: #fbbf24;" />
+                                    <RadzenText Style="color: white; font-weight: 600; margin: 0;">
+                                        @business.AverageRating.Value.ToString("0.0")
+                                    </RadzenText>
+                                    <RadzenText Style="color: rgba(255,255,255,0.8); margin: 0;">
+                                        (@business.TotalRatings değerlendirme)
+                                    </RadzenText>
+                                </RadzenStack>
+                            }
+                        </RadzenStack>
+                        @if (!string.IsNullOrEmpty(business.Description))
+                        {
+                            <RadzenText Style="color: rgba(255,255,255,0.9); line-height: 1.6; margin: 0;">
+                                @business.Description
+                            </RadzenText>
+                        }
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap" Style="margin-top: 8px;">
+                            @if (!string.IsNullOrEmpty(business.City))
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="location_on" Style="color: rgba(255,255,255,0.8);" />
+                                    <RadzenText Style="color: rgba(255,255,255,0.9); margin: 0;">@business.City, @business.District</RadzenText>
+                                </RadzenStack>
+                            }
+                            @if (!string.IsNullOrEmpty(business.Phone))
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="phone" Style="color: rgba(255,255,255,0.8);" />
+                                    <RadzenText Style="color: rgba(255,255,255,0.9); margin: 0;">@business.Phone</RadzenText>
+                                </RadzenStack>
+                            }
+                        </RadzenStack>
+                    </RadzenStack>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+
+    <!-- Tabs -->
+    <RadzenTabs @bind-SelectedIndex="selectedTabIndex" RenderMode="TabRenderMode.Client">
+        <Tabs>
+            <!-- Genel Bilgiler Tab -->
+            <RadzenTabsItem Text="Genel Bilgiler" Icon="info">
+                <RadzenCard Style="margin-top: 16px;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                        <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">İşletme Bilgileri</RadzenText>
+
+                        <RadzenRow Gap="16px">
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="İşletme Adı" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.Name" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="Kategori" Style="width: 100%;">
+                                    <RadzenTextBox Value="@business.CategoryName" ReadOnly="true" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenFormField Text="Açıklama" Style="width: 100%;">
+                            <RadzenTextArea @bind-Value="business.Description" Rows="4" Style="width: 100%;" />
+                        </RadzenFormField>
+
+                        <RadzenRow Gap="16px">
+                            <RadzenColumn Size="12" SizeMD="6">
+                                <RadzenFormField Text="Adres" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.Address" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="Şehir" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.City" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="3">
+                                <RadzenFormField Text="İlçe" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.District" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenRow Gap="16px">
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenFormField Text="Telefon" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.Phone" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenFormField Text="E-posta" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.Email" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenFormField Text="Web Sitesi" Style="width: 100%;">
+                                    <RadzenTextBox @bind-Value="business.Website" Style="width: 100%;" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        </RadzenRow>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
+                            <RadzenButton Text="Değişiklikleri Kaydet" ButtonStyle="ButtonStyle.Primary" Click="@SaveBusinessInfo" Icon="save" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenTabsItem>
+
+            <!-- Hizmetler Tab -->
+            <RadzenTabsItem Text="Hizmetler" Icon="build">
+                <RadzenCard Style="margin-top: 16px;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                            <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Hizmetler (@services.Count)</RadzenText>
+                            <RadzenButton Text="Yeni Hizmet" Icon="add" ButtonStyle="ButtonStyle.Success" Click="@AddService" />
+                        </RadzenStack>
+
+                        @if (services.Any())
+                        {
+                            <RadzenDataGrid Data="@services" TItem="ServiceDto" AllowPaging="true" PageSize="10" PagerHorizontalAlign="HorizontalAlign.Center">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="ServiceDto" Property="Name" Title="Hizmet Adı" Width="200px" />
+                                    <RadzenDataGridColumn TItem="ServiceDto" Property="Description" Title="Açıklama" />
+                                    <RadzenDataGridColumn TItem="ServiceDto" Property="Price" Title="Fiyat" Width="120px">
+                                        <Template Context="service">
+                                            @(service.Price.HasValue ? service.Price.Value.ToString("C") : "-")
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="ServiceDto" Property="DurationMinutes" Title="Süre (dk)" Width="100px" />
+                                    <RadzenDataGridColumn TItem="ServiceDto" Property="IsActive" Title="Durum" Width="100px">
+                                        <Template Context="service">
+                                            <RadzenBadge Text="@(service.IsActive ? "Aktif" : "Pasif")" 
+                                                        BadgeStyle="@(service.IsActive ? BadgeStyle.Success : BadgeStyle.Secondary)" />
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="ServiceDto" Title="İşlemler" Width="150px">
+                                        <Template Context="service">
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+                                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" 
+                                                            Click="@(() => EditService(service))" />
+                                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                                            Click="@(() => DeleteService(service))" />
+                                            </RadzenStack>
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        }
+                        else
+                        {
+                            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                                Henüz hizmet eklenmedi. "Yeni Hizmet" butonuna tıklayarak hizmet ekleyin.
+                            </RadzenAlert>
+                        }
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenTabsItem>
+
+            <!-- Çalışanlar Tab -->
+            <RadzenTabsItem Text="Çalışanlar" Icon="people">
+                <RadzenCard Style="margin-top: 16px;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                            <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Çalışanlar (@employees.Count)</RadzenText>
+                            <RadzenButton Text="Yeni Çalışan" Icon="add" ButtonStyle="ButtonStyle.Success" Click="@AddEmployee" />
+                        </RadzenStack>
+
+                        @if (employees.Any())
+                        {
+                            <RadzenRow Gap="16px">
+                                @foreach (var employee in employees)
+                                {
+                                    <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+                                        <RadzenCard Style="height: 100%;">
+                                            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                                @if (employee.PhotoUrls != null && employee.PhotoUrls.Any())
+                                                {
+                                                    <div style="width: 100%; height: 200px; overflow: hidden; border-radius: 8px;">
+                                                        <img src="@employee.PhotoUrls.First()" alt="@employee.Name" 
+                                                            style="width: 100%; height: 100%; object-fit: cover;" />
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                        <RadzenIcon Icon="person" Style="font-size: 80px; color: white;" />
+                                                    </div>
+                                                }
+                                                
+                                                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                        @employee.Name
+                                                    </RadzenText>
+                                                    
+                                                    @if (!string.IsNullOrEmpty(employee.Specialization))
+                                                    {
+                                                        <RadzenBadge Text="@employee.Specialization" BadgeStyle="BadgeStyle.Info" />
+                                                    }
+                                                    
+                                                    @if (!string.IsNullOrEmpty(employee.Description))
+                                                    {
+                                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                            @employee.Description
+                                                        </RadzenText>
+                                                    }
+                                                    
+                                                    @if (employee.PhotoUrls != null && employee.PhotoUrls.Count > 1)
+                                                    {
+                                                        <RadzenText TextStyle="TextStyle.Caption">
+                                                            📷 @employee.PhotoUrls.Count fotoğraf
+                                                        </RadzenText>
+                                                    }
+                                                    
+                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px">
+                                                        <RadzenBadge Text="@(employee.IsActive ? "Aktif" : "Pasif")" 
+                                                                    BadgeStyle="@(employee.IsActive ? BadgeStyle.Success : BadgeStyle.Secondary)" />
+                                                    </RadzenStack>
+                                                </RadzenStack>
+                                                
+                                                <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Style="margin-top: auto;">
+                                                    <RadzenButton Text="Düzenle" Icon="edit" ButtonStyle="ButtonStyle.Light" 
+                                                                Size="ButtonSize.Small" Click="@(() => EditEmployee(employee))" Style="flex: 1;" />
+                                                    <RadzenButton Text="Sil" Icon="delete" ButtonStyle="ButtonStyle.Danger" 
+                                                                Size="ButtonSize.Small" Click="@(() => DeleteEmployee(employee))" Style="flex: 1;" />
+                                                </RadzenStack>
+                                            </RadzenStack>
+                                        </RadzenCard>
+                                    </RadzenColumn>
+                                }
+                            </RadzenRow>
+                        }
+                        else
+                        {
+                            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                                Henüz çalışan eklenmedi. "Yeni Çalışan" butonuna tıklayarak çalışan ekleyebilirsiniz.
+                            </RadzenAlert>
+                        }
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenTabsItem>
+
+            <!-- Yorumlar Tab -->
+            <RadzenTabsItem Text="Yorumlar" Icon="rate_review">
+                <RadzenCard Style="margin-top: 16px;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                        <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">Müşteri Yorumları</RadzenText>
+
+                        <!-- Rating Summary -->
+                        <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="8px" AlignItems="AlignItems.Center">
+                                <RadzenText TextStyle="TextStyle.DisplayH3" Style="margin: 0; font-weight: 700;">
+                                    @(business.AverageRating?.ToString("0.0") ?? "0.0")
+                                </RadzenText>
+                                <RadzenRating Value="@((int)Math.Round(business.AverageRating ?? 0))" ReadOnly="true" Stars="5" />
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                    @business.TotalRatings değerlendirme
+                                </RadzenText>
+                            </RadzenStack>
+                        </RadzenCard>
+
+                        @if (reviews.Any())
+                        {
+                            @foreach (var review in reviews)
+                            {
+                                <RadzenCard>
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                                    <RadzenText TextStyle="TextStyle.Body1" Style="color: white; margin: 0; font-weight: 600;">
+                                                        @review.CustomerName.Substring(0, 1).ToUpper()
+                                                    </RadzenText>
+                                                </div>
+                                                <RadzenStack Orientation="Orientation.Vertical" Gap="2px">
+                                                    <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">
+                                                        @review.CustomerName
+                                                    </RadzenText>
+                                                    <RadzenRating Value="@review.Rating" ReadOnly="true" Stars="5" />
+                                                    @if (!string.IsNullOrEmpty(review.ServiceName))
+                                                    {
+                                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                            @review.ServiceName
+                                                        </RadzenText>
+                                                    }
+                                                </RadzenStack>
+                                            </RadzenStack>
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                                @(review.RatingDate.HasValue ? GetTimeAgo(review.RatingDate.Value) : "")
+                                            </RadzenText>
+                                        </RadzenStack>
+                                        @if (!string.IsNullOrEmpty(review.Review))
+                                        {
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="line-height: 1.6; margin: 0;">
+                                                @review.Review
+                                            </RadzenText>
+                                        }
+                                    </RadzenStack>
+                                </RadzenCard>
+                            }
+                        }
+                        else
+                        {
+                            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                                Henüz müşteri yorumu bulunmamaktadır.
+                            </RadzenAlert>
+                        }
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+}
+
+@code {
+    private BusinessDto? business;
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private List<BusinessReviewDto> reviews = new();
+    private bool isLoading = true;
+    private int selectedTabIndex = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinessData();
+    }
+
+    private async Task LoadBusinessData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Get current user's business
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var businessIdClaim = user.FindFirst("BusinessId") ?? user.FindFirst("businessId");
+
+            if (businessIdClaim != null && int.TryParse(businessIdClaim.Value, out var businessId))
+            {
+                // Load business
+                var businessResponse = await BusinessApiService.GetBusinessByIdAsync(businessId);
+                if (businessResponse.Success && businessResponse.Data != null)
+                {
+                    business = businessResponse.Data;
+                }
+
+                // Load services
+                var servicesResponse = await ServiceApiService.GetAllServicesAsync(businessId);
+                if (servicesResponse.Success)
+                {
+                    services = servicesResponse.Data ?? new List<ServiceDto>();
+                }
+
+                // Load employees
+                var employeesResponse = await EmployeeApiService.GetAllEmployeesAsync(businessId);
+                if (employeesResponse.Success)
+                {
+                    employees = employeesResponse.Data ?? new List<EmployeeDto>();
+                }
+
+                // Load reviews
+                var reviewsResponse = await BusinessApiService.GetBusinessReviewsAsync(businessId);
+                if (reviewsResponse.Success)
+                {
+                    reviews = reviewsResponse.Data ?? new List<BusinessReviewDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Veri yüklenirken hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveBusinessInfo()
+    {
+        if (business == null) return;
+
+        try
+        {
+            var updateDto = new CreateBusinessDto
+            {
+                Name = business.Name,
+                Description = business.Description,
+                Address = business.Address,
+                City = business.City,
+                District = business.District,
+                Phone = business.Phone,
+                Email = business.Email,
+                Website = business.Website,
+                CategoryId = business.CategoryId,
+                IsActive = business.IsActive
+            };
+
+            var response = await BusinessApiService.UpdateBusinessAsync(business.Id, updateDto);
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme bilgileri güncellendi.");
+                await LoadBusinessData();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Kaydetme hatası: {ex.Message}");
+        }
+    }
+
+    private async Task AddService()
+    {
+        if (business == null) return;
+
+        var result = await DialogService.OpenAsync<CreateServiceDialog>("Yeni Hizmet",
+            new Dictionary<string, object> { { "PreselectedBusinessId", business.Id } },
+            new DialogOptions { Width = "600px" });
+
+        if (result is true)
+        {
+            await LoadBusinessData();
+        }
+    }
+
+    private async Task EditService(ServiceDto service)
+    {
+        var result = await DialogService.OpenAsync<CreateServiceDialog>("Hizmet Düzenle",
+            new Dictionary<string, object> { { "isEdit", true }, { "ServiceId", service.Id }, { "PreselectedBusinessId", business!.Id } },
+            new DialogOptions { Width = "600px" });
+
+        if (result is true)
+        {
+            await LoadBusinessData();
+        }
+    }
+
+    private async Task DeleteService(ServiceDto service)
+    {
+        var confirmed = await DialogService.Confirm($"{service.Name} hizmetini silmek istediğinize emin misiniz?", "Hizmeti Sil",
+            new ConfirmOptions { OkButtonText = "Evet, Sil", CancelButtonText = "İptal" });
+
+        if (confirmed == true)
+        {
+            var response = await ServiceApiService.DeleteServiceAsync(service.Id);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Hizmet silindi.");
+                await LoadBusinessData();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+    }
+
+    private async Task AddEmployee()
+    {
+        if (business == null) return;
+
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Yeni Çalışan",
+            new Dictionary<string, object> { { "PreselectedBusinessId", business.Id } },
+            new DialogOptions { Width = "700px" });
+
+        if (result is true)
+        {
+            await LoadBusinessData();
+        }
+    }
+
+    private async Task EditEmployee(EmployeeDto employee)
+    {
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Çalışan Düzenle",
+            new Dictionary<string, object> { { "isEdit", true }, { "EmployeeId", employee.Id }, { "PreselectedBusinessId", business!.Id } },
+            new DialogOptions { Width = "700px" });
+
+        if (result is true)
+        {
+            await LoadBusinessData();
+        }
+    }
+
+    private async Task DeleteEmployee(EmployeeDto employee)
+    {
+        var confirmed = await DialogService.Confirm($"{employee.Name} çalışanını silmek istediğinize emin misiniz?", "Çalışanı Sil",
+            new ConfirmOptions { OkButtonText = "Evet, Sil", CancelButtonText = "İptal" });
+
+        if (confirmed == true)
+        {
+            var response = await EmployeeApiService.DeleteEmployeeAsync(employee.Id);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Çalışan silindi.");
+                await LoadBusinessData();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+    }
+
+    private string GetTimeAgo(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+
+        if (timeSpan.TotalDays > 365)
+            return $"{(int)(timeSpan.TotalDays / 365)} yıl önce";
+        if (timeSpan.TotalDays > 30)
+            return $"{(int)(timeSpan.TotalDays / 30)} ay önce";
+        if (timeSpan.TotalDays > 1)
+            return $"{(int)timeSpan.TotalDays} gün önce";
+        if (timeSpan.TotalHours > 1)
+            return $"{(int)timeSpan.TotalHours} saat önce";
+        if (timeSpan.TotalMinutes > 1)
+            return $"{(int)timeSpan.TotalMinutes} dakika önce";
+        
+        return "Az önce";
+    }
+}
