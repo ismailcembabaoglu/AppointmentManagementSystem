@@ -478,6 +478,10 @@
 
     private async Task ShowRatingDialog()
     {
+        // Reset values before opening dialog
+        ratingValue = 0;
+        reviewText = "";
+        
         var result = await DialogService.OpenAsync("Randevuyu Değerlendir",
             ds =>
             @<div style="padding: 20px;">
@@ -486,7 +490,7 @@
                         <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
                             Lütfen randevunuzu değerlendirin
                         </RadzenText>
-                        <RadzenRating @bind-Value="@ratingValue" Stars="5" />
+                        <RadzenRating Value="@ratingValue" Change="@(value => OnRatingChanged(value))" Stars="5" />
                     </div>
                     <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
@@ -516,10 +520,12 @@
                 NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message ?? "Değerlendirme kaydedilemedi.");
             }
         }
+    }
 
-        // Reset values
-        ratingValue = 0;
-        reviewText = "";
+    private void OnRatingChanged(int value)
+    {
+        ratingValue = value;
+        StateHasChanged();
     }
 
     private async Task ShowPhotoDialog(string photoUrl)
