@@ -35,6 +35,8 @@ namespace AppointmentManagementSystem.Application.Features.Services.Handlers
             }
 
             var service = _mapper.Map<Domain.Entities.Service>(request.CreateServiceDto);
+            service.Business = business;
+  
             await _serviceRepository.AddAsync(service);
             await _unitOfWork.SaveChangesAsync();
 

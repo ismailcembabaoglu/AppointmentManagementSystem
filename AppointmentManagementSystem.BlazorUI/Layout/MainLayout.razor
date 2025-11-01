@@ -973,7 +973,7 @@
 
     private void OpenProfile()
     {
-        DialogService.Open<ProfileDialog>("Profil", new Dictionary<string, object>() { { "User", currentUser } });
+          Navigation.NavigateTo("/profile");
     }
 
     private async Task Logout()

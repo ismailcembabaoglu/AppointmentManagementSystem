@@ -97,11 +97,11 @@
             
             if (user.IsInRole("Business"))
             {
-                Navigation.NavigateTo("/business/dashboard", true);
+                Navigation.NavigateTo("/dashboard/business", true);
             }
             else if (user.IsInRole("Customer"))
             {
-                Navigation.NavigateTo("/customer/dashboard", true);
+                Navigation.NavigateTo("/dashboard/customer", true);
             }
             else if (user.IsInRole("Admin"))
             {
