@@ -783,7 +783,7 @@
         }
     }
 
-    private async Task HandleBusinessRegister()
+    private async Task HandleBusinessRegisterAndContinue()
     {
         if (!services.Any())
         {
@@ -832,11 +832,19 @@
 
             var response = await ApiService.RegisterBusinessAsync(registerBusinessDto);
 
-            if (response.Success)
+            if (response.Success && response.Data != null)
             {
+                registeredBusinessId = response.Data.BusinessId;
+                
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
-                    "İşletme kaydınız başarıyla oluşturuldu! Giriş yapabilirsiniz.");
-                Navigation.NavigateTo("/login");
+                    "İşletme kaydınız oluşturuldu. Şimdi ödeme bilgilerinizi ekleyin.");
+
+                // Move to payment step
+                currentBusinessStep++;
+                StateHasChanged();
+
+                // Initialize payment
+                await InitiatePayment();
             }
             else
             {
@@ -856,6 +864,58 @@
             isRegistering = false;
             StateHasChanged();
         }
+    }
+
+    private async Task InitiatePayment()
+    {
+        if (!registeredBusinessId.HasValue)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme ID bulunamadı.");
+            return;
+        }
+
+        try
+        {
+            var initiateRequest = new InitiateCardRegistrationDto
+            {
+                Email = registerDto.Email,
+                BusinessName = businessInfo.Name,
+                BusinessId = registeredBusinessId.Value
+            };
+
+            var response = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
+
+            if (response.Success && response.Data?.IFrameParameters != null)
+            {
+                paymentIFrameParameters = response.Data.IFrameParameters;
+                StateHasChanged();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", 
+                    response.Message ?? "Ödeme ekranı başlatılamadı.");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata",
+                $"Ödeme başlatılamadı: {ex.Message}");
+        }
+    }
+
+    private async Task HandlePaymentSuccess()
+    {
+        NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
+            "Kart bilgileriniz başarıyla kaydedildi! Hoş geldiniz.");
+        
+        await Task.Delay(2000);
+        Navigation.NavigateTo("/login");
+    }
+
+    private async Task HandlePaymentFailed(string errorMessage)
+    {
+        NotificationService.Notify(NotificationSeverity.Error, "Ödeme Başarısız",
+            $"Kart kaydı başarısız oldu: {errorMessage}");
     }
 
     // Models for Registration
