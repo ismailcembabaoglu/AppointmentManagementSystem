@@ -235,7 +235,7 @@
                         Çalışan Seçin (Opsiyonel)
                     </RadzenText>
                     <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                        Tercih ettiğiniz çalışanı seçebilir veya atla'ya basabilirsiniz
+                        Seçilen tarih ve saatte müsait olan çalışanlar gösteriliyor
                     </RadzenText>
                 </RadzenStack>
                 
@@ -243,11 +243,20 @@
                 {
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center" Style="padding: 40px 0;">
                         <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
-                        <RadzenText TextStyle="TextStyle.Body2">Çalışanlar yükleniyor...</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">Müsait çalışanlar kontrol ediliyor...</RadzenText>
                     </RadzenStack>
                 }
                 else if (employees.Any())
                 {
+                    <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Shade="Shade.Lighter">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="check_circle" />
+                            <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
+                                <strong>@employees.Count çalışan</strong> seçilen zaman diliminde müsaittir
+                            </RadzenText>
+                        </RadzenStack>
+                    </RadzenAlert>
+                    
                     <RadzenRow Gap="12px">
                         @foreach (var employee in employees)
                         {
@@ -293,8 +302,18 @@
                 }
                 else
                 {
-                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
-                        Çalışan seçmeden devam edebilirsiniz. İşletme sizin için uygun çalışanı atayacaktır.
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                <RadzenIcon Icon="info" />
+                                <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">
+                                    Seçilen tarih ve saatte müsait çalışan bulunmuyor
+                                </RadzenText>
+                            </RadzenStack>
+                            <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
+                                Çalışan seçmeden devam edebilirsiniz. İşletme sizin için uygun çalışanı atayacaktır veya başka bir tarih/saat seçebilirsiniz.
+                            </RadzenText>
+                        </RadzenStack>
                     </RadzenAlert>
                 }
             </RadzenStack>
