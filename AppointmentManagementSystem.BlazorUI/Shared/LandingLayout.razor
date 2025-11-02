@@ -204,7 +204,15 @@
 
 <style>
     /* Responsive Navigation */
+    .header-content {
+        padding: 12px 20px !important;
+    }
+
     @@media (max-width: 768px) {
+        .header-content {
+            padding: 10px 12px !important;
+        }
+
         .desktop-nav {
             display: none !important;
         }
@@ -225,6 +233,10 @@
     @@media (min-width: 769px) {
         .mobile-menu-btn {
             display: none !important;
+        }
+
+        .logo-text {
+            display: block !important;
         }
     }
 
