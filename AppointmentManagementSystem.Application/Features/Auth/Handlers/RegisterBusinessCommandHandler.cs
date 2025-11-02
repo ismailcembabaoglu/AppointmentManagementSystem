@@ -97,7 +97,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 District = dto.District,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
-                IsActive = true
+                IsActive = false // Payment tamamlanana kadar pasif
             };
 
             await _businessRepository.AddAsync(business);
