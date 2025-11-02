@@ -21,16 +21,16 @@
             
             <!-- Desktop Navigation -->
             <RadzenStack Orientation="Orientation.Horizontal" Gap="32px" AlignItems="AlignItems.Center" class="desktop-nav">
-                <a href="#" @onclick="() => ScrollToSection('hero')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                <a href="#" @onclick="@(() => ScrollToSection("hero"))" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
                     Ana Sayfa
                 </a>
-                <a href="#" @onclick="() => ScrollToSection('features')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                <a href="#" @onclick="@(() => ScrollToSection("features"))" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
                     Özellikler
                 </a>
-                <a href="#" @onclick="() => ScrollToSection('how-it-works')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                <a href="#" @onclick="@(() => ScrollToSection("how-it-works"))" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
                     Nasıl Çalışır
                 </a>
-                <a href="#" @onclick="() => ScrollToSection('categories')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                <a href="#" @onclick="@(() => ScrollToSection("categories"))" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
                     Kategoriler
                 </a>
             </RadzenStack>
