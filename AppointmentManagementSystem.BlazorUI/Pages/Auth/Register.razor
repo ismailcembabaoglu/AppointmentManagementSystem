@@ -477,21 +477,32 @@
 
                             @if (currentBusinessStep < businessStepTitles.Length - 1)
                             {
-                                <RadzenButton Text="Devam Et"
-                                             Icon="arrow_forward"
-                                             ButtonStyle="ButtonStyle.Primary"
-                                             Click="@(() => currentBusinessStep++)"
-                                             Disabled="@(!CanProceed())"
-                                             Style="width: 150px; margin-left: auto;" />
+                                @if (currentBusinessStep == 3)
+                                {
+                                    <!-- Özet adımında "Kayıt Ol ve Devam Et" butonu -->
+                                    <RadzenButton Text="@(isRegistering ? "Kaydediliyor..." : "Kayıt Ol ve Devam Et")"
+                                                 Icon="arrow_forward"
+                                                 ButtonStyle="ButtonStyle.Primary"
+                                                 Click="@HandleBusinessRegisterAndContinue"
+                                                 Disabled="@(isRegistering || !CanProceed())"
+                                                 Style="width: 200px; margin-left: auto;" />
+                                }
+                                else
+                                {
+                                    <RadzenButton Text="Devam Et"
+                                                 Icon="arrow_forward"
+                                                 ButtonStyle="ButtonStyle.Primary"
+                                                 Click="@(() => currentBusinessStep++)"
+                                                 Disabled="@(!CanProceed())"
+                                                 Style="width: 150px; margin-left: auto;" />
+                                }
                             }
                             else
                             {
-                                <RadzenButton Text="@(isRegistering ? "Kaydediliyor..." : "Kayıt Ol")"
-                                             Icon="check"
-                                             ButtonStyle="ButtonStyle.Success"
-                                             Click="@HandleBusinessRegister"
-                                             Disabled="@(isRegistering || !CanProceed())"
-                                             Style="width: 150px; margin-left: auto;" />
+                                <!-- Ödeme adımında bilgilendirme -->
+                                <RadzenText Style="margin-left: auto; color: var(--rz-text-secondary-color); font-size: 14px;">
+                                    Ödeme tamamlandıktan sonra otomatik olarak yönlendirileceksiniz
+                                </RadzenText>
                             }
                         </RadzenStack>
                     </RadzenCard>
