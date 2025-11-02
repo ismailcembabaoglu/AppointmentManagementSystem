@@ -1252,7 +1252,16 @@
 
     private void OpenProfile()
     {
-          Navigation.NavigateTo("/profile");
+          if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (role=="Business")
+             Navigation.NavigateTo("/business/dashboard");
+            if (role=="Customer")
+             Navigation.NavigateTo("/profile");
+  
+        }
+        
     }
 
     private async Task Logout()
