@@ -198,6 +198,34 @@ namespace AppointmentManagementSystem.Infrastructure.Data
                       .HasForeignKey(ed => ed.EmployeeId)
                       .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // Payment configuration
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.MerchantOid).IsRequired().HasMaxLength(100);
+                entity.Property(p => p.Amount).HasColumnType("decimal(18,2)");
+                entity.Property(p => p.Status).IsRequired().HasMaxLength(50);
+                entity.HasIndex(p => p.MerchantOid).IsUnique();
+                
+                entity.HasOne(p => p.Business)
+                      .WithMany(b => b.Payments)
+                      .HasForeignKey(p => p.BusinessId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // BusinessSubscription configuration
+            modelBuilder.Entity<BusinessSubscription>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.MonthlyAmount).HasColumnType("decimal(18,2)");
+                entity.Property(s => s.SubscriptionStatus).IsRequired().HasMaxLength(50);
+                
+                entity.HasOne(s => s.Business)
+                      .WithOne(b => b.Subscription)
+                      .HasForeignKey<BusinessSubscription>(s => s.BusinessId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
             modelBuilder.Entity<Category>().HasData(
                         new Category { Id = 1, Name = "Berber", Description = "Erkek Berber Hizmetleri", Icon = "healing", CreatedAt = DateTime.UtcNow },
         new Category { Id = 2, Name = "Güzellik Merkezi", Description = "Güzellik ve bakım hizmetleri", Icon = "spa", CreatedAt = DateTime.UtcNow },
