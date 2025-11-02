@@ -1219,6 +1219,7 @@
     public void Dispose()
     {
         notificationTimer?.Dispose();
+        searchDebounceTimer?.Dispose();
     }
 
     private void ToggleSidebar()
