@@ -675,6 +675,7 @@
             employeesLoading = true;
             employees.Clear();
             selectedEmployeeId = null;
+            nextAvailableMessage = null;
             StateHasChanged();
 
             if (!PreselectedBusinessId.HasValue || !selectedDate.HasValue || !selectedTimeSlot.HasValue || !selectedServices.Any())
@@ -694,9 +695,10 @@
                 totalDuration
             );
 
-            if (response.Success)
+            if (response.Success && response.Data != null)
             {
-                employees = response.Data ?? new List<EmployeeDto>();
+                employees = response.Data.Employees ?? new List<EmployeeDto>();
+                nextAvailableMessage = response.Data.NextAvailableMessage;
             }
             else
             {
