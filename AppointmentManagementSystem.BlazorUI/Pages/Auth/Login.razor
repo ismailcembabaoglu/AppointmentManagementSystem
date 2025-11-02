@@ -55,6 +55,34 @@
     private string emailError = "";
     private string passwordError = "";
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            // User is already logged in - redirect to appropriate dashboard
+            if (user.IsInRole("Business"))
+            {
+                Navigation.NavigateTo("/dashboard/business", true);
+            }
+            else if (user.IsInRole("Customer"))
+            {
+                Navigation.NavigateTo("/dashboard/customer", true);
+            }
+            else if (user.IsInRole("Admin"))
+            {
+                Navigation.NavigateTo("/admin/dashboard", true);
+            }
+            else
+            {
+                Navigation.NavigateTo("/dashboard", true);
+            }
+        }
+    }
+
     private async Task HandleLogin()
     {
         // Basic validation
