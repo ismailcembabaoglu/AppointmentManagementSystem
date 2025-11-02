@@ -26,7 +26,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             }
         }
 
-        public async Task<ApiResponse<List<EmployeeDto>>> GetAvailableEmployeesAsync(
+        public async Task<ApiResponse<AvailableEmployeesResponse>> GetAvailableEmployeesAsync(
             int businessId, 
             DateTime selectedDate, 
             TimeSpan selectedTime, 
@@ -40,11 +40,11 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                                  $"&totalDurationMinutes={totalDurationMinutes}";
                 
                 var response = await _httpClient.GetAsync($"api/employees/available{queryString}");
-                return await HandleApiResponse<List<EmployeeDto>>(response);
+                return await HandleApiResponse<AvailableEmployeesResponse>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<EmployeeDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<AvailableEmployeesResponse> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
