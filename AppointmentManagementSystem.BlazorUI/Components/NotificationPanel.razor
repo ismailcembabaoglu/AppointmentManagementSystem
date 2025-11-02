@@ -38,7 +38,8 @@
             <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                 @foreach (var appointment in Appointments)
                 {
-                    <RadzenCard Style="@GetAppointmentCardStyle(appointment.Status); cursor: pointer; border: 1px solid #e2e8f0;"
+                    var cardStyle = GetAppointmentCardStyle(appointment.Status) + " cursor: pointer; border: 1px solid #e2e8f0;";
+                    <RadzenCard Style="@cardStyle"
                                @onclick="@(() => OnAppointmentClick?.Invoke(appointment.Id))">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                             <!-- Header Row -->
