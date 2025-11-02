@@ -997,6 +997,9 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         currentUser = authState.User;
 
+        // Subscribe to authentication state changes
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
         if (currentUser?.Identity?.IsAuthenticated == true)
         {
             // Get user role and ID
@@ -1038,6 +1041,18 @@
                     StateHasChanged();
                 });
             }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            // User is logged out - redirect to login
+            Navigation.NavigateTo("/login", forceLoad: true);
         }
     }
 
