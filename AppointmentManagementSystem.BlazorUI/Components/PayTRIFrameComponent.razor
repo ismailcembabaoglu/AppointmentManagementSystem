@@ -1,0 +1,102 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div class="paytr-iframe-container">
+    @if (IsLoading)
+    {
+        <div style="text-align: center; padding: 40px;">
+            <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+            <RadzenText TextStyle="TextStyle.H6" Style="margin-top: 20px;">Ödeme ekranı yükleniyor...</RadzenText>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat">
+            <RadzenText TextStyle="TextStyle.H6" Style="margin-bottom: 8px;">Hata</RadzenText>
+            <RadzenText>@ErrorMessage</RadzenText>
+        </RadzenAlert>
+    }
+    else if (IFrameParameters != null)
+    {
+        <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <RadzenText TextStyle="TextStyle.H5" Style="margin-bottom: 16px; text-align: center; color: var(--rz-primary);">
+                💳 Kart Bilgilerinizi Girin
+            </RadzenText>
+            
+            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Style="margin-bottom: 16px;">
+                <RadzenText Style="font-size: 14px;">
+                    🔒 Kart bilgileriniz güvenli bir şekilde PayTR tarafından saklanacaktır. Aylık 700 TL abonelik ücreti otomatik olarak tahsil edilecektir.
+                </RadzenText>
+            </RadzenAlert>
+
+            <form @ref="paytrForm" method="post" action="@IFrameParameters["post_url"]" target="paytr_iframe">
+                @foreach (var param in IFrameParameters)
+                {
+                    <input type="hidden" name="@param.Key" value="@param.Value" />
+                }
+            </form>
+
+            <div style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                <iframe name="paytr_iframe" 
+                        style="width: 100%; height: 100%; border: none;"
+                        @onload="OnIFrameLoad">
+                </iframe>
+            </div>
+
+            <RadzenText TextStyle="TextStyle.Caption" Style="text-align: center; margin-top: 16px; color: var(--rz-text-secondary-color);">
+                ⚠️ Tarayıcı penceresini kapatmayın. Ödeme işlemi tamamlandıktan sonra otomatik olarak yönlendirileceksiniz.
+            </RadzenText>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Dictionary<string, string>? IFrameParameters { get; set; }
+
+    [Parameter]
+    public EventCallback OnPaymentSuccess { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnPaymentFailed { get; set; }
+
+    private bool IsLoading = true;
+    private string? ErrorMessage;
+    private ElementReference paytrForm;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && IFrameParameters != null)
+        {
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('form').submit();");
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnIFrameLoad()
+    {
+        // iFrame yüklendiğinde loading'i kapat
+        if (IsLoading)
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public void ShowError(string message)
+    {
+        ErrorMessage = message;
+        IsLoading = false;
+        StateHasChanged();
+    }
+}
+
+<style>
+    .paytr-iframe-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+</style>
