@@ -33,6 +33,10 @@ namespace AppointmentManagementSystem.Infrastructure.Data
         // Documents
         public DbSet<EmployeeDocument> EmployeeDocuments { get; set; }
 
+        // Payment & Subscription
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<BusinessSubscription> BusinessSubscriptions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
