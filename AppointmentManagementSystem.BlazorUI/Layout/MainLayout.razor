@@ -1,12 +1,16 @@
 @inherits LayoutComponentBase
 @using AppointmentManagementSystem.BlazorUI.Components
 @using AppointmentManagementSystem.BlazorUI.Services.Authentication
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.Application.DTOs
 @using Microsoft.AspNetCore.Components.Authorization
 @using Radzen
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject DialogService DialogService
+@inject IAppointmentApiService AppointmentApiService
+@inject IJSRuntime JSRuntime
 
 <!-- Backdrop (Mobil için kararma) -->
 @if (sidebarExpanded)
