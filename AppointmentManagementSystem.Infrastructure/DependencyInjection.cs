@@ -32,6 +32,9 @@ namespace AppointmentManagementSystem.Infrastructure
             // Document Repositories
             services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
 
+            // Payment & Subscription Repositories
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IBusinessSubscriptionRepository, BusinessSubscriptionRepository>();
 
             // Unit of Work
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -39,6 +42,11 @@ namespace AppointmentManagementSystem.Infrastructure
             // Services
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<IPayTRService, PayTRService>();
+            services.AddHttpClient<IPayTRService, PayTRService>();
+
+            // Background Services
+            services.AddHostedService<MonthlyBillingService>();
 
             return services;
         }
