@@ -3,7 +3,7 @@ using MediatR;
 
 namespace AppointmentManagementSystem.Application.Features.Employees.Queries
 {
-    public class GetAvailableEmployeesQuery : IRequest<List<EmployeeDto>>
+    public class GetAvailableEmployeesQuery : IRequest<AvailableEmployeesResponseDto>
     {
         public int BusinessId { get; set; }
         public DateTime SelectedDate { get; set; }
