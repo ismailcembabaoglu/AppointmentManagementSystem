@@ -620,3 +620,5 @@ FodyWeavers.xsd-e
 # Environment files
 *.env
 *.env.*
+# Blazor build output
+AppointmentManagementSystem.API/wwwroot/blazor/
