@@ -21,6 +21,7 @@ builder.Services.AddScoped<IEmployeeApiService, EmployeeApiService>();
 builder.Services.AddScoped<IAppointmentApiService, AppointmentApiService>();
 builder.Services.AddScoped<IPhotoApiService, PhotoApiService>();
 builder.Services.AddScoped<IDocumentApiService, DocumentApiService>();
+builder.Services.AddScoped<IPaymentApiService, PaymentApiService>();
 
 // Local Storage
 builder.Services.AddBlazoredLocalStorage();
