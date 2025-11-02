@@ -1,93 +1,320 @@
 @inherits LayoutComponentBase
 @using Radzen
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <RadzenLayout>
-    <!-- Transparent Header -->
-    <RadzenHeader Style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="padding: 16px 24px;">
-            <a href="/" style="text-decoration: none;">
+    <!-- Fixed Navigation Header with Smooth Scroll Links -->
+    <RadzenHeader Style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.98); backdrop-filter: blur(15px); box-shadow: 0 2px 20px rgba(0,0,0,0.08); transition: all 0.3s;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="padding: 16px 24px; max-width: 1400px; margin: 0 auto;">
+            <!-- Logo -->
+            <a href="/" style="text-decoration: none;" @onclick="ScrollToTop" @onclick:preventDefault>
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
-                    <RadzenIcon Icon="event_available" Style="font-size: 100px; color: var(--rz-primary);" />
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 700; color: var(--rz-primary);">
+                    <div style="width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                        <RadzenIcon Icon="event_available" Style="font-size: 24px; color: white;" />
+                    </div>
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700; color: var(--rz-primary); display: none; display: block;" class="logo-text">
                         RandevuPro
                     </RadzenText>
                 </RadzenStack>
             </a>
             
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" AlignItems="AlignItems.Center">
-                <a href="/categories" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500;">
+            <!-- Desktop Navigation -->
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="32px" AlignItems="AlignItems.Center" class="desktop-nav">
+                <a href="#" @onclick="() => ScrollToSection('hero')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                    Ana Sayfa
+                </a>
+                <a href="#" @onclick="() => ScrollToSection('features')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                    Özellikler
+                </a>
+                <a href="#" @onclick="() => ScrollToSection('how-it-works')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
+                    Nasıl Çalışır
+                </a>
+                <a href="#" @onclick="() => ScrollToSection('categories')" @onclick:preventDefault style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s;" class="nav-link">
                     Kategoriler
                 </a>
+            </RadzenStack>
+
+            <!-- Auth Buttons -->
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center" class="auth-buttons">
                 <a href="/login" style="text-decoration: none;">
-                    <RadzenButton Text="Giriş Yap" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Medium" />
+                    <RadzenButton Text="Giriş" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Medium" class="btn-compact" />
                 </a>
                 <a href="/register" style="text-decoration: none;">
-                    <RadzenButton Text="Kayıt Ol" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                    <RadzenButton Text="Başla" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" class="btn-compact" />
                 </a>
             </RadzenStack>
+
+            <!-- Mobile Menu Button -->
+            <RadzenButton Icon="@(mobileMenuOpen ? "close" : "menu")" 
+                         ButtonStyle="ButtonStyle.Light" 
+                         Size="ButtonSize.Medium"
+                         Click="ToggleMobileMenu"
+                         class="mobile-menu-btn" />
         </RadzenStack>
+
+        <!-- Mobile Menu Dropdown -->
+        @if (mobileMenuOpen)
+        {
+            <div class="mobile-menu">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 24px;">
+                    <a href="#" @onclick="() => { ScrollToSection('hero'); ToggleMobileMenu(); }" @onclick:preventDefault class="mobile-nav-link">
+                        Ana Sayfa
+                    </a>
+                    <a href="#" @onclick="() => { ScrollToSection('features'); ToggleMobileMenu(); }" @onclick:preventDefault class="mobile-nav-link">
+                        Özellikler
+                    </a>
+                    <a href="#" @onclick="() => { ScrollToSection('how-it-works'); ToggleMobileMenu(); }" @onclick:preventDefault class="mobile-nav-link">
+                        Nasıl Çalışır
+                    </a>
+                    <a href="#" @onclick="() => { ScrollToSection('categories'); ToggleMobileMenu(); }" @onclick:preventDefault class="mobile-nav-link">
+                        Kategoriler
+                    </a>
+                    <RadzenDivider Style="margin: 8px 0;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="12px">
+                        <a href="/login" style="flex: 1; text-decoration: none;">
+                            <RadzenButton Text="Giriş Yap" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Medium" Style="width: 100%;" />
+                        </a>
+                        <a href="/register" style="flex: 1; text-decoration: none;">
+                            <RadzenButton Text="Kayıt Ol" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" Style="width: 100%;" />
+                        </a>
+                    </RadzenStack>
+                </RadzenStack>
+            </div>
+        }
     </RadzenHeader>
 
     <!-- Main Content -->
-    <RadzenBody Style="margin-top: 80px; min-height: calc(100vh - 80px);">
+    <RadzenBody Style="margin-top: 70px; min-height: calc(100vh - 70px);">
         @Body
     </RadzenBody>
 
-    <!-- Footer -->
-    <RadzenFooter Style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 48px 24px 24px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <RadzenRow Gap="32px">
-                <RadzenColumn Size="12" SizeMD="4">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+    <!-- Modern Footer -->
+    <RadzenFooter Style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 60px 24px 24px; position: relative; overflow: hidden;">
+        <!-- Decorative Background -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 200px; background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%); pointer-events: none;"></div>
+        
+        <div style="max-width: 1400px; margin: 0 auto; position: relative;">
+            <RadzenRow Gap="40px" Style="margin-bottom: 48px;">
+                <!-- Company Info -->
+                <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
-                            <RadzenIcon Icon="event_available" Style="font-size: 32px;" />
+                            <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                                <RadzenIcon Icon="event_available" Style="font-size: 24px;" />
+                            </div>
                             <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 700;">
                                 RandevuPro
                             </RadzenText>
                         </RadzenStack>
-                        <RadzenText Style="color: rgba(255,255,255,0.8); line-height: 1.6;">
-                            Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin, müşterilerinize daha iyi hizmet verin.
+                        <RadzenText Style="color: rgba(255,255,255,0.75); line-height: 1.7; font-size: 15px;">
+                            Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterilerinize 7/24 online randevu imkanı sunun.
                         </RadzenText>
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;" @onmouseenter="@((e) => HoverSocial(0))" @onmouseleave="@((e) => HoverSocial(-1))">
+                                <RadzenIcon Icon="facebook" Style="font-size: 20px;" />
+                            </div>
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">
+                                <RadzenIcon Icon="mail" Style="font-size: 20px;" />
+                            </div>
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">
+                                <RadzenIcon Icon="phone" Style="font-size: 20px;" />
+                            </div>
+                        </RadzenStack>
                     </RadzenStack>
                 </RadzenColumn>
 
-                <RadzenColumn Size="12" SizeMD="4">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
-                            Hızlı Bağlantılar
+                <!-- Quick Links -->
+                <RadzenColumn Size="6" SizeMD="3" SizeLG="2">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600; margin-bottom: 8px;">
+                            Hızlı Linkler
                         </RadzenText>
-                        <a href="/categories" style="color: rgba(255,255,255,0.8); text-decoration: none;">Kategoriler</a>
-                        <a href="/register" style="color: rgba(255,255,255,0.8); text-decoration: none;">İşletme Kaydı</a>
-                        <a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none;">Giriş Yap</a>
+                        <a href="#" @onclick="() => ScrollToSection('features')" @onclick:preventDefault class="footer-link">Özellikler</a>
+                        <a href="#" @onclick="() => ScrollToSection('how-it-works')" @onclick:preventDefault class="footer-link">Nasıl Çalışır</a>
+                        <a href="#" @onclick="() => ScrollToSection('categories')" @onclick:preventDefault class="footer-link">Kategoriler</a>
+                        <a href="/login" class="footer-link">Giriş Yap</a>
                     </RadzenStack>
                 </RadzenColumn>
 
-                <RadzenColumn Size="12" SizeMD="4">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                <!-- Company -->
+                <RadzenColumn Size="6" SizeMD="3" SizeLG="2">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600; margin-bottom: 8px;">
+                            Şirket
+                        </RadzenText>
+                        <a href="/register" class="footer-link">İşletme Kaydı</a>
+                        <a href="#" class="footer-link">Hakkımızda</a>
+                        <a href="#" class="footer-link">Blog</a>
+                        <a href="#" class="footer-link">Kariyer</a>
+                    </RadzenStack>
+                </RadzenColumn>
+
+                <!-- Contact -->
+                <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
                         <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
                             İletişim
                         </RadzenText>
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
-                            <RadzenIcon Icon="email" />
-                            <RadzenText Style="color: rgba(255,255,255,0.8); margin: 0;">
-                                info@randevupro.com
-                            </RadzenText>
-                        </RadzenStack>
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
-                            <RadzenIcon Icon="phone" />
-                            <RadzenText Style="color: rgba(255,255,255,0.8); margin: 0;">
-                                0850 123 45 67
-                            </RadzenText>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
+                                <RadzenIcon Icon="email" Style="margin-top: 2px; opacity: 0.8;" />
+                                <RadzenText Style="color: rgba(255,255,255,0.75); margin: 0; line-height: 1.5;">
+                                    info@randevupro.com
+                                </RadzenText>
+                            </RadzenStack>
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
+                                <RadzenIcon Icon="phone" Style="margin-top: 2px; opacity: 0.8;" />
+                                <RadzenText Style="color: rgba(255,255,255,0.75); margin: 0; line-height: 1.5;">
+                                    0850 123 45 67
+                                </RadzenText>
+                            </RadzenStack>
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
+                                <RadzenIcon Icon="location_on" Style="margin-top: 2px; opacity: 0.8;" />
+                                <RadzenText Style="color: rgba(255,255,255,0.75); margin: 0; line-height: 1.5;">
+                                    İstanbul, Türkiye
+                                </RadzenText>
+                            </RadzenStack>
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
 
-            <RadzenDivider Style="margin: 32px 0; background: rgba(255,255,255,0.2);" />
+            <RadzenDivider Style="margin: 24px 0; background: rgba(255,255,255,0.15);" />
 
-            <RadzenText Style="text-align: center; color: rgba(255,255,255,0.6); margin: 0;">
-                © 2025 RandevuPro. Tüm hakları saklıdır.
-            </RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" Gap="16px" Style="padding: 16px 0;">
+                <RadzenText Style="color: rgba(255,255,255,0.5); margin: 0; font-size: 14px;">
+                    © 2025 RandevuPro. Tüm hakları saklıdır.
+                </RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="24px" Wrap="FlexWrap.Wrap">
+                    <a href="#" style="color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.3s;">
+                        Gizlilik Politikası
+                    </a>
+                    <a href="#" style="color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.3s;">
+                        Kullanım Şartları
+                    </a>
+                    <a href="#" style="color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.3s;">
+                        Çerez Politikası
+                    </a>
+                </RadzenStack>
+            </RadzenStack>
         </div>
     </RadzenFooter>
 </RadzenLayout>
+
+<style>
+    /* Responsive Navigation */
+    @@media (max-width: 768px) {
+        .desktop-nav {
+            display: none !important;
+        }
+        
+        .logo-text {
+            display: none !important;
+        }
+        
+        .mobile-menu-btn {
+            display: flex !important;
+        }
+        
+        .auth-buttons {
+            display: none !important;
+        }
+    }
+
+    @@media (min-width: 769px) {
+        .mobile-menu-btn {
+            display: none !important;
+        }
+    }
+
+    .mobile-menu {
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        animation: slideDown 0.3s ease;
+    }
+
+    .mobile-nav-link {
+        color: var(--rz-text-color);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 12px 16px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        display: block;
+    }
+
+    .mobile-nav-link:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: var(--rz-primary);
+    }
+
+    .nav-link:hover {
+        color: var(--rz-primary) !important;
+    }
+
+    .footer-link {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        font-size: 15px;
+        transition: all 0.3s;
+        display: inline-block;
+    }
+
+    .footer-link:hover {
+        color: white;
+        transform: translateX(5px);
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Smooth Scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    .btn-compact {
+        padding: 8px 20px !important;
+    }
+
+    @@media (max-width: 480px) {
+        .btn-compact {
+            font-size: 13px !important;
+            padding: 6px 16px !important;
+        }
+    }
+</style>
+
+@code {
+    private bool mobileMenuOpen = false;
+    private int hoveredSocial = -1;
+
+    private void ToggleMobileMenu()
+    {
+        mobileMenuOpen = !mobileMenuOpen;
+    }
+
+    private async Task ScrollToSection(string sectionId)
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToSection", sectionId);
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JSRuntime.InvokeVoidAsync("window.scrollTo", new { top = 0, behavior = "smooth" });
+    }
+
+    private void HoverSocial(int index)
+    {
+        hoveredSocial = index;
+    }
+}
