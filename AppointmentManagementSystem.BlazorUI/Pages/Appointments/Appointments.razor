@@ -409,6 +409,13 @@
             if (response.Success)
             {
                 appointments = response.Data ?? new List<AppointmentDto>();
+                
+                // Load business options for customer
+                if (userRole == "Customer")
+                {
+                    await LoadBusinessOptions();
+                }
+                
                 FilterAndSortAppointments();
             }
             else
