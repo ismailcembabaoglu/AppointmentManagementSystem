@@ -43,6 +43,8 @@ namespace AppointmentManagementSystem.Domain.Entities
         public virtual ICollection<Service>? Services { get; set; }
         public virtual ICollection<Employee>? Employees { get; set; } 
         public virtual ICollection<Appointment>? Appointments { get; set; } 
-        public virtual ICollection<BusinessPhoto>? Photos { get; set; } 
+        public virtual ICollection<BusinessPhoto>? Photos { get; set; }
+        public virtual BusinessSubscription? Subscription { get; set; }
+        public virtual ICollection<Payment>? Payments { get; set; } 
     }
 }
