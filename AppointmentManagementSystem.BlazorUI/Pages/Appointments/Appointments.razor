@@ -267,7 +267,11 @@
     private string userRole = "";
 
     private string selectedStatus = "All";
+    private int? selectedBusinessId = null;
     private string sortBy = "Date";
+
+    // Business options for customer filter
+    private List<BusinessOption> businessOptions = new();
 
     private List<StatusOption> statusOptions = new()
     {
@@ -289,6 +293,12 @@
     {
         await GetCurrentUserInfo();
         await LoadAppointments();
+        
+        // Load businesses for customer filter
+        if (userRole == "Customer")
+        {
+            await LoadBusinessOptions();
+        }
     }
 
     private async Task GetCurrentUserInfo()
