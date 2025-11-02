@@ -94,8 +94,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Auto-start Blazor UI service
-builder.Services.AddHostedService<BlazorAutoStartService>();
+// Auto-start Blazor UI service (disabled when serving from same port)
+// builder.Services.AddHostedService<BlazorAutoStartService>();
 
 var app = builder.Build();
 
@@ -108,7 +108,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseCors("AllowAll");
+
+// Serve Blazor static files
+var blazorDistPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "blazor");
+if (Directory.Exists(blazorDistPath))
+{
+    app.UseStaticFiles();
+    app.UseBlazorFrameworkFiles();
+}
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -116,4 +126,27 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// SPA fallback - Blazor routes
+if (Directory.Exists(blazorDistPath))
+{
+    app.MapFallbackToFile("blazor/index.html");
+}
+else
+{
+    // If Blazor not built, show info message
+    app.MapGet("/", () => Results.Content(@"
+        <html>
+            <head><title>Appointment Management System</title></head>
+            <body style='font-family: Arial; padding: 40px; text-align: center;'>
+                <h1>🚀 Appointment Management System API</h1>
+                <p>Blazor UI henüz build edilmemiş.</p>
+                <p><strong>Build komutu:</strong></p>
+                <pre style='background: #f5f5f5; padding: 20px; border-radius: 8px;'>build-blazor.bat</pre>
+                <p><strong>veya</strong></p>
+                <pre style='background: #f5f5f5; padding: 20px; border-radius: 8px;'>dotnet publish ../AppointmentManagementSystem.BlazorUI -o ./wwwroot/blazor</pre>
+                <hr style='margin: 40px 0;'>
+                <p><a href='/swagger' style='color: #007bff; font-size: 18px;'>📚 Swagger API Documentation</a></p>
+            </body>
+        </html>
+    ", "text/html"));
+}
