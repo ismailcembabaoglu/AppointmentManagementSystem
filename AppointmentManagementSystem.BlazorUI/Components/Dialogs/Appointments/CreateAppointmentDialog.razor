@@ -303,13 +303,31 @@
                 else
                 {
                     <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
                                 <RadzenIcon Icon="info" />
                                 <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">
                                     Seçilen tarih ve saatte müsait çalışan bulunmuyor
                                 </RadzenText>
                             </RadzenStack>
+                            
+                            @if (!string.IsNullOrEmpty(nextAvailableMessage))
+                            {
+                                <RadzenCard Style="background: linear-gradient(135deg, #fbbf2415 0%, #f5925215 100%); padding: 12px; border: 1px solid #fbbf2450;">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Start">
+                                        <RadzenIcon Icon="schedule" Style="color: #f59042; margin-top: 2px;" />
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0; font-weight: 600; color: #f59042;">
+                                                Alternatif Zaman
+                                            </RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
+                                                @nextAvailableMessage
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </RadzenStack>
+                                </RadzenCard>
+                            }
+                            
                             <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0;">
                                 Çalışan seçmeden devam edebilirsiniz. İşletme sizin için uygun çalışanı atayacaktır veya başka bir tarih/saat seçebilirsiniz.
                             </RadzenText>
