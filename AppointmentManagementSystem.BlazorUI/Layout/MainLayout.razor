@@ -962,11 +962,159 @@
 @code {
     private bool sidebarExpanded = false;
     private ClaimsPrincipal? currentUser;
+    private int notificationCount = 0;
+    private int previousNotificationCount = 0;
+    private List<AppointmentDto> notificationAppointments = new();
+    private System.Threading.Timer? notificationTimer;
+    private string userRole = "";
+    private int currentUserId = 0;
+    private int? currentBusinessId = null;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         currentUser = authState.User;
+
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            // Get user role and ID
+            var roleClaim = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            if (roleClaim != null)
+            {
+                userRole = roleClaim.Value;
+            }
+
+            var userIdClaim = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                           ?? currentUser.FindFirst("sub")
+                           ?? currentUser.FindFirst("userId")
+                           ?? currentUser.FindFirst("id");
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            // If business, get business ID
+            if (userRole == "Business")
+            {
+                var businessIdClaim = currentUser.FindFirst("businessId");
+                if (businessIdClaim != null && int.TryParse(businessIdClaim.Value, out var parsedBusinessId))
+                {
+                    currentBusinessId = parsedBusinessId;
+                }
+            }
+
+            // Load notifications immediately
+            await LoadNotifications();
+
+            // Set up periodic check (every 30 seconds)
+            notificationTimer = new System.Threading.Timer(async _ =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadNotifications();
+                    StateHasChanged();
+                });
+            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            if (userRole == "Business" && currentBusinessId.HasValue)
+            {
+                // Business: Get pending appointments
+                var response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: currentBusinessId.Value);
+                if (response.Success && response.Data != null)
+                {
+                    notificationAppointments = response.Data
+                        .Where(a => a.Status == "Pending")
+                        .OrderByDescending(a => a.CreatedAt)
+                        .ToList();
+                }
+            }
+            else if (userRole == "Customer")
+            {
+                // Customer: Get confirmed appointments
+                var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
+                if (response.Success && response.Data != null)
+                {
+                    notificationAppointments = response.Data
+                        .Where(a => a.Status == "Confirmed")
+                        .OrderByDescending(a => a.UpdatedAt)
+                        .ToList();
+                }
+            }
+
+            // Update notification count
+            var newCount = notificationAppointments.Count;
+            
+            // Play sound if count increased
+            if (newCount > previousNotificationCount && previousNotificationCount > 0)
+            {
+                await PlayNotificationSound();
+            }
+
+            previousNotificationCount = newCount;
+            notificationCount = newCount;
+        }
+        catch (Exception ex)
+        {
+            // Silently fail - don't interrupt user experience
+            Console.WriteLine($"Notification load error: {ex.Message}");
+        }
+    }
+
+    private async Task PlayNotificationSound()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("playNotificationSound");
+        }
+        catch
+        {
+            // Silently fail if JS interop fails
+        }
+    }
+
+    private async Task OpenNotifications()
+    {
+        var title = userRole == "Business" ? "Bekleyen Randevular" : "Onaylanan Randevular";
+        var subtitle = userRole == "Business" 
+            ? $"{notificationCount} randevu onay bekliyor" 
+            : $"{notificationCount} randevunuz onaylandı";
+
+        await DialogService.OpenAsync<NotificationPanel>(title,
+            new Dictionary<string, object>
+            {
+                { "Appointments", notificationAppointments },
+                { "Title", title },
+                { "Subtitle", subtitle },
+                { "IsBusinessRole", userRole == "Business" },
+                { "OnAppointmentClick", new Action<int>(appointmentId => 
+                    {
+                        DialogService.Close();
+                        Navigation.NavigateTo($"/appointments/{appointmentId}");
+                    })
+                }
+            },
+            new DialogOptions 
+            { 
+                Width = "650px", 
+                Height = "auto",
+                CloseDialogOnOverlayClick = true,
+                ShowClose = true
+            });
+
+        // Reload after dialog closes
+        await LoadNotifications();
+    }
+
+    public void Dispose()
+    {
+        notificationTimer?.Dispose();
     }
 
     private void ToggleSidebar()
