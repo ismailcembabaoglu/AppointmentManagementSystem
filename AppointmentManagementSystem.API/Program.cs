@@ -97,10 +97,6 @@ builder.Services.AddCors(options =>
 // Auto-start Blazor UI service
 builder.Services.AddHostedService<BlazorAutoStartService>();
 
-// YARP Reverse Proxy (Blazor'u proxy için)
-builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -120,8 +116,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// YARP Reverse Proxy - Blazor routes
-app.MapReverseProxy();
 
 app.Run();
