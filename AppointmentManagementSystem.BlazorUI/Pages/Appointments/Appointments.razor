@@ -38,6 +38,19 @@
             <!-- Filters -->
             <RadzenCard>
                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="12px" AlignItems="AlignItems.End">
+                    @if (userRole == "Customer")
+                    {
+                        <div style="flex: 1; min-width: 200px;">
+                            <RadzenLabel Text="İşletme" />
+                            <RadzenDropDown @bind-Value="selectedBusinessId"
+                                          Data="@businessOptions"
+                                          TextProperty="Text"
+                                          ValueProperty="Value"
+                                          Style="width: 100%;"
+                                          Placeholder="Tüm İşletmeler" />
+                        </div>
+                    }
+
                     <div style="flex: 1; min-width: 200px;">
                         <RadzenLabel Text="Durum" />
                         <RadzenDropDown @bind-Value="selectedStatus"
@@ -45,7 +58,7 @@
                                       TextProperty="Text"
                                       ValueProperty="Value"
                                       Style="width: 100%;"
-                                      Change="@(args => LoadAppointments())" />
+                                      Placeholder="Tümü" />
                     </div>
 
                     <div style="flex: 1; min-width: 200px;">
@@ -54,10 +67,10 @@
                                       Data="@sortOptions"
                                       TextProperty="Text"
                                       ValueProperty="Value"
-                                      Style="width: 100%;"
-                                      Change="@(args => SortAppointments())" />
+                                      Style="width: 100%;" />
                     </div>
 
+                    <RadzenButton Text="Filtrele" Icon="filter_list" ButtonStyle="ButtonStyle.Primary" Click="@ApplyFilters" />
                     <RadzenButton Text="Yenile" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@LoadAppointments" />
                 </RadzenStack>
             </RadzenCard>
