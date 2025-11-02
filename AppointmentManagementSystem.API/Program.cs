@@ -112,4 +112,45 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Auto-start Blazor UI in development
+if (app.Environment.IsDevelopment())
+{
+    StartBlazorUI();
+}
+
 app.Run();
+
+// Method to start Blazor UI automatically
+static void StartBlazorUI()
+{
+    try
+    {
+        var blazorProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "AppointmentManagementSystem.BlazorUI");
+        
+        if (Directory.Exists(blazorProjectPath))
+        {
+            Console.WriteLine("🚀 Starting Blazor UI...");
+            
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "run",
+                WorkingDirectory = blazorProjectPath,
+                UseShellExecute = true, // Opens in new window
+                CreateNoWindow = false
+            };
+
+            Process.Start(processStartInfo);
+            Console.WriteLine("✅ Blazor UI started successfully!");
+            Console.WriteLine($"📁 Blazor Path: {blazorProjectPath}");
+        }
+        else
+        {
+            Console.WriteLine($"⚠️  Blazor project not found at: {blazorProjectPath}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error starting Blazor UI: {ex.Message}");
+    }
+}
