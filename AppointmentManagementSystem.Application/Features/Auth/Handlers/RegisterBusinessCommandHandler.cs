@@ -195,7 +195,8 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 Token = token,
                 UserName = user.Name,
                 Role = user.Role,
-                ExpiresAt = DateTime.UtcNow.AddHours(24)
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                BusinessId = business.Id
             };
         }
     }
