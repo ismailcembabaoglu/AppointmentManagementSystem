@@ -37,10 +37,11 @@ namespace AppointmentManagementSystem.API.Services
             try
             {
                 // Wait a bit for API to start
-                Task.Delay(2000, cancellationToken).Wait(cancellationToken);
+                Task.Delay(3000, cancellationToken).Wait(cancellationToken);
 
                 var currentDirectory = Directory.GetCurrentDirectory();
                 var blazorProjectPath = Path.Combine(currentDirectory, "..", "AppointmentManagementSystem.BlazorUI");
+                blazorProjectPath = Path.GetFullPath(blazorProjectPath);
 
                 if (!Directory.Exists(blazorProjectPath))
                 {
@@ -49,23 +50,28 @@ namespace AppointmentManagementSystem.API.Services
                 }
 
                 _logger.LogInformation("🚀 Starting Blazor UI automatically...");
+                _logger.LogInformation("📁 Blazor Path: {Path}", blazorProjectPath);
 
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = "run --no-build",
+                    Arguments = "run",
                     WorkingDirectory = blazorProjectPath,
                     UseShellExecute = true,
-                    CreateNoWindow = false
+                    CreateNoWindow = false,
+                    WindowStyle = ProcessWindowStyle.Normal
                 };
+
+                // Environment variable to disable Visual Studio tooling
+                processStartInfo.Environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "";
 
                 _blazorProcess = Process.Start(processStartInfo);
 
                 if (_blazorProcess != null)
                 {
                     _logger.LogInformation("✅ Blazor UI started successfully!");
-                    _logger.LogInformation("📁 Blazor Path: {Path}", blazorProjectPath);
-                    _logger.LogInformation("🌐 Blazor should be available at: https://localhost:5002 or check the Blazor console");
+                    _logger.LogInformation("🌐 Blazor will be available at: http://localhost:5090");
+                    _logger.LogInformation("⏳ Wait for Blazor to compile and start (may take 10-30 seconds)");
                 }
             }
             catch (OperationCanceledException)
@@ -85,7 +91,18 @@ namespace AppointmentManagementSystem.API.Services
                 if (_blazorProcess != null && !_blazorProcess.HasExited)
                 {
                     _logger.LogInformation("🛑 Stopping Blazor UI...");
-                    _blazorProcess.Kill(true); // Kill entire process tree
+                    
+                    // Kill the process tree
+                    try
+                    {
+                        _blazorProcess.Kill(entireProcessTree: true);
+                    }
+                    catch
+                    {
+                        // If Kill with tree fails, try simple kill
+                        _blazorProcess.Kill();
+                    }
+                    
                     _blazorProcess.Dispose();
                     _logger.LogInformation("✅ Blazor UI stopped");
                 }
