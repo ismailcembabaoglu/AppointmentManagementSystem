@@ -305,7 +305,15 @@
 
     private async Task ScrollToSection(string sectionId)
     {
-        await JSRuntime.InvokeVoidAsync("scrollToSection", sectionId);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToSection", sectionId);
+        }
+        catch (Exception ex)
+        {
+            // Fallback to anchor link if JS fails
+            Console.WriteLine($"Scroll error: {ex.Message}");
+        }
     }
 
     private async Task ScrollToTop()
