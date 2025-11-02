@@ -1031,7 +1031,7 @@
                 {
                     notificationAppointments = response.Data
                         .Where(a => a.Status == "Pending")
-                        .OrderByDescending(a => a.CreatedAt)
+                        .OrderByDescending(a => a.AppointmentDate)
                         .ToList();
                 }
             }
@@ -1043,7 +1043,7 @@
                 {
                     notificationAppointments = response.Data
                         .Where(a => a.Status == "Confirmed")
-                        .OrderByDescending(a => a.UpdatedAt)
+                        .OrderByDescending(a => a.AppointmentDate)
                         .ToList();
                 }
             }
