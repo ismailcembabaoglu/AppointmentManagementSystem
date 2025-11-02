@@ -94,6 +94,9 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Auto-start Blazor UI service
+builder.Services.AddHostedService<BlazorAutoStartService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
