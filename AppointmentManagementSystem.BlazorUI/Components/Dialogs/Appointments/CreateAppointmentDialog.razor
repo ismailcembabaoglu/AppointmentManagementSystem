@@ -656,7 +656,7 @@
             0 => selectedDate.HasValue,
             1 => selectedTimeSlot.HasValue,
             2 => selectedServices.Any(),
-            3 => true, // Employee is optional
+            3 => selectedEmployeeId.HasValue, // Employee is now required
             4 => true, // Photos are optional
             5 => true,
             _ => false
