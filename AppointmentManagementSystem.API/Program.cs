@@ -97,11 +97,9 @@ builder.Services.AddCors(options =>
 // Auto-start Blazor UI service
 builder.Services.AddHostedService<BlazorAutoStartService>();
 
-// Add SPA services for development
-builder.Services.AddSpaStaticFiles(configuration =>
-{
-    configuration.RootPath = "../AppointmentManagementSystem.BlazorUI/bin/Debug/net9.0/wwwroot";
-});
+// YARP Reverse Proxy (Blazor'u proxy için)
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
@@ -116,8 +114,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
-app.UseStaticFiles();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -125,16 +121,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// SPA Proxy for Blazor
-app.UseSpa(spa =>
-{
-    spa.Options.SourcePath = "../AppointmentManagementSystem.BlazorUI";
-    
-    if (app.Environment.IsDevelopment())
-    {
-        // Blazor development server will be proxied
-        spa.UseProxyToSpaDevelopmentServer("http://localhost:5090");
-    }
-});
+// YARP Reverse Proxy - Blazor routes
+app.MapReverseProxy();
 
 app.Run();
