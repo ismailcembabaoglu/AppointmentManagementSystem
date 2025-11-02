@@ -25,6 +25,6 @@ namespace AppointmentManagementSystem.Domain.Entities
         // Navigation properties
         public virtual Business? Business { get; set; } = new();
         public virtual User? User { get; set; } = new();
-        public virtual ICollection<Employee>? ManagedEmployees { get; set; } = new List<Employee>();
+        public virtual ICollection<Employee>? ManagedEmployees { get; set; }
     }
 }

@@ -38,11 +38,11 @@ namespace AppointmentManagementSystem.Domain.Entities
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public virtual Category? Category { get; set; } = new();
-        public virtual ICollection<BusinessUser>? BusinessUsers { get; set; } = new List<BusinessUser>();
-        public virtual ICollection<Service>? Services { get; set; } = new List<Service>();
-        public virtual ICollection<Employee>? Employees { get; set; } = new List<Employee>();
-        public virtual ICollection<Appointment>? Appointments { get; set; } = new List<Appointment>();
-        public virtual ICollection<BusinessPhoto>? Photos { get; set; } = new List<BusinessPhoto>();
+        public virtual Category? Category { get; set; } 
+        public virtual ICollection<BusinessUser>? BusinessUsers { get; set; } 
+        public virtual ICollection<Service>? Services { get; set; }
+        public virtual ICollection<Employee>? Employees { get; set; } 
+        public virtual ICollection<Appointment>? Appointments { get; set; } 
+        public virtual ICollection<BusinessPhoto>? Photos { get; set; } 
     }
 }

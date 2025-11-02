@@ -3,6 +3,6 @@
     public class ServicePhoto : Photo
     {
         public int ServiceId { get; set; }
-        public virtual Service? Service { get; set; } = new();
+        public virtual Service? Service { get; set; }
     }
 }

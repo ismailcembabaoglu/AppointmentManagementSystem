@@ -43,7 +43,7 @@ namespace AppointmentManagementSystem.Domain.Entities
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public virtual ICollection<BusinessUser> BusinessUsers { get; set; } = new List<BusinessUser>();
-        public virtual ICollection<Appointment> CustomerAppointments { get; set; } = new List<Appointment>();
+        public virtual ICollection<BusinessUser>? BusinessUsers { get; set; } 
+        public virtual ICollection<Appointment>? CustomerAppointments { get; set; }
     }
 }

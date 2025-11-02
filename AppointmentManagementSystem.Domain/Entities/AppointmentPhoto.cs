@@ -3,6 +3,6 @@
     public class AppointmentPhoto : Photo
     {
         public int AppointmentId { get; set; }
-        public virtual Appointment? Appointment { get; set; } = new();
+        public virtual Appointment? Appointment { get; set; }
     }
 }

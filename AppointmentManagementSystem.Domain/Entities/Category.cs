@@ -15,6 +15,6 @@ namespace AppointmentManagementSystem.Domain.Entities
         public string? Icon { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Business>? Businesses { get; set; } = new List<Business>();
+        public virtual ICollection<Business>? Businesses { get; set; }
     }
 }
