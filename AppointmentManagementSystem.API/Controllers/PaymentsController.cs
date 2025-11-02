@@ -1,4 +1,3 @@
-using AppointmentManagementSystem.API.Controllers;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Features.Payments.Queries;
 using MediatR;
@@ -9,10 +8,13 @@ namespace AppointmentManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentsController : BaseController
+    public class PaymentsController : ControllerBase
     {
-        public PaymentsController(IMediator mediator) : base(mediator)
+        private readonly IMediator _mediator;
+
+        public PaymentsController(IMediator mediator)
         {
+            _mediator = mediator;
         }
 
         [HttpPost("initiate-card-registration")]
