@@ -8,13 +8,11 @@ namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
     {
-        private readonly ILocalStorageService _localStorage; // Blazored.LocalStorage'den gelen interface
-        private System.Threading.Timer? _tokenExpirationTimer;
+        private readonly ILocalStorageService _localStorage;
 
         public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
         {
             _localStorage = localStorage;
-            StartTokenExpirationCheck();
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -26,13 +24,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
 
-            // Check if token is expired
-            if (IsTokenExpired(token))
-            {
-                await MarkUserAsLoggedOut();
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-            }
-
+            // Token expiration kontrolü kaldırıldı - kullanıcı manuel logout yapana kadar session devam eder
             var claims = ParseClaimsFromJwt(token);
             var identity = new ClaimsIdentity(claims, "jwt");
             var user = new ClaimsPrincipal(identity);
