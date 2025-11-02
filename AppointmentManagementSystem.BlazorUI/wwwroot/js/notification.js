@@ -43,3 +43,18 @@ window.playNotificationSound = function() {
         oscillator2.stop(audioContext.currentTime + 0.3);
     }, 150);
 };
+
+// Smooth scroll to section
+window.scrollToSection = function(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        const headerHeight = 70; // Fixed header height
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+};
