@@ -409,6 +409,50 @@
                                 </RadzenCard>
                             </RadzenStack>
                         }
+                        else if (currentBusinessStep == 4)
+                        {
+                            <!-- Step 5: Payment -->
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+                                <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
+                                    💳 Ödeme Bilgileri
+                                </RadzenText>
+
+                                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                            📋 Abonelik Bilgileri
+                                        </RadzenText>
+                                        <RadzenText>• <strong>Aylık Ücret:</strong> 700 TL</RadzenText>
+                                        <RadzenText>• <strong>İlk Ödeme:</strong> Kayıt tamamlandıktan 30 gün sonra</RadzenText>
+                                        <RadzenText>• <strong>Ödeme Yöntemi:</strong> Otomatik kredi kartı tahsilatı</RadzenText>
+                                        <RadzenText>• <strong>İptal:</strong> İstediğiniz zaman iptal edebilirsiniz</RadzenText>
+                                    </RadzenStack>
+                                </RadzenAlert>
+
+                                @if (registeredBusinessId.HasValue && !paymentIFrameParameters.Any())
+                                {
+                                    <RadzenCard>
+                                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 40px;">
+                                            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                                            <RadzenText TextStyle="TextStyle.H6">Ödeme ekranı hazırlanıyor...</RadzenText>
+                                        </RadzenStack>
+                                    </RadzenCard>
+                                }
+                                else if (paymentIFrameParameters.Any())
+                                {
+                                    <PayTRIFrameComponent 
+                                        IFrameParameters="@paymentIFrameParameters"
+                                        OnPaymentSuccess="@HandlePaymentSuccess"
+                                        OnPaymentFailed="@HandlePaymentFailed" />
+                                }
+                                else
+                                {
+                                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
+                                        Ödeme ekranı yüklenemedi. Lütfen önceki adımları kontrol edin.
+                                    </RadzenAlert>
+                                }
+                            </RadzenStack>
+                        }
                     </RadzenCard>
 
                     <!-- Navigation Buttons -->
