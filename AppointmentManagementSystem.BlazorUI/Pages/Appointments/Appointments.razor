@@ -440,14 +440,19 @@
 
     private void FilterAndSortAppointments()
     {
-        // Filter
-        if (selectedStatus == "All")
+        // Start with all appointments
+        filteredAppointments = new List<AppointmentDto>(appointments);
+
+        // Filter by business (Customer only)
+        if (userRole == "Customer" && selectedBusinessId.HasValue)
         {
-            filteredAppointments = new List<AppointmentDto>(appointments);
+            filteredAppointments = filteredAppointments.Where(a => a.BusinessId == selectedBusinessId.Value).ToList();
         }
-        else
+
+        // Filter by status
+        if (selectedStatus != "All")
         {
-            filteredAppointments = appointments.Where(a => a.Status == selectedStatus).ToList();
+            filteredAppointments = filteredAppointments.Where(a => a.Status == selectedStatus).ToList();
         }
 
         // Sort
