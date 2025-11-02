@@ -52,9 +52,13 @@
                     <!-- Notifications -->
                     <RadzenButton Icon="notifications" ButtonStyle="ButtonStyle.Light" 
                                 Variant="Variant.Text" Size="ButtonSize.Large"
-                                class="header-icon-btn">
-                        <RadzenBadge Text="3" BadgeStyle="BadgeStyle.Danger" 
-                                   Style="position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px;" />
+                                class="header-icon-btn"
+                                Click="@OpenNotifications">
+                        @if (notificationCount > 0)
+                        {
+                            <RadzenBadge Text="@notificationCount.ToString()" BadgeStyle="BadgeStyle.Danger" 
+                                       Style="position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px;" />
+                        }
                     </RadzenButton>
 
                     <!-- Messages -->
