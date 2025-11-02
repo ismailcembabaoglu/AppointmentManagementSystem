@@ -5,6 +5,7 @@
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Components
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Registration
+@using Microsoft.AspNetCore.Components.Authorization
 @using Radzen
 @using static AppointmentManagementSystem.BlazorUI.Components.FileUploadComponent
 @inject IApiService ApiService
@@ -12,6 +13,7 @@
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="auth-container" style="padding: 2rem 0;">
     <RadzenCard Style="@cardStyle">
