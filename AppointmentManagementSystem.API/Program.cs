@@ -1,4 +1,5 @@
 using AppointmentManagementSystem.API.Middleware;
+using AppointmentManagementSystem.API.Services;
 using AppointmentManagementSystem.Application;
 using AppointmentManagementSystem.Infrastructure;
 using AppointmentManagementSystem.Infrastructure.Data;
