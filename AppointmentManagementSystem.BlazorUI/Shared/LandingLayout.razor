@@ -284,7 +284,21 @@
 
     /* Scroll offset for fixed header */
     #hero, #features, #how-it-works, #categories {
-        scroll-margin-top: 80px;
+        scroll-margin-top: 100px;
+    }
+
+    /* Body reset */
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        #hero, #features, #how-it-works, #categories {
+            scroll-margin-top: 80px;
+        }
     }
 
     .btn-compact {
