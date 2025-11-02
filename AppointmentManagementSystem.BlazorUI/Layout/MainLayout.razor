@@ -1234,6 +1234,7 @@
 
     public void Dispose()
     {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         notificationTimer?.Dispose();
         searchDebounceTimer?.Dispose();
     }
