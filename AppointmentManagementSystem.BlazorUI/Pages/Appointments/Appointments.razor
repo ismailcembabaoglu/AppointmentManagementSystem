@@ -338,6 +338,49 @@
         }
     }
 
+    private async Task LoadBusinessOptions()
+    {
+        try
+        {
+            // Müşterinin randevu aldığı işletmeleri bul
+            var uniqueBusinessIds = appointments
+                .Where(a => a.BusinessId > 0)
+                .Select(a => a.BusinessId)
+                .Distinct()
+                .ToList();
+
+            // İşletme bilgilerini al
+            businessOptions = new List<BusinessOption>
+            {
+                new BusinessOption { Text = "Tüm İşletmeler", Value = null }
+            };
+
+            foreach (var businessId in uniqueBusinessIds)
+            {
+                var businessName = appointments.FirstOrDefault(a => a.BusinessId == businessId)?.BusinessName;
+                if (!string.IsNullOrEmpty(businessName))
+                {
+                    businessOptions.Add(new BusinessOption
+                    {
+                        Text = businessName,
+                        Value = businessId
+                    });
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"İşletmeler yüklenirken hata oluştu: {ex.Message}");
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        FilterAndSortAppointments();
+    }
+
     private async Task LoadAppointments()
     {
         isLoading = true;
