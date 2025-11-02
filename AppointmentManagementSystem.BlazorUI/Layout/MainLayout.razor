@@ -37,13 +37,30 @@
                 </div>
             </div>
 
-            <!-- Center Section - Search (Optional) -->
-            <div class="header-center-section">
-                <div class="search-wrapper">
-                    <RadzenIcon Icon="search" Style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px;" />
-                    <input type="text" placeholder="Ara..." class="search-input" />
+            <!-- Center Section - Search (Customer Only) -->
+            @if (userRole == "Customer")
+            {
+                <div class="header-center-section">
+                    <div class="search-wrapper">
+                        <RadzenIcon Icon="search" Style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px;" />
+                        <input type="text" 
+                               placeholder="İşletme ara..." 
+                               class="search-input"
+                               @bind="searchQuery"
+                               @bind:event="oninput"
+                               @onkeydown="HandleSearchKeyDown" />
+                        @if (!string.IsNullOrEmpty(searchQuery))
+                        {
+                            <RadzenButton Icon="close" 
+                                        ButtonStyle="ButtonStyle.Light" 
+                                        Variant="Variant.Text"
+                                        Size="ButtonSize.Small"
+                                        Click="ClearSearch"
+                                        Style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); min-width: 32px; height: 32px;" />
+                        }
+                    </div>
                 </div>
-            </div>
+            }
 
             <!-- Right Section -->
             <div class="header-right-section">
