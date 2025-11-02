@@ -506,12 +506,10 @@
     private async Task LoadBusinessData(int businessId)
     {
         servicesLoading = true;
-        employeesLoading = true;
 
         var servicesTask = ServiceApiService.GetAllServicesAsync(businessId);
-        var employeesTask = EmployeeApiService.GetAllEmployeesAsync(businessId);
 
-        await Task.WhenAll(servicesTask, employeesTask);
+        await Task.WhenAll(servicesTask);
 
         var servicesResponse = await servicesTask;
         if (servicesResponse.Success)
@@ -519,14 +517,7 @@
             services = servicesResponse.Data ?? new List<ServiceDto>();
         }
 
-        var employeesResponse = await employeesTask;
-        if (employeesResponse.Success)
-        {
-            employees = employeesResponse.Data ?? new List<EmployeeDto>();
-        }
-
         servicesLoading = false;
-        employeesLoading = false;
         StateHasChanged();
     }
 
