@@ -26,6 +26,25 @@ namespace AppointmentManagementSystem.API.Controllers
             return OkResponse(result, "Çalışanlar başarıyla getirildi.");
         }
 
+        [HttpGet("available")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAvailableEmployees(
+            [FromQuery] int businessId,
+            [FromQuery] DateTime selectedDate,
+            [FromQuery] TimeSpan selectedTime,
+            [FromQuery] int totalDurationMinutes)
+        {
+            var query = new GetAvailableEmployeesQuery
+            {
+                BusinessId = businessId,
+                SelectedDate = selectedDate,
+                SelectedTime = selectedTime,
+                TotalDurationMinutes = totalDurationMinutes
+            };
+            var result = await _mediator.Send(query);
+            return OkResponse(result, "Müsait çalışanlar başarıyla getirildi.");
+        }
+
         [HttpGet("{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
