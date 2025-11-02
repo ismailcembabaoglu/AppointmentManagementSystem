@@ -633,6 +633,11 @@
             {
                 await LoadAvailableTimeSlots(selectedDate.Value);
             }
+            else if (currentStep == 2 && selectedServices.Any() && PreselectedBusinessId.HasValue && selectedDate.HasValue && selectedTimeSlot.HasValue)
+            {
+                // Hizmet seçiminden çalışan seçimine geçerken müsait çalışanları yükle
+                await LoadAvailableEmployees();
+            }
 
             currentStep++;
             StateHasChanged();
@@ -640,6 +645,54 @@
         catch (Exception ex)
         {
             NotificationService.Notify(NotificationSeverity.Error, "Hata", $"İşlem sırasında hata oluştu: {ex.Message}");
+        }
+    }
+
+    private async Task LoadAvailableEmployees()
+    {
+        try
+        {
+            employeesLoading = true;
+            employees.Clear();
+            selectedEmployeeId = null;
+            StateHasChanged();
+
+            if (!PreselectedBusinessId.HasValue || !selectedDate.HasValue || !selectedTimeSlot.HasValue || !selectedServices.Any())
+            {
+                employeesLoading = false;
+                return;
+            }
+
+            // Seçilen hizmetlerin toplam süresini hesapla
+            var totalDuration = GetTotalDuration();
+
+            // Müsait çalışanları API'den al
+            var response = await EmployeeApiService.GetAvailableEmployeesAsync(
+                PreselectedBusinessId.Value,
+                selectedDate.Value,
+                selectedTimeSlot.Value,
+                totalDuration
+            );
+
+            if (response.Success)
+            {
+                employees = response.Data ?? new List<EmployeeDto>();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", 
+                    response.Message ?? "Müsait çalışanlar yüklenirken bir sorun oluştu.");
+            }
+
+            employeesLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            employeesLoading = false;
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", 
+                $"Müsait çalışanlar yüklenirken hata oluştu: {ex.Message}");
+            StateHasChanged();
         }
     }
 
