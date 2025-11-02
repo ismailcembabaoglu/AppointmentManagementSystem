@@ -16,6 +16,8 @@ dotnet add package Microsoft.Extensions.Configuration.Abstractions --version 8.0
 ```bash
 cd ../AppointmentManagementSystem.Infrastructure
 dotnet add package Microsoft.Extensions.Hosting.Abstractions --version 8.0.0
+dotnet add package Microsoft.Extensions.Http --version 8.0.0
+dotnet add package Microsoft.Extensions.Configuration.Binder --version 8.0.0
 ```
 
 ### 3. Tüm Paketleri Restore Etme
