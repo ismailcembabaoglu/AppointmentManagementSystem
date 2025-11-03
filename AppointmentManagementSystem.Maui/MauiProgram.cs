@@ -52,7 +52,9 @@ namespace AppointmentManagementSystem.Maui
             builder.Services.AddScoped<TooltipService>();
             builder.Services.AddScoped<ContextMenuService>();
 
-            // Native Features - Permissions
+            // Native Features Services
+            builder.Services.AddSingleton<ICameraService, CameraService>();
+            builder.Services.AddSingleton<ILocationService, LocationService>();
             builder.Services.AddSingleton<IPermissions>(Permissions.Default);
 
 #if DEBUG
