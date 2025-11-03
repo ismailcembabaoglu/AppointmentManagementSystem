@@ -12,7 +12,7 @@
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
         <div>
             <RadzenLabel Text="Hizmet Adı *" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextBox @bind-Value="serviceDto.Name" Placeholder="Hizmet adını girin" Style="width: 100%;" />
+            <RadzenTextBox @bind="serviceDto.Name" Placeholder="Hizmet adını girin" Style="width: 100%;" />
             @if (!string.IsNullOrEmpty(nameError))
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@nameError</RadzenText>
@@ -21,17 +21,17 @@
 
         <div>
             <RadzenLabel Text="Açıklama" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextArea @bind-Value="serviceDto.Description" Rows="3" Placeholder="Hizmet açıklaması" Style="width: 100%;" />
+            <RadzenTextArea @bind="serviceDto.Description" Rows="3" Placeholder="Hizmet açıklaması" Style="width: 100%;" />
         </div>
 
         <div>
             <RadzenLabel Text="Fiyat (TL)" Style="margin-bottom: 8px; display: block;" />
-            <RadzenNumeric @bind-Value="serviceDto.Price" Placeholder="Fiyat (opsiyonel)" Style="width: 100%;" ShowUpDown="false" />
+            <RadzenNumeric @bind="serviceDto.Price" Placeholder="Fiyat (opsiyonel)" Style="width: 100%;" ShowUpDown="false" />
         </div>
 
         <div>
             <RadzenLabel Text="Süre (dakika) *" Style="margin-bottom: 8px; display: block;" />
-            <RadzenNumeric @bind-Value="serviceDto.DurationMinutes" Placeholder="Süre" Min="1" Max="1440" Style="width: 100%;" ShowUpDown="true" />
+            <RadzenNumeric @bind="serviceDto.DurationMinutes" Placeholder="Süre" Min="1" Max="1440" Style="width: 100%;" ShowUpDown="true" />
             @if (!string.IsNullOrEmpty(durationError))
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@durationError</RadzenText>
@@ -39,7 +39,7 @@
         </div>
 
         <div>
-            <RadzenCheckBox @bind-Value="serviceDto.IsActive" />
+            <RadzenCheckBox @bind="serviceDto.IsActive" />
             <RadzenLabel Text="Aktif" Style="margin-left: 8px;" />
         </div>
     </RadzenStack>

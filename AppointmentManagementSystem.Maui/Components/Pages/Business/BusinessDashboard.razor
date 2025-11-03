@@ -113,7 +113,7 @@ else
                         <RadzenRow Gap="16px">
                             <RadzenColumn Size="12" SizeMD="6">
                                 <RadzenFormField Text="İşletme Adı" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.Name" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.Name" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="6">
@@ -124,23 +124,23 @@ else
                         </RadzenRow>
 
                         <RadzenFormField Text="Açıklama" Style="width: 100%;">
-                            <RadzenTextArea @bind-Value="business.Description" Rows="4" Style="width: 100%;" />
+                            <RadzenTextArea @bind="business.Description" Rows="4" Style="width: 100%;" />
                         </RadzenFormField>
 
                         <RadzenRow Gap="16px">
                             <RadzenColumn Size="12" SizeMD="6">
                                 <RadzenFormField Text="Adres" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.Address" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.Address" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="3">
                                 <RadzenFormField Text="Şehir" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.City" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.City" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="3">
                                 <RadzenFormField Text="İlçe" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.District" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.District" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                         </RadzenRow>
@@ -148,17 +148,17 @@ else
                         <RadzenRow Gap="16px">
                             <RadzenColumn Size="12" SizeMD="4">
                                 <RadzenFormField Text="Telefon" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.Phone" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.Phone" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="4">
                                 <RadzenFormField Text="E-posta" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.Email" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.Email" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="4">
                                 <RadzenFormField Text="Web Sitesi" Style="width: 100%;">
-                                    <RadzenTextBox @bind-Value="business.Website" Style="width: 100%;" />
+                                    <RadzenTextBox @bind="business.Website" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                         </RadzenRow>

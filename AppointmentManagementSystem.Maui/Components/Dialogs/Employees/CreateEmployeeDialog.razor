@@ -15,7 +15,7 @@
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
         <div>
             <RadzenLabel Text="Ad Soyad *" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextBox @bind-Value="employeeDto.Name" Placeholder="Çalışan adını girin" Style="width: 100%;" />
+            <RadzenTextBox @bind="employeeDto.Name" Placeholder="Çalışan adını girin" Style="width: 100%;" />
             @if (!string.IsNullOrEmpty(nameError))
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@nameError</RadzenText>
@@ -24,12 +24,12 @@
 
         <div>
             <RadzenLabel Text="Uzmanlık" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextBox @bind-Value="employeeDto.Specialization" Placeholder="Uzmanlık alanı" Style="width: 100%;" />
+            <RadzenTextBox @bind="employeeDto.Specialization" Placeholder="Uzmanlık alanı" Style="width: 100%;" />
         </div>
 
         <div>
             <RadzenLabel Text="Açıklama" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextArea @bind-Value="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" Style="width: 100%;" />
+            <RadzenTextArea @bind="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" Style="width: 100%;" />
         </div>
 
         <!-- Photo Upload Section -->
@@ -70,7 +70,7 @@
         </div>
 
         <div>
-            <RadzenCheckBox @bind-Value="employeeDto.IsActive" />
+            <RadzenCheckBox @bind="employeeDto.IsActive" />
             <RadzenLabel Text="Aktif" Style="margin-left: 8px;" />
         </div>
     </RadzenStack>

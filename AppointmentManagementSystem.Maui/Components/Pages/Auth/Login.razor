@@ -21,7 +21,7 @@
 
             <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                 <RadzenTextBox Placeholder="E-posta adresinizi girin"
-                               @bind-Value="loginDto.Email"
+                               @bind="loginDto.Email"
                                Icon="email" />
                 @if (!string.IsNullOrEmpty(emailError))
                 {
@@ -29,7 +29,7 @@
                 }
 
                 <RadzenPassword Placeholder="Şifrenizi girin"
-                                @bind-Value="loginDto.Password"
+                                @bind="loginDto.Password"
                                 Icon="lock" />
                 @if (!string.IsNullOrEmpty(passwordError))
                 {

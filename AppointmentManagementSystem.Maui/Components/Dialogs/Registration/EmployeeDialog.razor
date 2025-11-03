@@ -8,7 +8,7 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
             <div>
                 <RadzenLabel Text="Ad Soyad *" />
-                <RadzenTextBox @bind-Value="model.Name"
+                <RadzenTextBox @bind="model.Name"
                               Placeholder="Örn: Ahmet Yılmaz"
                               Style="width: 100%;" />
                 @if (!string.IsNullOrEmpty(nameError))
@@ -22,14 +22,14 @@
 
             <div>
                 <RadzenLabel Text="Uzmanlık" />
-                <RadzenTextBox @bind-Value="model.Specialization"
+                <RadzenTextBox @bind="model.Specialization"
                               Placeholder="Örn: Kuaför, Masöz, Berber"
                               Style="width: 100%;" />
             </div>
 
             <div>
                 <RadzenLabel Text="Açıklama" />
-                <RadzenTextArea @bind-Value="model.Description"
+                <RadzenTextArea @bind="model.Description"
                                Rows="3"
                                Placeholder="Çalışan hakkında detaylı bilgi"
                                Style="width: 100%;" />

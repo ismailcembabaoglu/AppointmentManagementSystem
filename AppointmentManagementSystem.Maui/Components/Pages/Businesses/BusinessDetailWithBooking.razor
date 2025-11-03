@@ -139,19 +139,19 @@ else
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                         <div>
                             <RadzenLabel Text="Hizmet Seçin *" />
-                            <RadzenDropDown @bind-Value="selectedServiceId" Data="@services" TextProperty="Name" ValueProperty="Id" 
+                            <RadzenDropDown @bind="selectedServiceId" Data="@services" TextProperty="Name" ValueProperty="Id" 
                                           Placeholder="Hizmet seçin" Style="width: 100%;" Change="@(args => OnServiceChanged())" />
                         </div>
 
                         <div>
                             <RadzenLabel Text="Çalışan Seçin *" />
-                            <RadzenDropDown @bind-Value="selectedEmployeeId" Data="@employees" TextProperty="Name" ValueProperty="Id" 
+                            <RadzenDropDown @bind="selectedEmployeeId" Data="@employees" TextProperty="Name" ValueProperty="Id" 
                                           Placeholder="Çalışan seçin" Style="width: 100%;" Disabled="@(!selectedServiceId.HasValue)" />
                         </div>
 
                         <div>
                             <RadzenLabel Text="Tarih Seçin *" />
-                            <RadzenDatePicker @bind-Value="selectedDate" DateFormat="dd/MM/yyyy" 
+                            <RadzenDatePicker @bind="selectedDate" DateFormat="dd/MM/yyyy" 
                                             Style="width: 100%;" Min="@DateTime.Today" Disabled="@(!selectedEmployeeId.HasValue)" 
                                             Change="@(args => LoadAvailableTimeSlots())" />
                         </div>
@@ -172,7 +172,7 @@ else
 
                         <div>
                             <RadzenLabel Text="Notunuz (İsteğe Bağlı)" />
-                            <RadzenTextArea @bind-Value="notes" Rows="3" Placeholder="Özel bir isteğiniz var mı?" Style="width: 100%;" />
+                            <RadzenTextArea @bind="notes" Rows="3" Placeholder="Özel bir isteğiniz var mı?" Style="width: 100%;" />
                         </div>
 
                         <RadzenButton Text="Randevu Oluştur" Icon="event" ButtonStyle="ButtonStyle.Success" 

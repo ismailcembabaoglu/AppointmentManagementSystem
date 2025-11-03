@@ -27,7 +27,7 @@
         <!-- Filtreler -->
         <RadzenRow>
             <RadzenColumn Col="12" Md="6">
-                <RadzenTextBox Placeholder="İşletme ara..." @bind-Value="searchTerm" Change="@(args => SearchBusinesses())" />
+                <RadzenTextBox Placeholder="İşletme ara..." @bind="searchTerm" Change="@(args => SearchBusinesses())" />
             </RadzenColumn>
         </RadzenRow>
 

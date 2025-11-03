@@ -42,7 +42,7 @@
                     {
                         <div style="flex: 1; min-width: 200px;">
                             <RadzenLabel Text="İşletme" />
-                            <RadzenDropDown @bind-Value="selectedBusinessId"
+                            <RadzenDropDown @bind="selectedBusinessId"
                                           Data="@businessOptions"
                                           TextProperty="Text"
                                           ValueProperty="Value"
@@ -53,7 +53,7 @@
 
                     <div style="flex: 1; min-width: 200px;">
                         <RadzenLabel Text="Durum" />
-                        <RadzenDropDown @bind-Value="selectedStatus"
+                        <RadzenDropDown @bind="selectedStatus"
                                       Data="@statusOptions"
                                       TextProperty="Text"
                                       ValueProperty="Value"
@@ -63,7 +63,7 @@
 
                     <div style="flex: 1; min-width: 200px;">
                         <RadzenLabel Text="Sıralama" />
-                        <RadzenDropDown @bind-Value="sortBy"
+                        <RadzenDropDown @bind="sortBy"
                                       Data="@sortOptions"
                                       TextProperty="Text"
                                       ValueProperty="Value"
@@ -531,8 +531,8 @@
             ds =>
             @<div style="padding: 20px;">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                    <RadzenRating @bind-Value="@ratingValue" Stars="5" />
-                    <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+                    <RadzenRating @bind="@ratingValue" Stars="5" />
+                    <RadzenTextArea @bind="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
                         <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="() => ds.Close(false)" />
                         <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => ds.Close(true)" />

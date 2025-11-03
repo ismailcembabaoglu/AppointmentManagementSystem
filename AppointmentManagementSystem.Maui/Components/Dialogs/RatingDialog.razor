@@ -9,7 +9,7 @@
             <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
                 Lütfen randevunuzu değerlendirin
             </RadzenText>
-            <RadzenRating @bind-Value="@localRating" Stars="5" Change="@OnRatingChange" />
+            <RadzenRating @bind="@localRating" Stars="5" Change="@OnRatingChange" />
             @if (localRating > 0)
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="margin-top: 8px; color: var(--rz-success);">
@@ -17,7 +17,7 @@
                 </RadzenText>
             }
         </div>
-        <RadzenTextArea @bind-Value="@localReview" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+        <RadzenTextArea @bind="@localReview" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
         <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
             <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="@Cancel" />
             <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="@Submit" />

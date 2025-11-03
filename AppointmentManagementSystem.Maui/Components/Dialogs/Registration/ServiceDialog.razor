@@ -7,7 +7,7 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
             <div>
                 <RadzenLabel Text="Hizmet Adı *" />
-                <RadzenTextBox @bind-Value="model.Name"
+                <RadzenTextBox @bind="model.Name"
                               Placeholder="Örn: Saç Kesimi"
                               Style="width: 100%;" />
                 @if (!string.IsNullOrEmpty(nameError))
@@ -21,7 +21,7 @@
 
             <div>
                 <RadzenLabel Text="Açıklama" />
-                <RadzenTextArea @bind-Value="model.Description"
+                <RadzenTextArea @bind="model.Description"
                                Rows="3"
                                Placeholder="Hizmet hakkında detaylı bilgi"
                                Style="width: 100%;" />
@@ -31,7 +31,7 @@
                 <RadzenColumn Size="12" SizeMD="6">
                     <div>
                         <RadzenLabel Text="Fiyat (TL)" />
-                        <RadzenNumeric @bind-Value="model.Price"
+                        <RadzenNumeric @bind="model.Price"
                                       ShowUpDown="false"
                                       Placeholder="Fiyat"
                                       Min="0"
@@ -41,7 +41,7 @@
                 <RadzenColumn Size="12" SizeMD="6">
                     <div>
                         <RadzenLabel Text="Süre (Dakika) *" />
-                        <RadzenNumeric @bind-Value="model.DurationMinutes"
+                        <RadzenNumeric @bind="model.DurationMinutes"
                                       ShowUpDown="true"
                                       Placeholder="Dakika"
                                       Min="1"

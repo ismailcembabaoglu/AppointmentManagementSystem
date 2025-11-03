@@ -50,7 +50,7 @@
 
             <!-- Search Bar -->
             <RadzenFormField Text="İşletme Adı" Style="width: 100%;">
-                <RadzenTextBox @bind-Value="searchTerm" 
+                <RadzenTextBox @bind="searchTerm" 
                               Placeholder="İşletme ara..." 
                               Style="width: 100%;" />
             </RadzenFormField>
@@ -59,7 +59,7 @@
             <RadzenRow Gap="12px">
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenFormField Text="İl" Style="width: 100%;">
-                        <RadzenDropDown @bind-Value="selectedCity" 
+                        <RadzenDropDown @bind="selectedCity" 
                                        Data="@cities" 
                                        AllowClear="true"
                                        Placeholder="İl seçin..."
@@ -69,7 +69,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenFormField Text="İlçe" Style="width: 100%;">
-                        <RadzenDropDown @bind-Value="selectedDistrict" 
+                        <RadzenDropDown @bind="selectedDistrict" 
                                        Data="@districts" 
                                        AllowClear="true"
                                        Placeholder="İlçe seçin..."
@@ -81,7 +81,7 @@
 
             <!-- Star Rating Filter -->
             <RadzenFormField Text="Minimum Yıldız Puanı" Style="width: 100%;">
-                <RadzenDropDown @bind-Value="selectedRating" 
+                <RadzenDropDown @bind="selectedRating" 
                                Data="@ratingOptions" 
                                AllowClear="true"
                                Placeholder="Puan seçin..."
