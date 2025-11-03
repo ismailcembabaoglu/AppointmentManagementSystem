@@ -1,0 +1,339 @@
+/* Radzen Custom Theme */
+:root {
+    --rz-primary: #3f51b5;
+    --rz-primary-light: #757de8;
+    --rz-primary-lighter: #e8eaf6;
+    --rz-primary-dark: #002984;
+    --rz-primary-contrast: #ffffff;
+    --rz-success: #4caf50;
+    --rz-success-lighter: #e8f5e9;
+    --rz-info: #2196f3;
+    --rz-info-lighter: #e3f2fd;
+    --rz-warning: #ff9800;
+    --rz-warning-lighter: #fff3e0;
+    --rz-danger: #f44336;
+    --rz-danger-lighter: #ffebee;
+    --rz-secondary-lighter: #f5f5f5;
+}
+
+/* Layout Fix - Body tam genişlik */
+.rz-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.rz-body-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.rz-body {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto !important; /* Dikey scroll aktif */
+    height: auto !important;
+}
+
+/* Sidebar kapalı iken body margin sıfır */
+.rz-sidebar + .rz-body,
+.rz-body {
+    margin-left: 0 !important;
+}
+
+/* Mobile-First Responsive Design */
+/* Base styles for mobile (< 768px) */
+body {
+    font-size: 14px;
+    overflow-x: hidden;
+    overflow-y: auto !important; /* Body scroll aktif */
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.rz-card {
+    margin-bottom: 1rem;
+    border-radius: 12px;
+}
+
+/* Touch-friendly buttons for mobile */
+.rz-button {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.rz-button-sm {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+    .rz-body {
+        padding: 8px !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        overflow-y: auto !important; /* Scroll aktif */
+        height: auto !important;
+    }
+    
+    .rz-card {
+        margin-bottom: 12px;
+        padding: 16px;
+    }
+    
+    .rz-form-group {
+        margin-bottom: 16px;
+    }
+
+    /* Make data grids scrollable on mobile */
+    .rz-datatable {
+        overflow-x: auto;
+    }
+
+    /* Stack columns on mobile */
+    .rz-g {
+        margin: 0 -8px;
+    }
+
+    .rz-g > div {
+        padding: 0 8px;
+    }
+
+    /* Dialog responsive */
+    .rz-dialog {
+        max-width: 95% !important;
+        margin: 10px;
+    }
+
+    /* Sidebar mobilde overlay - smooth animation */
+    .rz-sidebar {
+        width: 280px !important;
+        position: fixed !important;
+        z-index: 1050 !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    /* Sidebar açık durumu */
+    .rz-sidebar.rz-sidebar-expanded,
+    .rz-sidebar[style*="display: block"] {
+        transform: translateX(0) !important;
+    }
+
+    /* Header adjustments */
+    .rz-header {
+        padding: 12px 16px !important;
+        height: auto !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1040 !important;
+    }
+
+    /* Remove double padding from pages */
+    .rz-body > div {
+        padding: 0 !important;
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .rz-body {
+        padding: 16px !important;
+        width: 100% !important;
+    }
+
+    .rz-sidebar {
+        width: 260px !important;
+        position: relative !important;
+        transition: all 0.3s ease !important;
+    }
+}
+
+/* Desktop (> 1024px) */
+@media (min-width: 1024px) {
+    body {
+        font-size: 15px;
+    }
+
+    .rz-sidebar {
+        width: 280px !important;
+    }
+    
+    /* Body tam genişlik desktop'ta da + scroll */
+    .rz-body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+    
+    /* Layout flex yapısı */
+    .rz-layout {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .rz-body-container {
+        display: flex;
+        flex: 1;
+    }
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    border-radius: 16px;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Auth pages */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+}
+
+.auth-card {
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: none;
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Loading animation */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Panel menu improvements */
+.rz-panel-menu-item {
+    border-radius: 8px !important;
+    margin: 4px 8px !important;
+    transition: all 0.3s ease !important;
+    font-size: 15px !important;
+    padding: 12px 16px !important;
+}
+
+.rz-panel-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(5px);
+}
+
+.rz-panel-menu-item.rz-active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Mobile: Larger touch targets */
+@media (max-width: 768px) {
+    .rz-panel-menu-item {
+        min-height: 48px !important;
+        font-size: 16px !important;
+    }
+
+    .rz-button {
+        font-size: 15px;
+    }
+}
+
+/* Form inputs responsive */
+.rz-textbox,
+.rz-textarea,
+.rz-dropdown {
+    font-size: 14px;
+    padding: 10px 12px;
+}
+
+@media (max-width: 768px) {
+    .rz-textbox,
+    .rz-textarea,
+    .rz-dropdown {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+    }
+}
+
+/* Card hover effects */
+.service-card,
+.employee-card,
+.appointment-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.service-card:hover,
+.employee-card:hover,
+.appointment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive tables - convert to cards on mobile */
+@media (max-width: 768px) {
+    .rz-datatable-data tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .rz-datatable-data tbody td {
+        display: block;
+        text-align: right;
+        padding: 8px;
+        border: none;
+    }
+
+    .rz-datatable-data tbody td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+    }
+}
+
+/* Notification positioning */
+@media (max-width: 768px) {
+    .rz-notification {
+        width: 90% !important;
+        left: 5% !important;
+    }
+}
+
+/* Dialog mobile optimization */
+@media (max-width: 768px) {
+    .rz-dialog-content {
+        padding: 16px !important;
+    }
+
+    .rz-dialog-title {
+        font-size: 18px !important;
+    }
+}
