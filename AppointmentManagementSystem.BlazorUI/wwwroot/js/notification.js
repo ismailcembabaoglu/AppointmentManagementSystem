@@ -12,17 +12,17 @@ window.playNotificationSound = function() {
     gainNode.connect(audioContext.destination);
     
     // Configure sound (pleasant notification beep)
-    oscillator.frequency.value = 800; // Frequency in Hz
+    oscillator.frequency.value = 1200; // Frequency in Hz
     oscillator.type = 'sine'; // Wave type
     
     // Volume envelope (fade in and out)
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+    gainNode.gain.linearRampToValueAtTime(0.8, audioContext.currentTime + 0.2);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.5);
     
     // Play sound
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    oscillator.stop(audioContext.currentTime + 1.5);
     
     // Second beep for double notification sound
     setTimeout(() => {
@@ -36,11 +36,11 @@ window.playNotificationSound = function() {
         oscillator2.type = 'sine';
         
         gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode2.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-        gainNode2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+        gainNode2.gain.linearRampToValueAtTime(0.8, audioContext.currentTime + 0.2);
+        gainNode2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.5);
         
         oscillator2.start(audioContext.currentTime);
-        oscillator2.stop(audioContext.currentTime + 0.3);
+        oscillator2.stop(audioContext.currentTime + 1.5);
     }, 150);
 };
 
