@@ -1,5 +1,5 @@
 using AppointmentManagementSystem.Application.DTOs;
-using AppointmentManagementSystem.BlazorUI.Models;
+using AppointmentManagementSystem.Maui.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
 

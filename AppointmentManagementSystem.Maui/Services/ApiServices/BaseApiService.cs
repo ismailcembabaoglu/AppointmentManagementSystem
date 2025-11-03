@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.BlazorUI.Models;
+﻿using AppointmentManagementSystem.Maui.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
