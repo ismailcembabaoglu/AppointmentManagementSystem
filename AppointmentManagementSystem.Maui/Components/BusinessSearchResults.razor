@@ -1,0 +1,165 @@
+@using AppointmentManagementSystem.Application.DTOs
+@using Radzen
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0" Style="width: 100%; max-width: 700px;">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 12px 12px 0 0;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="search" Style="font-size: 32px; color: white;" />
+                <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; color: white; font-weight: 700;">
+                        Arama Sonuçları
+                    </RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0; color: rgba(255,255,255,0.9);">
+                        "@SearchQuery" için sonuçlar
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+            <RadzenBadge Text="@Businesses.Count.ToString()" BadgeStyle="BadgeStyle.Light" 
+                       Style="font-size: 16px; padding: 8px 12px; font-weight: 700;" />
+        </RadzenStack>
+    </div>
+
+    <!-- Results List -->
+    <div style="max-height: 500px; overflow-y: auto; padding: 16px; background: white; border-radius: 0 0 12px 12px;">
+        @if (IsLoading)
+        {
+            <div style="text-align: center; padding: 60px 20px;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.Body2" Style="margin-top: 16px; opacity: 0.6;">
+                    İşletmeler aranıyor...
+                </RadzenText>
+            </div>
+        }
+        else if (!Businesses.Any())
+        {
+            <div style="text-align: center; padding: 60px 20px;">
+                <div style="font-size: 64px; opacity: 0.2;">🔍</div>
+                <RadzenText TextStyle="TextStyle.H6" Style="margin-top: 16px; opacity: 0.6;">Sonuç Bulunamadı</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body2" Style="margin-top: 8px; opacity: 0.4;">
+                    Aradığınız kriterlere uygun işletme bulunamadı.
+                </RadzenText>
+            </div>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                @foreach (var business in Businesses)
+                {
+                    <RadzenCard Style="cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.3s ease; border-left: 4px solid #667eea;"
+                               @onclick="@(() => OnBusinessClick?.Invoke(business.Id))"
+                               class="business-search-card">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            <!-- Header Row -->
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700; color: #1e293b;">
+                                        🏢 @business.Name
+                                    </RadzenText>
+                                    @if (!string.IsNullOrEmpty(business.Description))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                            @business.Description
+                                        </RadzenText>
+                                    }
+                                </RadzenStack>
+
+                                @if (business.AverageRating.HasValue && business.AverageRating.Value > 0)
+                                {
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center"
+                                               Style="background: linear-gradient(135deg, #fbbf2415 0%, #f5925215 100%); padding: 6px 12px; border-radius: 8px;">
+                                        <RadzenIcon Icon="star" Style="font-size: 16px; color: #fbbf24;" />
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 700; margin: 0; color: #f59042;">
+                                            @business.AverageRating.Value.ToString("0.0")
+                                        </RadzenText>
+                                    </RadzenStack>
+                                }
+                            </RadzenStack>
+
+                            <!-- Info Row -->
+                            <RadzenRow Gap="8px">
+                                @if (!string.IsNullOrEmpty(business.CategoryName))
+                                {
+                                    <RadzenColumn Size="12" SizeMD="4">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="6px" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="category" Style="font-size: 16px; color: var(--rz-primary);" />
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; font-weight: 600;">
+                                                @business.CategoryName
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </RadzenColumn>
+                                }
+
+                                @if (!string.IsNullOrEmpty(business.City))
+                                {
+                                    <RadzenColumn Size="12" SizeMD="4">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="6px" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="location_on" Style="font-size: 16px; color: var(--rz-primary);" />
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; font-weight: 600;">
+                                                @business.City@(!string.IsNullOrEmpty(business.District) ? $", {business.District}" : "")
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </RadzenColumn>
+                                }
+
+                                @if (!string.IsNullOrEmpty(business.Phone))
+                                {
+                                    <RadzenColumn Size="12" SizeMD="4">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="6px" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="phone" Style="font-size: 16px; color: var(--rz-primary);" />
+                                            <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; font-weight: 600;">
+                                                @business.Phone
+                                            </RadzenText>
+                                        </RadzenStack>
+                                    </RadzenColumn>
+                                }
+                            </RadzenRow>
+
+                            <!-- Address -->
+                            @if (!string.IsNullOrEmpty(business.Address))
+                            {
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="6px" AlignItems="AlignItems.Start">
+                                    <RadzenIcon Icon="place" Style="font-size: 16px; color: var(--rz-text-secondary-color); margin-top: 2px;" />
+                                    <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; color: var(--rz-text-secondary-color); flex: 1;">
+                                        @business.Address
+                                    </RadzenText>
+                                </RadzenStack>
+                            }
+
+                            <!-- Action Button -->
+                            <RadzenButton Text="İşletmeyi Görüntüle" 
+                                        Icon="arrow_forward" 
+                                        ButtonStyle="ButtonStyle.Primary"
+                                        Size="ButtonSize.Small"
+                                        Style="width: 100%; margin-top: 8px;"
+                                        Click="@(() => OnBusinessClick?.Invoke(business.Id))" />
+                        </RadzenStack>
+                    </RadzenCard>
+                }
+            </RadzenStack>
+        }
+    </div>
+</RadzenStack>
+
+<style>
+    .business-search-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-left-width: 6px !important;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public List<BusinessDto> Businesses { get; set; } = new();
+
+    [Parameter]
+    public string SearchQuery { get; set; } = "";
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public Action<int>? OnBusinessClick { get; set; }
+}

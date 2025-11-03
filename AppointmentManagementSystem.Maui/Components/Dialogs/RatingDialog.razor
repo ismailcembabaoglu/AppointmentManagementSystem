@@ -1,0 +1,59 @@
+@using Radzen
+@using Radzen.Blazor
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<div style="padding: 20px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div style="text-align: center;">
+            <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 12px;">
+                Lütfen randevunuzu değerlendirin
+            </RadzenText>
+            <RadzenRating @bind-Value="@localRating" Stars="5" Change="@OnRatingChange" />
+            @if (localRating > 0)
+            {
+                <RadzenText TextStyle="TextStyle.Caption" Style="margin-top: 8px; color: var(--rz-success);">
+                    ✓ @localRating yıldız seçildi
+                </RadzenText>
+            }
+        </div>
+        <RadzenTextArea @bind-Value="@localReview" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="@Cancel" />
+            <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="@Submit" />
+        </RadzenStack>
+    </RadzenStack>
+</div>
+
+@code {
+    private int localRating = 0;
+    private string localReview = "";
+
+    protected override void OnInitialized()
+    {
+        localRating = 0;
+        localReview = "";
+    }
+
+    private void OnRatingChange(int value)
+    {
+        localRating = value;
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Submit()
+    {
+        if (localRating == 0)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen yıldız puanı seçin.");
+            return;
+        }
+        
+        DialogService.Close((localRating, localReview));
+    }
+}

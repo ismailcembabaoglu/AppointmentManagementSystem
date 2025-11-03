@@ -1,0 +1,182 @@
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject IServiceApiService ServiceApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 20px;">
+    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">@(isEdit ? "Hizmet Düzenle" : "Yeni Hizmet")</RadzenText>
+    
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div>
+            <RadzenLabel Text="Hizmet Adı *" Style="margin-bottom: 8px; display: block;" />
+            <RadzenTextBox @bind-Value="serviceDto.Name" Placeholder="Hizmet adını girin" Style="width: 100%;" />
+            @if (!string.IsNullOrEmpty(nameError))
+            {
+                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@nameError</RadzenText>
+            }
+        </div>
+
+        <div>
+            <RadzenLabel Text="Açıklama" Style="margin-bottom: 8px; display: block;" />
+            <RadzenTextArea @bind-Value="serviceDto.Description" Rows="3" Placeholder="Hizmet açıklaması" Style="width: 100%;" />
+        </div>
+
+        <div>
+            <RadzenLabel Text="Fiyat (TL)" Style="margin-bottom: 8px; display: block;" />
+            <RadzenNumeric @bind-Value="serviceDto.Price" Placeholder="Fiyat (opsiyonel)" Style="width: 100%;" ShowUpDown="false" />
+        </div>
+
+        <div>
+            <RadzenLabel Text="Süre (dakika) *" Style="margin-bottom: 8px; display: block;" />
+            <RadzenNumeric @bind-Value="serviceDto.DurationMinutes" Placeholder="Süre" Min="1" Max="1440" Style="width: 100%;" ShowUpDown="true" />
+            @if (!string.IsNullOrEmpty(durationError))
+            {
+                <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@durationError</RadzenText>
+            }
+        </div>
+
+        <div>
+            <RadzenCheckBox @bind-Value="serviceDto.IsActive" />
+            <RadzenLabel Text="Aktif" Style="margin-left: 8px;" />
+        </div>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" JustifyContent="JustifyContent.End" Wrap="FlexWrap.Wrap" Style="margin-top: 8px;">
+        <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="Cancel" Style="min-width: 120px;" />
+        <RadzenButton Text="@(isEdit ? "Güncelle" : "Oluştur")" 
+                    ButtonStyle="ButtonStyle.Primary" 
+                    Click="Save" 
+                    Disabled="isSaving" 
+                    Style="min-width: 120px;" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public bool isEdit { get; set; } = false;
+
+    [Parameter]
+    public int ServiceId { get; set; } = 0;
+
+    [Parameter]
+    public int? PreselectedBusinessId { get; set; } = null;
+
+    private CreateServiceDto serviceDto = new();
+    private bool isSaving = false;
+    
+    // Validation errors
+    private string nameError = "";
+    private string durationError = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PreselectedBusinessId.HasValue && PreselectedBusinessId.Value > 0)
+        {
+            serviceDto.BusinessId = PreselectedBusinessId.Value;
+        }
+
+        serviceDto.IsActive = true;
+        
+        if (isEdit && ServiceId > 0)
+        {
+            await LoadServiceForEdit();
+        }
+    }
+
+    private async Task LoadServiceForEdit()
+    {
+        var response = await ServiceApiService.GetServiceByIdAsync(ServiceId);
+        if (response.Success && response.Data != null)
+        {
+            var service = response.Data;
+            serviceDto = new CreateServiceDto
+            {
+                Name = service.Name,
+                Description = service.Description,
+                Price = service.Price,
+                DurationMinutes = service.DurationMinutes,
+                BusinessId = service.BusinessId,
+                IsActive = service.IsActive
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse<ServiceDto> response;
+            
+            if (isEdit)
+            {
+                response = await ServiceApiService.UpdateServiceAsync(ServiceId, serviceDto);
+            }
+            else
+            {
+                response = await ServiceApiService.CreateServiceAsync(serviceDto);
+            }
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
+                    isEdit ? "Hizmet başarıyla güncellendi." : "Hizmet başarıyla oluşturuldu.");
+                DialogService.Close(true);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Bir hata oluştu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool Validate()
+    {
+        nameError = "";
+        durationError = "";
+
+        bool isValid = true;
+
+        if (string.IsNullOrWhiteSpace(serviceDto.Name))
+        {
+            nameError = "Hizmet adı gereklidir.";
+            isValid = false;
+        }
+
+        if (serviceDto.DurationMinutes <= 0)
+        {
+            durationError = "Süre gereklidir.";
+            isValid = false;
+        }
+
+        if (serviceDto.BusinessId <= 0)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme bilgisi bulunamadı.");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}
