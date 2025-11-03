@@ -1,17 +1,1315 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@implements IDisposable
+@using AppointmentManagementSystem.BlazorUI.Components
+@using AppointmentManagementSystem.BlazorUI.Services.Authentication
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.Application.DTOs
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+@inject IAppointmentApiService AppointmentApiService
+@inject IBusinessApiService BusinessApiService
+@inject IJSRuntime JSRuntime
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<!-- Backdrop (Mobil için kararma) -->
+@if (sidebarExpanded)
+{
+    <div class="mobile-backdrop" @onclick="CloseSidebar"></div>
+}
+
+<div class="main-container">
+    <!-- HEADER - PREMIUM -->
+    <div class="app-header-premium">
+        <div class="header-container">
+            <!-- Left Section -->
+            <div class="header-left-section">
+                <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light" 
+                            Click="ToggleSidebar" Size="ButtonSize.Large"
+                            class="menu-toggle-btn" Variant="Variant.Text" />
+                
+                <div class="header-brand">
+                    <RadzenIcon Icon="calendar_month" Style="font-size: 28px; color: #667eea;" />
+                    <div class="brand-text">
+                        <div class="brand-title">@GetBrandName()</div>
+                        <div class="brand-subtitle">Appointment System</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Section - Search (Customer Only) -->
+            @if (userRole == "Customer")
+            {
+                <div class="header-center-section">
+                    <div class="search-wrapper">
+                        <RadzenIcon Icon="search" Style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px;" />
+                        <input type="text" 
+                               placeholder="İşletme ara..." 
+                               class="search-input"
+                               @bind="searchQuery"
+                               @bind:event="oninput"
+                               @onkeydown="HandleSearchKeyDown" />
+                        @if (!string.IsNullOrEmpty(searchQuery))
+                        {
+                            <RadzenButton Icon="close" 
+                                        ButtonStyle="ButtonStyle.Light" 
+                                        Variant="Variant.Text"
+                                        Size="ButtonSize.Small"
+                                        Click="ClearSearch"
+                                        Style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); min-width: 32px; height: 32px;" />
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Right Section -->
+            <div class="header-right-section">
+                @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+                {
+                    <!-- Notifications -->
+                    <RadzenButton Icon="notifications" ButtonStyle="ButtonStyle.Light" 
+                                Variant="Variant.Text" Size="ButtonSize.Large"
+                                class="header-icon-btn"
+                                Click="@OpenNotifications">
+                        @if (notificationCount > 0)
+                        {
+                            <RadzenBadge Text="@notificationCount.ToString()" BadgeStyle="BadgeStyle.Danger" 
+                                       Style="position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px;" />
+                        }
+                    </RadzenButton>
+
+                    <!-- Messages -->
+                    <RadzenButton Icon="mail" ButtonStyle="ButtonStyle.Light" 
+                                Variant="Variant.Text" Size="ButtonSize.Large"
+                                class="header-icon-btn" />
+
+                    <!-- Divider -->
+                    <div class="header-divider"></div>
+
+                    <!-- User Profile -->
+                    <RadzenButton Click="OpenProfile" class="header-user-btn" ButtonStyle="ButtonStyle.Light" Variant="Variant.Text">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                            <div class="header-avatar">
+                                <span>@GetShortName(currentUser.Identity.Name)</span>
+                                <div class="avatar-status-dot"></div>
+                            </div>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0" class="user-info-text" AlignItems="AlignItems.Start">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0; font-weight: 600; color: #1e293b; line-height: 1.2;">
+                                    @GetShortName(currentUser.Identity.Name)
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" Style="margin: 0; color: #64748b; font-size: 11px; line-height: 1.2;">
+                                    @GetUserRole()
+                                </RadzenText>
+                            </RadzenStack>
+                            <RadzenIcon Icon="keyboard_arrow_down" Style="font-size: 20px; color: #64748b;" />
+                        </RadzenStack>
+                    </RadzenButton>
+                }
+                else
+                {
+                    <RadzenButton Text="Giriş Yap" Icon="login" 
+                                ButtonStyle="ButtonStyle.Primary"
+                                Click="@(() => Navigation.NavigateTo("/login"))"
+                                Style="font-weight: 600;" />
+                }
+            </div>
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <!-- SIDEBAR -->
+    <div class="app-sidebar @(sidebarExpanded ? "expanded" : "collapsed")">
+        <div class="sidebar-content">
+            <!-- Logo Section - Premium -->
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon-premium">
+                        <RadzenIcon Icon="calendar_today" Style="font-size: 32px; color: darkslateblue;" />
+                        <div class="logo-pulse"></div>
+                    </div>
+                    <div class="logo-info">
+                        <div class="logo-brand">Randevu</div>
+                        <div class="logo-tagline">Yönetim Sistemi</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Section -->
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0" Style="flex: 1; padding: 24px 12px; overflow-y: auto;">
+                <!-- Business Menu -->
+                <AuthorizeView Roles="Business">
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="business_center" Style="font-size: 14px;" />
+                            <span>İşletme Yönetimi</span>
+                        </div>
+                        
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/business" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_note" />
+                                </div>
+                                <span class="nav-label">Randevular</span>
+                                <RadzenBadge Text="12" BadgeStyle="BadgeStyle.Light" Style="margin-left: auto; font-size: 10px;" />
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="services" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="room_service" />
+                                </div>
+                                <span class="nav-label">Hizmetler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="employees" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="groups" />
+                                </div>
+                                <span class="nav-label">Çalışanlar</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                        </RadzenStack>
+                    </div>
+                </AuthorizeView>
+
+                <!-- Customer Menu -->
+                <AuthorizeView Roles="Customer">
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="person" Style="font-size: 14px;" />
+                            <span>Müşteri Paneli</span>
+                        </div>
+                        
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="dashboard/customer" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="appointments" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_available" />
+                                </div>
+                                <span class="nav-label">Randevularım</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+                            <NavLink href="categories" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="category" />
+                                </div>
+                                <span class="nav-label">Kategoriler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                            
+               @*              <NavLink href="businesses" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="store" />
+                                </div>
+                                <span class="nav-label">İşletmeler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink> *@
+                        </RadzenStack>
+                    </div>
+                </AuthorizeView>
+
+                <!-- Guest Menu -->
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <div class="nav-section">
+                            <div class="section-label">
+                                <RadzenIcon Icon="explore" Style="font-size: 14px;" />
+                                <span>Keşfet</span>
+                            </div>
+                            
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                                <NavLink href="/" class="nav-link-premium" Match="NavLinkMatch.All">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="home" />
+                                    </div>
+                                    <span class="nav-label">Ana Sayfa</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                <NavLink href="categories" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="category" />
+                                    </div>
+                                    <span class="nav-label">Kategoriler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink>
+                                
+                                @* <NavLink href="businesses" class="nav-link-premium">
+                                    <div class="nav-icon-wrapper">
+                                        <RadzenIcon Icon="store" />
+                                    </div>
+                                    <span class="nav-label">İşletmeler</span>
+                                    <div class="nav-indicator"></div>
+                                </NavLink> *@
+                            </RadzenStack>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </RadzenStack>
+
+            <!-- User Profile - Premium -->
+            <div class="sidebar-user-section">
+                @if (currentUser != null && currentUser.Identity.IsAuthenticated)
+                {
+                    <div class="user-profile-premium">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center" Style="flex: 1; min-width: 0;">
+                            <div class="user-avatar-premium">
+                                <div class="avatar-inner">@GetShortName(currentUser.Identity.Name)</div>
+                                <div class="avatar-status"></div>
+                            </div>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="2px" Style="flex: 1; min-width: 0;">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="color: white; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    @currentUser.Identity.Name
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" Style="color: rgba(255,255,255,0.7); margin: 0; font-size: 11px;">
+                                    @GetUserRole()
+                                </RadzenText>
+                            </RadzenStack>
+                        </RadzenStack>
+                        <RadzenButton Icon="logout" ButtonStyle="ButtonStyle.Danger" 
+                                    Size="ButtonSize.Small" Variant="Variant.Text"
+                                    Click="Logout" Style="min-width: 40px; height: 40px; color: white;"
+                                    title="Çıkış Yap" />
+                    </div>
+                }
+                else
+                {
+                    <div class="login-section-premium">
+                        <RadzenButton Text="Giriş Yap" Icon="login" 
+                                    ButtonStyle="ButtonStyle.Light" 
+                                    Click="@(() => Navigation.NavigateTo("/login"))"
+                                    Style="width: 100%; font-weight: 600;" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="app-body">
+        <div class="body-content">
+            @Body
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+        <!-- FOOTER -->
+        <div class="app-footer">
+            <div class="footer-content">
+                © 2024 Appointment Management System
+            </div>
+        </div>
+    </div>
 </div>
+
+<RadzenDialog />
+<RadzenNotification />
+<RadzenTooltip />
+
+<style>
+    /* ========================
+       RESET & BASE
+       ======================== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    /* ========================
+       HEADER - PREMIUM DESIGN
+       ======================== */
+    .app-header-premium {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        max-width: 100%;
+        gap: 16px;
+    }
+
+    /* Left Section */
+    .header-left-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-shrink: 0;
+    }
+
+    .menu-toggle-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+
+    .menu-toggle-btn:hover {
+        background: #f1f5f9 !important;
+        transform: rotate(90deg);
+    }
+
+    .header-brand {
+        display: none;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .brand-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+
+    .brand-subtitle {
+        font-size: 11px;
+        font-weight: 500;
+        color: #64748b;
+        line-height: 1.2;
+    }
+
+    /* Center Section - Search */
+    .header-center-section {
+        flex: 1;
+        max-width: 500px;
+        display: none;
+    }
+
+    .search-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        height: 44px;
+        padding: 0 16px 0 48px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 14px;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Right Section */
+    .header-right-section {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .header-icon-btn {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+
+    .header-icon-btn:hover {
+        background: #f1f5f9 !important;
+        transform: translateY(-2px);
+    }
+
+    .header-divider {
+        width: 1px;
+        height: 32px;
+        background: #e2e8f0;
+        margin: 0 8px;
+    }
+
+    .header-user-btn {
+        padding: 6px 12px 6px 6px !important;
+        border-radius: 12px !important;
+        transition: all 0.3s !important;
+        height: auto !important;
+    }
+
+    .header-user-btn:hover {
+        background: #f1f5f9 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .header-avatar {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .avatar-status-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: #10b981;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+    }
+
+    .user-info-text {
+        display: none;
+    }
+
+    /* ========================
+       RESPONSIVE - TABLET
+       ======================== */
+    @@media (min-width: 768px) {
+        .header-brand {
+            display: flex;
+        }
+
+        .header-center-section {
+            display: block;
+        }
+
+        .user-info-text {
+            display: flex;
+        }
+
+        .header-container {
+            padding: 12px 32px;
+        }
+    }
+
+    /* ========================
+       RESPONSIVE - DESKTOP
+       ======================== */
+    @@media (min-width: 1024px) {
+        .header-icon-btn {
+            display: flex;
+        }
+
+        .menu-toggle-btn {
+            display: none;
+        }
+    }
+
+    /* ========================
+       SIDEBAR - PREMIUM DESIGN
+       ======================== */
+    .app-sidebar {
+        position: fixed;
+        top: 69px;
+        left: 0;
+        width: 300px;
+        height: calc(100vh - 69px);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: translateX(-100%);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 999;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+    }
+
+    .app-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.5;
+    }
+
+    .app-sidebar.expanded {
+        transform: translateX(0);
+        box-shadow: 8px 0 40px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        z-index: 1;
+    }
+
+    /* ========================
+       LOGO HEADER - PREMIUM
+       ======================== */
+    .sidebar-header {
+        padding: 28px 20px;
+        background: rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .logo-icon-premium {
+        position: relative;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .logo-pulse {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 16px;
+        border: 2px solid rgba(255,255,255,0.5);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0;
+        }
+    }
+
+    .logo-info {
+        flex: 1;
+    }
+
+    .logo-brand {
+        font-size: 20px;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .logo-tagline {
+        font-size: 11px;
+        color: rgba(255,255,255,0.8);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+
+    /* ========================
+       NAVIGATION SECTION
+       ======================== */
+    .nav-section {
+        margin-bottom: 28px;
+    }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.6);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+    }
+
+    /* ========================
+       NAV LINKS - PREMIUM
+       ======================== */
+    .nav-link-premium {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        margin: 0 8px;
+        color: rgba(255,255,255,0.85);
+        text-decoration: none;
+        border-radius: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-link-premium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .nav-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.1);
+        transition: all 0.3s;
+        font-size: 20px;
+    }
+
+    .nav-label {
+        flex: 1;
+    }
+
+    .nav-indicator {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) scaleY(0);
+        width: 4px;
+        height: 24px;
+        background: white;
+        border-radius: 0 4px 4px 0;
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .nav-link-premium:hover {
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .nav-link-premium:hover::before {
+        opacity: 1;
+    }
+
+    .nav-link-premium:hover .nav-icon-wrapper {
+        background: rgba(255,255,255,0.25);
+        transform: scale(1.05) rotate(5deg);
+    }
+
+    .nav-link-premium.active {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .nav-link-premium.active::before {
+        opacity: 1;
+    }
+
+    .nav-link-premium.active .nav-icon-wrapper {
+        background: rgba(255,255,255,0.3);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .nav-link-premium.active .nav-indicator {
+        transform: translateY(-50%) scaleY(1);
+    }
+
+    /* ========================
+       USER SECTION - PREMIUM
+       ======================== */
+    .sidebar-user-section {
+        padding: 20px;
+        background: rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .user-profile-premium {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+    }
+
+    .user-profile-premium:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .user-avatar-premium {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        flex-shrink: 0;
+    }
+
+    .avatar-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .avatar-status {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        background: #4ade80;
+        border-radius: 50%;
+        border: 3px solid rgba(102, 126, 234, 1);
+        box-shadow: 0 2px 8px rgba(74, 222, 128, 0.5);
+    }
+
+    .login-section-premium {
+        padding: 4px;
+    }
+
+    /* ========================
+       BACKDROP (Mobil)
+       ======================== */
+    .mobile-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 998;
+        animation: fadeIn 0.3s;
+        display: none;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* ========================
+       BODY
+       ======================== */
+    .app-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #f5f5f5;
+    }
+
+    .body-content {
+        flex: 1;
+        padding: 16px;
+        max-width: 100%;
+    }
+
+    /* ========================
+       FOOTER
+       ======================== */
+    .app-footer {
+        background: white;
+        border-top: 1px solid #e0e0e0;
+        padding: 16px;
+    }
+
+    .footer-content {
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* ========================
+       RESPONSIVE - TABLET
+       ======================== */
+    @@media (min-width: 768px) {
+        .brand-logo {
+            display: block;
+        }
+
+        .user-name {
+            display: inline;
+        }
+
+        .mobile-backdrop {
+            display: block !important;
+        }
+    }
+
+    /* ========================
+       RESPONSIVE - DESKTOP
+       ======================== */
+    @@media (min-width: 1024px) {
+        .app-sidebar {
+            position: relative;
+            top: 0;
+            transform: translateX(0) !important;
+            box-shadow: none;
+            width: 300px;
+        }
+
+        .main-container {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .app-header-premium {
+            width: 100%;
+            order: 1;
+        }
+
+        .app-sidebar {
+            order: 2;
+            height: calc(100vh - 69px);
+        }
+
+        .app-body {
+            width: calc(100% - 300px);
+            order: 3;
+            height: calc(100vh - 69px);
+        }
+
+        .mobile-backdrop {
+            display: none !important;
+        }
+
+        .menu-toggle-btn {
+            display: none;
+        }
+        
+        .header-icon-btn {
+            display: flex;
+        }
+    }
+
+    /* ========================
+       SCROLLBAR
+       ======================== */
+    .app-sidebar::-webkit-scrollbar,
+    .app-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .app-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 3px;
+    }
+
+    .app-body::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+</style>
+
+@code {
+    private bool sidebarExpanded = false;
+    private ClaimsPrincipal? currentUser;
+    private int notificationCount = 0;
+    private int previousNotificationCount = 0;
+    private List<AppointmentDto> notificationAppointments = new();
+    private System.Threading.Timer? notificationTimer;
+    private string userRole = "";
+    private int currentUserId = 0;
+    private int? currentBusinessId = null;
+    
+    // Search
+    private string searchQuery = "";
+    private System.Threading.Timer? searchDebounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        currentUser = authState.User;
+
+        // Subscribe to authentication state changes
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            // Get user role and ID
+            var roleClaim = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role);
+            if (roleClaim != null)
+            {
+                userRole = roleClaim.Value;
+            }
+
+            var userIdClaim = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                           ?? currentUser.FindFirst("sub")
+                           ?? currentUser.FindFirst("userId")
+                           ?? currentUser.FindFirst("id");
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            // If business, get business ID
+            if (userRole == "Business")
+            {
+                var businessIdClaim = currentUser.FindFirst("businessId");
+                if (businessIdClaim != null && int.TryParse(businessIdClaim.Value, out var parsedBusinessId))
+                {
+                    currentBusinessId = parsedBusinessId;
+                }
+            }
+
+            // Load notifications immediately
+            await LoadNotifications();
+
+            // Set up periodic check (every 30 seconds)
+            notificationTimer = new System.Threading.Timer(async _ =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadNotifications();
+                    StateHasChanged();
+                });
+            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            // User is logged out - redirect to login
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchQuery))
+        {
+            await PerformSearch();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = "";
+        StateHasChanged();
+    }
+
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+            return;
+
+        try
+        {
+            var searchResults = new List<BusinessDto>();
+            var isLoading = true;
+
+            // Open dialog immediately with loading state
+            var dialogReference = await DialogService.OpenAsync<BusinessSearchResults>("Arama Sonuçları",
+                new Dictionary<string, object>
+                {
+                    { "Businesses", searchResults },
+                    { "SearchQuery", searchQuery },
+                    { "IsLoading", isLoading },
+                    { "OnBusinessClick", new Action<int>(businessId => 
+                        {
+                            DialogService.Close();
+                            Navigation.NavigateTo($"/businesses/{businessId}");
+                        })
+                    }
+                },
+                new DialogOptions 
+                { 
+                    Width = "750px", 
+                    Height = "auto",
+                    CloseDialogOnOverlayClick = true,
+                    ShowClose = true
+                });
+
+            // Perform actual search
+            var response = await BusinessApiService.GetAllBusinessesAsync(searchTerm: searchQuery);
+            
+            if (response.Success && response.Data != null)
+            {
+                searchResults = response.Data;
+            }
+
+            // Update dialog with results
+            DialogService.Close();
+            await DialogService.OpenAsync<BusinessSearchResults>("Arama Sonuçları",
+                new Dictionary<string, object>
+                {
+                    { "Businesses", searchResults },
+                    { "SearchQuery", searchQuery },
+                    { "IsLoading", false },
+                    { "OnBusinessClick", new Action<int>(businessId => 
+                        {
+                            DialogService.Close();
+                            Navigation.NavigateTo($"/businesses/{businessId}");
+                        })
+                    }
+                },
+                new DialogOptions 
+                { 
+                    Width = "750px", 
+                    Height = "auto",
+                    CloseDialogOnOverlayClick = true,
+                    ShowClose = true
+                });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Search error: {ex.Message}");
+        }
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            if (userRole == "Business" && currentBusinessId.HasValue)
+            {
+                // Business: Get pending appointments
+                var response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: currentBusinessId.Value);
+                if (response.Success && response.Data != null)
+                {
+                    notificationAppointments = response.Data
+                        .Where(a => a.Status == "Pending")
+                        .OrderByDescending(a => a.AppointmentDate)
+                        .ToList();
+                }
+            }
+            else if (userRole == "Customer")
+            {
+                // Customer: Get confirmed appointments
+                var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
+                if (response.Success && response.Data != null)
+                {
+                    notificationAppointments = response.Data
+                        .Where(a => a.Status == "Confirmed")
+                        .OrderByDescending(a => a.AppointmentDate)
+                        .ToList();
+                }
+            }
+
+            // Update notification count
+            var newCount = notificationAppointments.Count;
+            
+            // Play sound if count increased
+            if (newCount > previousNotificationCount && previousNotificationCount > 0)
+            {
+                await PlayNotificationSound();
+            }
+
+            previousNotificationCount = newCount;
+            notificationCount = newCount;
+        }
+        catch (Exception ex)
+        {
+            // Silently fail - don't interrupt user experience
+            Console.WriteLine($"Notification load error: {ex.Message}");
+        }
+    }
+
+    private async Task PlayNotificationSound()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("playNotificationSound");
+        }
+        catch
+        {
+            // Silently fail if JS interop fails
+        }
+    }
+
+    private async Task OpenNotifications()
+    {
+        var title = userRole == "Business" ? "Bekleyen Randevular" : "Onaylanan Randevular";
+        var subtitle = userRole == "Business" 
+            ? $"{notificationCount} randevu onay bekliyor" 
+            : $"{notificationCount} randevunuz onaylandı";
+
+        await DialogService.OpenAsync<NotificationPanel>(title,
+            new Dictionary<string, object>
+            {
+                { "Appointments", notificationAppointments },
+                { "Title", title },
+                { "Subtitle", subtitle },
+                { "IsBusinessRole", userRole == "Business" },
+                { "OnAppointmentClick", new Action<int>(appointmentId => 
+                    {
+                        DialogService.Close();
+                        Navigation.NavigateTo($"/appointments/{appointmentId}");
+                    })
+                }
+            },
+            new DialogOptions 
+            { 
+                Width = "650px", 
+                Height = "auto",
+                CloseDialogOnOverlayClick = true,
+                ShowClose = true
+            });
+
+        // Reload after dialog closes
+        await LoadNotifications();
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        notificationTimer?.Dispose();
+        searchDebounceTimer?.Dispose();
+    }
+
+    private void ToggleSidebar()
+    {
+        sidebarExpanded = !sidebarExpanded;
+    }
+
+    private void CloseSidebar()
+    {
+        sidebarExpanded = false;
+    }
+
+    private void OpenProfile()
+    {
+          if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (role=="Business")
+             Navigation.NavigateTo("/business/dashboard");
+            if (role=="Customer")
+             Navigation.NavigateTo("/profile");
+  
+        }
+        
+    }
+
+    private async Task Logout()
+    {
+        if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            await customProvider.MarkUserAsLoggedOut();
+        }
+        Navigation.NavigateTo("/login");
+    }
+
+    private string GetShortName(string? fullName)
+    {
+        if (string.IsNullOrEmpty(fullName))
+            return "K";
+
+        var names = fullName.Split(' ');
+        return names.Length > 0 ? names[0].Substring(0, 1).ToUpper() : fullName.Substring(0, 1).ToUpper();
+    }
+
+    private string GetBrandName()
+    {
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch
+            {
+                "Business" => "İşletme Paneli",
+                "Customer" => "Randevu Sistemi",
+                _ => "AMS"
+            };
+        }
+        return "Randevu Yönetimi";
+    }
+
+    private string GetUserRole()
+    {
+        if (currentUser?.Identity?.IsAuthenticated == true)
+        {
+            var role = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            return role switch
+            {
+                "Business" => "İşletme Sahibi",
+                "Customer" => "Müşteri",
+                "Admin" => "Yönetici",
+                _ => "Kullanıcı"
+            };
+        }
+        return "Misafir";
+    }
+}
