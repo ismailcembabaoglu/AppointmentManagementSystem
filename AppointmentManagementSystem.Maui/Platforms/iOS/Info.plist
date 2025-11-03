@@ -28,5 +28,27 @@
     </array>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
+    
+    <!-- Camera Permission -->
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs access to the camera to take photos for appointments and business profiles.</string>
+    
+    <!-- Photo Library Permission -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library to select photos for appointments and business profiles.</string>
+    
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>This app needs to save photos to your photo library.</string>
+    
+    <!-- Location Permissions -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to your location to find nearby businesses and provide location-based services.</string>
+    
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to your location to provide better service recommendations.</string>
+    
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app needs access to your location to find nearby businesses.</string>
 </dict>
 </plist>
+
