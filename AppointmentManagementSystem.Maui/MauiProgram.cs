@@ -22,6 +22,39 @@ namespace AppointmentManagementSystem.Maui
 
             builder.Services.AddMauiBlazorWebView();
 
+            // Configure HttpClient for API
+            builder.Services.AddScoped(sp => new HttpClient 
+            { 
+                BaseAddress = new Uri("http://localhost:5089/") 
+            });
+
+            // API Services
+            builder.Services.AddScoped<IApiService, ApiService>();
+            builder.Services.AddScoped<ICategoryApiService, CategoryApiService>();
+            builder.Services.AddScoped<IBusinessApiService, BusinessApiService>();
+            builder.Services.AddScoped<IServiceApiService, ServiceApiService>();
+            builder.Services.AddScoped<IEmployeeApiService, EmployeeApiService>();
+            builder.Services.AddScoped<IAppointmentApiService, AppointmentApiService>();
+            builder.Services.AddScoped<IPhotoApiService, PhotoApiService>();
+            builder.Services.AddScoped<IDocumentApiService, DocumentApiService>();
+            builder.Services.AddScoped<IPaymentApiService, PaymentApiService>();
+
+            // Local Storage
+            builder.Services.AddBlazoredLocalStorage();
+
+            // Authentication
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+
+            // Radzen Services
+            builder.Services.AddScoped<DialogService>();
+            builder.Services.AddScoped<NotificationService>();
+            builder.Services.AddScoped<TooltipService>();
+            builder.Services.AddScoped<ContextMenuService>();
+
+            // Native Features - Permissions
+            builder.Services.AddSingleton<IPermissions>(Permissions.Default);
+
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
