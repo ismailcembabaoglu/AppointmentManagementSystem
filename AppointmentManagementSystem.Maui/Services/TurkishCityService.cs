@@ -1,4 +1,4 @@
-namespace AppointmentManagementSystem.BlazorUI.Services
+namespace AppointmentManagementSystem.Maui.Services
 {
     public class TurkishCityService
     {

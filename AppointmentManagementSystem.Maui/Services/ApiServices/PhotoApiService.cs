@@ -3,7 +3,7 @@ using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
 
-namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
+namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
     public class PhotoApiService : BaseApiService, IPhotoApiService
     {

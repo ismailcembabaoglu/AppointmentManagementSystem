@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
+namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
     public class BaseApiService
     {

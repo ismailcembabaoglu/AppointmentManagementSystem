@@ -4,7 +4,7 @@ using Blazored.LocalStorage; // BU SATIRI GÜNCELLE
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
-namespace AppointmentManagementSystem.BlazorUI.Services
+namespace AppointmentManagementSystem.Maui.Services
 {
     public class ApiService : IApiService
     {

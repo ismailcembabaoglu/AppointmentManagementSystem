@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-namespace AppointmentManagementSystem.BlazorUI.Services.Authentication
+namespace AppointmentManagementSystem.Maui.Services.Authentication
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
     {

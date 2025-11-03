@@ -1,7 +1,7 @@
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 
-namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
+namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
     public interface IPaymentApiService
     {
