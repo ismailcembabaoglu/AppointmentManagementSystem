@@ -1,5 +1,295 @@
-﻿@page "/"
+@page "/"
+@layout AppointmentManagementSystem.BlazorUI.Shared.LandingLayout
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Radzen
+@inject ICategoryApiService CategoryApiService
+@inject NavigationManager Navigation
 
-<h1>Hello, world!</h1>
+<PageTitle>RandevuPro - Online Randevu Sistemi</PageTitle>
 
-Welcome to your new app.
+<!-- Hero Section -->
+<div id="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 24px; text-align: center;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <RadzenText TextStyle="TextStyle.DisplayH2" Style="color: white; margin: 0; font-weight: 800; margin-bottom: 24px; animation: fadeInUp 0.8s;">
+            Randevularınızı Kolayca Yönetin
+        </RadzenText>
+        <RadzenText TextStyle="TextStyle.H5" Style="color: rgba(255,255,255,0.95); margin: 0 auto 40px; max-width: 700px; line-height: 1.6; animation: fadeInUp 1s;">
+            Modern, hızlı ve kullanıcı dostu randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterileriniz 7/24 online randevu alabilsin!
+        </RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" JustifyContent="JustifyContent.Center" Wrap="FlexWrap.Wrap" Style="animation: fadeInUp 1.2s;">
+            <RadzenButton Text="Ücretsiz Başla" 
+                         ButtonStyle="ButtonStyle.Light" 
+                         Size="ButtonSize.Large" 
+                         Icon="arrow_forward"
+                         Click="@(() => Navigation.NavigateTo("/register"))"
+                         Style="min-width: 200px; font-weight: 600; font-size: 18px; padding: 16px 32px;" />
+            <RadzenButton Text="Keşfet" 
+                         ButtonStyle="ButtonStyle.Secondary" 
+                         Size="ButtonSize.Large" 
+                         Icon="search"
+                         Click="@(() => Navigation.NavigateTo("/categories"))"
+                         Style="min-width: 200px; font-weight: 600; font-size: 18px; padding: 16px 32px; background: rgba(255,255,255,0.2); border: 2px solid white;" />
+        </RadzenStack>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div id="features" style="padding: 80px 24px; background: white;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
+                Neden RandevuPro?
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                İşletmenizi bir üst seviyeye taşıyacak özellikler
+            </RadzenText>
+        </div>
+
+        <RadzenRow Gap="32px">
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;"
+                           @onmouseenter="@((args) => HandleHover(args, 0))"
+                           @onmouseleave="@((args) => HandleHover(args, -1))">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="event" Style="font-size: 40px; color: white;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            Online Randevu
+                        </RadzenText>
+                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                            Müşterileriniz 7/24 online randevu alabilir. Telefon trafiğinden kurtulun.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="notifications" Style="font-size: 40px; color: white;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            Otomatik Bildirimler
+                        </RadzenText>
+                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                            Randevu hatırlatmaları otomatik gönderilir. No-show oranını düşürün.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="analytics" Style="font-size: 40px; color: white;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            Detaylı Raporlar
+                        </RadzenText>
+                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                            İşletmenizin performansını anlık takip edin. Veri odaklı kararlar alın.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: flex; align-items: center; justify-content: center;">
+                            <RadzenIcon Icon="star" Style="font-size: 40px; color: white;" />
+                        </div>
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                            Müşteri Yorumları
+                        </RadzenText>
+                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                            Müşteri memnuniyetini ölçün. Yorumlar ve puanlamalarla güven kazanın.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div id="how-it-works" style="padding: 80px 24px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
+                Nasıl Çalışır?
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                3 adımda işletmenizi dijitalleştirin
+            </RadzenText>
+        </div>
+
+        <RadzenRow Gap="48px">
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">1</RadzenText>
+                    </div>
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
+                        Kayıt Olun
+                    </RadzenText>
+                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                        İşletmenizi ve hizmetlerinizi sisteme ekleyin. Sadece 5 dakika sürer!
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);">
+                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">2</RadzenText>
+                    </div>
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
+                        Paylaşın
+                    </RadzenText>
+                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                        İşletme profilinizi müşterilerinizle paylaşın. Sosyal medyada duyurun.
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);">
+                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">3</RadzenText>
+                    </div>
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
+                        Yönetin
+                    </RadzenText>
+                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
+                        Randevuları yönetin, müşterilerinize harika hizmet verin!
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+    </div>
+</div>
+
+<!-- Categories Section -->
+@if (categories.Any())
+{
+    <div id="categories" style="padding: 80px 24px; background: white;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
+                    Popüler Kategoriler
+                </RadzenText>
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                    Hangi alanda hizmet veriyorsunuz?
+                </RadzenText>
+            </div>
+
+            <RadzenRow Gap="24px">
+                @foreach (var category in categories.Take(6))
+                {
+                    <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+                        <RadzenCard Style="height: 100%; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;"
+                                   @onclick="@(() => Navigation.NavigateTo($"/businesses/category/{category.Id}"))">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 16px;">
+                                <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                    <RadzenText Style="color: white; font-size: 28px; margin: 0;">
+                                        @category.Name.Substring(0, 1).ToUpper()
+                                    </RadzenText>
+                                </div>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin: 0; font-weight: 600;">
+                                        @category.Name
+                                    </RadzenText>
+                                    @if (!string.IsNullOrEmpty(category.Description))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                            @category.Description
+                                        </RadzenText>
+                                    }
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                }
+            </RadzenRow>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <RadzenButton Text="Tüm Kategorileri Gör" 
+                             ButtonStyle="ButtonStyle.Primary" 
+                             Size="ButtonSize.Large"
+                             Icon="arrow_forward"
+                             Click="@(() => Navigation.NavigateTo("/categories"))" />
+            </div>
+        </div>
+    </div>
+}
+
+<!-- CTA Section -->
+<div style="padding: 80px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <RadzenText TextStyle="TextStyle.DisplayH3" Style="color: white; margin: 0; font-weight: 800; margin-bottom: 24px;">
+            Hemen Başlayın!
+        </RadzenText>
+        <RadzenText TextStyle="TextStyle.H5" Style="color: rgba(255,255,255,0.95); margin: 0 auto 40px; line-height: 1.6;">
+            İşletmenizi dijitalleştirmek için geç kalmayın. Ücretsiz hesap oluşturun ve tüm özellikleri keşfedin.
+        </RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" JustifyContent="JustifyContent.Center" Wrap="FlexWrap.Wrap">
+            <RadzenButton Text="Ücretsiz Dene" 
+                         ButtonStyle="ButtonStyle.Light" 
+                         Size="ButtonSize.Large" 
+                         Icon="rocket_launch"
+                         Click="@(() => Navigation.NavigateTo("/register"))"
+                         Style="min-width: 220px; font-weight: 600; font-size: 18px; padding: 16px 32px;" />
+        </RadzenStack>
+        <RadzenText Style="color: rgba(255,255,255,0.8); margin-top: 24px;">
+            💳 Kredi kartı gerektirmez • ⚡ Anında başlayın • 🎯 İptal ücretsiz
+        </RadzenText>
+    </div>
+</div>
+
+<style>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .rz-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+</style>
+
+@code {
+    private List<CategoryDto> categories = new();
+    private int hoveredIndex = -1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        var response = await CategoryApiService.GetAllCategoriesAsync();
+        if (response.Success && response.Data != null)
+        {
+            categories = response.Data;
+        }
+    }
+
+    private void HandleHover(MouseEventArgs args, int index)
+    {
+        hoveredIndex = index;
+        StateHasChanged();
+    }
+}

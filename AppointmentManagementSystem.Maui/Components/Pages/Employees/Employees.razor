@@ -1,0 +1,213 @@
+@page "/employees"
+@attribute [Authorize(Roles = "Business")]
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Employees
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@inject IEmployeeApiService EmployeeApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Çalışanlar</PageTitle>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px 0;">
+    <!-- Header Card -->
+    <RadzenCard Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="16px">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">👥 Çalışanlar</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1" Style="opacity: 0.95; margin: 0;">İşletmenize ait çalışanları yönetin</RadzenText>
+            </RadzenStack>
+            <RadzenButton Text="Yeni Çalışan" Icon="person_add" ButtonStyle="ButtonStyle.Light" 
+                        Click="ShowCreateDialog" Size="ButtonSize.Large" data-testid="add-employee-btn" />
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (isLoading)
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.H6">Çalışanlar yükleniyor...</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else if (employees.Any())
+    {
+        <!-- Mobile-First Grid Layout -->
+        <div class="employees-grid">
+            @foreach (var employee in employees)
+            {
+                <RadzenCard class="employee-card" data-testid="@($"employee-card-{employee.Id}")">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="height: 100%;">
+                        <!-- Employee Header -->
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start" Gap="12px">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center" Style="flex: 1;">
+                                <div Style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; flex-shrink: 0;">
+                                    @employee.Name.Substring(0, 1).ToUpper()
+                                </div>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1; min-width: 0;">
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">@employee.Name</RadzenText>
+                                    @if (!string.IsNullOrEmpty(employee.Specialization))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                            @employee.Specialization
+                                        </RadzenText>
+                                    }
+                                </RadzenStack>
+                            </RadzenStack>
+                            <RadzenBadge Text="@(employee.IsActive ? "Aktif" : "Pasif")" 
+                                       BadgeStyle="@(employee.IsActive ? BadgeStyle.Success : BadgeStyle.Secondary)" />
+                        </RadzenStack>
+
+                        <!-- Employee Description -->
+                        @if (!string.IsNullOrEmpty(employee.Description))
+                        {
+                            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                @employee.Description
+                            </RadzenText>
+                        }
+
+                        <!-- Action Buttons -->
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap" Style="margin-top: auto;">
+                            <RadzenButton Text="Düzenle" Icon="edit" ButtonStyle="ButtonStyle.Secondary" 
+                                        Click="@(args => ShowEditDialog(employee))" Style="flex: 1;" data-testid="@($"edit-employee-{employee.Id}")" />
+                            <RadzenButton Text="Sil" Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                                        Click="@(args => DeleteEmployee(employee.Id))" Style="flex: 1;" data-testid="@($"delete-employee-{employee.Id}")" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            }
+        </div>
+    }
+    else
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="person_off" Style="font-size: 64px; color: var(--rz-text-disabled-color); opacity: 0.5;" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); text-align: center;">Henüz çalışan bulunmamaktadır</RadzenText>
+                <RadzenButton Text="İlk Çalışanı Ekle" Icon="person_add" ButtonStyle="ButtonStyle.Primary" 
+                            Click="ShowCreateDialog" data-testid="add-first-employee-btn" />
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+<style>
+    .employees-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .employee-card {
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .employee-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+
+    media (max-width: 768px) {
+        .employees-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private List<EmployeeDto> employees = new();
+    private bool isLoading = true;
+    private int businessId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetBusinessId();
+        await LoadEmployees();
+    }
+
+    private async Task GetBusinessId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var businessIdClaim = user.FindFirst("businessId")?.Value;
+            if (!string.IsNullOrEmpty(businessIdClaim) && int.TryParse(businessIdClaim, out int id))
+            {
+                businessId = id;
+            }
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await EmployeeApiService.GetAllEmployeesAsync(businessId);
+        if (response.Success)
+        {
+            employees = response.Data ?? new List<EmployeeDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            employees = new List<EmployeeDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Yeni Çalışan",
+            new Dictionary<string, object>() { { "isEdit", false }, { "PreselectedBusinessId", businessId } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadEmployees();
+        }
+    }
+
+    private async Task ShowEditDialog(EmployeeDto employee)
+    {
+        var result = await DialogService.OpenAsync<CreateEmployeeDialog>("Çalışan Düzenle",
+            new Dictionary<string, object>() { { "isEdit", true }, { "EmployeeId", employee.Id }, { "PreselectedBusinessId", businessId } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadEmployees();
+        }
+    }
+
+    private async Task DeleteEmployee(int employeeId)
+    {
+        var result = await DialogService.Confirm("Bu çalışanı silmek istediğinize emin misiniz?", "Çalışan Sil", 
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+        
+        if (result.HasValue && result.Value)
+        {
+            var response = await EmployeeApiService.DeleteEmployeeAsync(employeeId);
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Çalışan başarıyla silindi.");
+                await LoadEmployees();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+    }
+}

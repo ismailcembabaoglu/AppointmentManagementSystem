@@ -1,0 +1,174 @@
+@page "/businesses"
+@page "/categories/{categoryId:int}/businesses"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Businesses
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject ICategoryApiService CategoryApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+
+<PageTitle>İşletmeler</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>@pageTitle</h2>
+            <AuthorizeView Roles="Business">
+                <RadzenButton Text="Yeni İşletme" ButtonStyle="ButtonStyle.Success" 
+                            Click="ShowCreateDialog" Icon="add" />
+            </AuthorizeView>
+        </div>
+
+        <!-- Filtreler -->
+        <RadzenRow>
+            <RadzenColumn Col="12" Md="6">
+                <RadzenTextBox Placeholder="İşletme ara..." @bind-Value="searchTerm" Change="@(args => SearchBusinesses())" />
+            </RadzenColumn>
+        </RadzenRow>
+
+        @if (isLoading)
+        {
+            <div class="text-center">
+                <RadzenLoader />
+                <p>Yükleniyor...</p>
+            </div>
+        }
+        else if (businesses.Any())
+        {
+            <RadzenRow>
+                @foreach (var business in businesses)
+                {
+                    <RadzenColumn Col="12" Sm="6" Md="4">
+                        <RadzenCard class="dashboard-card h-100">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5>@business.Name</h5>
+                                    <p class="text-muted small">@business.CategoryName</p>
+                                    @if (!string.IsNullOrEmpty(business.City))
+                                    {
+                                        <p class="small"><i class="oi oi-location"></i> @business.City</p>
+                                    }
+                                </div>
+                                @if (business.AverageRating.HasValue && business.AverageRating > 0)
+                                {
+                                    <div class="text-end">
+                                        <RadzenBadge Text="@business.AverageRating.Value.ToString("0.0")" BadgeStyle="BadgeStyle.Success" />
+                                        <div class="small text-muted">(@business.TotalRatings)</div>
+                                    </div>
+                                }
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(business.Description))
+                            {
+                                <p class="mt-2">@business.Description</p>
+                            }
+                            
+                            <div class="mt-3">
+                                <RadzenButton Text="Detaylar" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" 
+                                            Click="@(args => ViewBusinessDetails(business.Id))" />
+                                <AuthorizeView Roles="Business">
+                                    <RadzenButton Text="Düzenle" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" 
+                                                Click="@(args => ShowEditDialog(business))" class="ms-2" />
+                                </AuthorizeView>
+                            </div>
+                        </RadzenCard>
+                    </RadzenColumn>
+                }
+            </RadzenRow>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <p>@noResultsMessage</p>
+            </div>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<BusinessDto> businesses = new();
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private int? categoryId;
+    private string pageTitle = "Tüm İşletmeler";
+    private string noResultsMessage = "Henüz işletme bulunmamaktadır.";
+
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CategoryId > 0)
+        {
+            categoryId = CategoryId;
+            // Kategori adına göre başlık güncelle
+            var categoryResponse = await CategoryApiService.GetCategoryByIdAsync(CategoryId);
+            if (categoryResponse.Success && categoryResponse.Data != null)
+            {
+                pageTitle = $"{categoryResponse.Data.Name} İşletmeleri";
+                noResultsMessage = $"{categoryResponse.Data.Name} kategorisinde işletme bulunmamaktadır.";
+            }
+        }
+        
+        await LoadBusinesses();
+    }
+
+    private async Task LoadBusinesses()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await BusinessApiService.GetAllBusinessesAsync(categoryId, searchTerm);
+        if (response.Success)
+        {
+            businesses = response.Data ?? new List<BusinessDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            businesses = new List<BusinessDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchBusinesses()
+    {
+        await LoadBusinesses();
+    }
+
+    private void ViewBusinessDetails(int businessId)
+    {
+        Navigation.NavigateTo($"/businesses/{businessId}");
+    }
+
+    private async Task ShowCreateDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateBusinessDialog>("Yeni İşletme",
+            new Dictionary<string, object>() { { "isEdit", false } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadBusinesses();
+        }
+    }
+
+    private async Task ShowEditDialog(BusinessDto business)
+    {
+        var result = await DialogService.OpenAsync<CreateBusinessDialog>("İşletme Düzenle",
+            new Dictionary<string, object>() { { "isEdit", true }, { "BusinessId", business.Id } },
+            new DialogOptions() { Width = "500px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            await LoadBusinesses();
+        }
+    }
+}

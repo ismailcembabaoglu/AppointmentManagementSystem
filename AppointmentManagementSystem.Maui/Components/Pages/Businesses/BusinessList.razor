@@ -1,0 +1,364 @@
+@page "/businesses/category/{categoryId:int}"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Services
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject ICategoryApiService CategoryApiService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<PageTitle>İşletmeler</PageTitle>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="padding: 16px;">
+    <!-- Header with Back Button -->
+    <RadzenCard Style="padding: 16px;">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+            <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" 
+                         Click="@(() => Navigation.NavigateTo("/categories"))" 
+                         Size="ButtonSize.Medium" />
+            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex: 1;">
+                <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600;">
+                    @categoryName
+                </RadzenText>
+                <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                    @filteredBusinesses.Count işletme bulundu
+                </RadzenText>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- Filter Section -->
+    <RadzenCard Style="padding: 16px;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+            <!-- Filter Title -->
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                    <RadzenIcon Icon="filter_list" Style="vertical-align: middle; margin-right: 8px;" />
+                    Filtreler
+                </RadzenText>
+                @if (HasActiveFilters())
+                {
+                    <RadzenButton Text="Temizle" 
+                                 ButtonStyle="ButtonStyle.Light" 
+                                 Size="ButtonSize.Small"
+                                 Click="@ClearFilters"
+                                 Icon="clear" />
+                }
+            </RadzenStack>
+
+            <!-- Search Bar -->
+            <RadzenFormField Text="İşletme Adı" Style="width: 100%;">
+                <RadzenTextBox @bind-Value="searchTerm" 
+                              Placeholder="İşletme ara..." 
+                              Style="width: 100%;" />
+            </RadzenFormField>
+
+            <!-- City and District Filters -->
+            <RadzenRow Gap="12px">
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="İl" Style="width: 100%;">
+                        <RadzenDropDown @bind-Value="selectedCity" 
+                                       Data="@cities" 
+                                       AllowClear="true"
+                                       Placeholder="İl seçin..."
+                                       Change="@OnCityChanged"
+                                       Style="width: 100%;" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenFormField Text="İlçe" Style="width: 100%;">
+                        <RadzenDropDown @bind-Value="selectedDistrict" 
+                                       Data="@districts" 
+                                       AllowClear="true"
+                                       Placeholder="İlçe seçin..."
+                                       Disabled="@string.IsNullOrEmpty(selectedCity)"
+                                       Style="width: 100%;" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <!-- Star Rating Filter -->
+            <RadzenFormField Text="Minimum Yıldız Puanı" Style="width: 100%;">
+                <RadzenDropDown @bind-Value="selectedRating" 
+                               Data="@ratingOptions" 
+                               AllowClear="true"
+                               Placeholder="Puan seçin..."
+                               TextProperty="Text"
+                               ValueProperty="Value"
+                               Style="width: 100%;" />
+            </RadzenFormField>
+
+            <!-- Filter Button -->
+            <RadzenButton Text="Filtrele" 
+                         ButtonStyle="ButtonStyle.Primary" 
+                         Style="width: 100%;"
+                         Click="@ApplyFilters"
+                         Icon="search"
+                         Size="ButtonSize.Medium" />
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (isLoading)
+    {
+        <RadzenCard Style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText TextStyle="TextStyle.H6">İşletmeler yükleniyor...</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else if (filteredBusinesses.Any())
+    {
+        <RadzenRow Gap="16px">
+            @foreach (var business in filteredBusinesses)
+            {
+                <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+                    <RadzenCard @onclick="@(() => NavigateToDetail(business.Id))" 
+                               Style="cursor: pointer; height: 100%; transition: all 0.3s ease;"
+                               class="business-card">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            <!-- Business Image -->
+                            @if (business.PhotoUrls != null && business.PhotoUrls.Any())
+                            {
+                                <div style="width: 100%; height: 200px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
+                                    <img src="@business.PhotoUrls.First()" 
+                                         style="width: 100%; height: 100%; object-fit: cover;" 
+                                         alt="@business.Name" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="width: 100%; height: 200px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                    <RadzenText TextStyle="TextStyle.DisplayH2" Style="color: white; margin: 0;">
+                                        @business.Name.Substring(0, 1).ToUpper()
+                                    </RadzenText>
+                                </div>
+                            }
+                            
+                            <!-- Business Info -->
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
+                                    @business.Name
+                                </RadzenText>
+                                
+                                @if (!string.IsNullOrEmpty(business.Description))
+                                {
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        @business.Description
+                                    </RadzenText>
+                                }
+                                
+                                <!-- Location -->
+                                @if (!string.IsNullOrEmpty(business.City))
+                                {
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                        <RadzenIcon Icon="location_on" Style="font-size: 16px; color: var(--rz-text-secondary-color);" />
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                            @business.City @(!string.IsNullOrEmpty(business.District) ? $", {business.District}" : "")
+                                        </RadzenText>
+                                    </RadzenStack>
+                                }
+                                
+                                <!-- Rating -->
+                                <RadzenStack Orientation="Orientation.Horizontal" Gap="4px" AlignItems="AlignItems.Center">
+                                    <RadzenIcon Icon="star" Style="font-size: 16px; color: #fbbf24;" />
+                                    <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 600; margin: 0;">
+                                        @(business.AverageRating?.ToString("F1") ?? "0.0")
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                        (@business.TotalRatings değerlendirme)
+                                    </RadzenText>
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenColumn>
+            }
+        </RadzenRow>
+    }
+    else
+    {
+        <RadzenCard Style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="business" Style="font-size: 64px; color: var(--rz-text-disabled-color);" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); text-align: center;">
+                    Bu kategoride işletme bulunamadı
+                </RadzenText>
+                <RadzenButton Text="Kategorilere Dön" ButtonStyle="ButtonStyle.Primary" 
+                             Click="@(() => Navigation.NavigateTo("/categories"))" />
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+<style>
+    .business-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    private List<BusinessDto> businesses = new();
+    private List<BusinessDto> filteredBusinesses = new();
+    private string categoryName = "";
+    private string searchTerm = "";
+    private bool isLoading = true;
+
+    // Filter variables
+    private string? selectedCity;
+    private string? selectedDistrict;
+    private double? selectedRating;
+    private List<string> cities = new();
+    private List<string> districts = new();
+    private List<RatingOption> ratingOptions = new();
+
+    public class RatingOption
+    {
+        public string Text { get; set; } = string.Empty;
+        public double Value { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeFilters();
+        await LoadCategoryName();
+        await LoadBusinesses();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadCategoryName();
+        await LoadBusinesses();
+    }
+
+    private void InitializeFilters()
+    {
+        // Load cities
+        cities = TurkishCityService.GetAllCities();
+
+        // Initialize rating options
+        ratingOptions = new List<RatingOption>
+        {
+            new RatingOption { Text = "⭐ 1+ Yıldız", Value = 1.0 },
+            new RatingOption { Text = "⭐⭐ 2+ Yıldız", Value = 2.0 },
+            new RatingOption { Text = "⭐⭐⭐ 3+ Yıldız", Value = 3.0 },
+            new RatingOption { Text = "⭐⭐⭐⭐ 4+ Yıldız", Value = 4.0 },
+            new RatingOption { Text = "⭐⭐⭐⭐⭐ 4.5+ Yıldız", Value = 4.5 }
+        };
+    }
+
+    private void OnCityChanged()
+    {
+        // Reset district when city changes
+        selectedDistrict = null;
+        
+        // Load districts for selected city
+        if (!string.IsNullOrEmpty(selectedCity))
+        {
+            districts = TurkishCityService.GetDistrictsByCity(selectedCity);
+        }
+        else
+        {
+            districts = new List<string>();
+        }
+        
+        StateHasChanged();
+    }
+
+    private bool HasActiveFilters()
+    {
+        return !string.IsNullOrWhiteSpace(searchTerm) ||
+               !string.IsNullOrEmpty(selectedCity) ||
+               !string.IsNullOrEmpty(selectedDistrict) ||
+               selectedRating.HasValue;
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = "";
+        selectedCity = null;
+        selectedDistrict = null;
+        selectedRating = null;
+        districts = new List<string>();
+        
+        await LoadBusinesses();
+    }
+
+    private async Task LoadCategoryName()
+    {
+        var response = await CategoryApiService.GetCategoryByIdAsync(CategoryId);
+        if (response.Success && response.Data != null)
+        {
+            categoryName = response.Data.Name;
+        }
+    }
+
+    private async Task LoadBusinesses()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await BusinessApiService.GetAllBusinessesAsync(CategoryId);
+        if (response.Success)
+        {
+            businesses = response.Data ?? new List<BusinessDto>();
+            filteredBusinesses = businesses;
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            businesses = new List<BusinessDto>();
+            filteredBusinesses = new List<BusinessDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ApplyFilters()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await BusinessApiService.GetAllBusinessesAsync(
+            categoryId: CategoryId,
+            searchTerm: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+            city: selectedCity,
+            district: selectedDistrict,
+            minRating: selectedRating
+        );
+
+        if (response.Success)
+        {
+            filteredBusinesses = response.Data ?? new List<BusinessDto>();
+            
+            if (filteredBusinesses.Count == 0)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Info, 
+                    "Bilgi", 
+                    "Seçilen filtrelere uygun işletme bulunamadı."
+                );
+            }
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            filteredBusinesses = new List<BusinessDto>();
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void NavigateToDetail(int businessId)
+    {
+        Navigation.NavigateTo($"/business/{businessId}");
+    }
+}

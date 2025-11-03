@@ -1,0 +1,270 @@
+﻿@page "/businesses/{businessId:int}"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Appointments
+@using AppointmentManagementSystem.BlazorUI.Models
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Components.Authorization
+@using Radzen
+@inject IBusinessApiService BusinessApiService
+@inject IServiceApiService ServiceApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+<PageTitle>İşletme Detayları</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <RadzenLoader />
+        <p>Yükleniyor...</p>
+    </div>
+}
+else if (business != null)
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="24px">
+            <!-- Başlık -->
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1>@business.Name</h1>
+                    <p class="text-muted">@business.CategoryName</p>
+                    @if (business.AverageRating.HasValue && business.AverageRating > 0)
+                    {
+                        <div class="d-flex align-items-center">
+                            <RadzenRating Value="@((int)business.AverageRating.Value)" ReadOnly="true" />
+                            <span class="ms-2">@business.AverageRating.Value.ToString("0.0") (@business.TotalRatings değerlendirme)</span>
+                        </div>
+                    }
+                </div>
+                <AuthorizeView Roles="Business">
+                    <RadzenButton Text="Düzenle" ButtonStyle="ButtonStyle.Secondary" Click="EditBusiness" />
+                </AuthorizeView>
+            </div>
+
+            <!-- Bilgiler -->
+            <RadzenRow>
+                @if (!string.IsNullOrEmpty(business.Description))
+                {
+                    <RadzenColumn Col="12">
+                        <h5>Açıklama</h5>
+                        <p>@business.Description</p>
+                    </RadzenColumn>
+                }
+
+                @if (!string.IsNullOrEmpty(business.Address) || !string.IsNullOrEmpty(business.City))
+                {
+                    <RadzenColumn Col="12" Md="6">
+                        <h5>Adres</h5>
+                        <p>
+                            @if (!string.IsNullOrEmpty(business.Address))
+                            {
+                                <div>@business.Address</div>
+                            }
+                            @if (!string.IsNullOrEmpty(business.City))
+                            {
+                                <div>@business.City @business.District</div>
+                            }
+                        </p>
+                    </RadzenColumn>
+                }
+
+                @if (!string.IsNullOrEmpty(business.Phone) || !string.IsNullOrEmpty(business.Email))
+                {
+                    <RadzenColumn Col="12" Md="6">
+                        <h5>İletişim</h5>
+                        <p>
+                            @if (!string.IsNullOrEmpty(business.Phone))
+                            {
+                                <div><i class="oi oi-phone"></i> @business.Phone</div>
+                            }
+                            @if (!string.IsNullOrEmpty(business.Email))
+                            {
+                                <div><i class="oi oi-envelope-closed"></i> @business.Email</div>
+                            }
+                        </p>
+                    </RadzenColumn>
+                }
+            </RadzenRow>
+            <AuthorizeView Roles="Customer">
+    <div class="mb-3">
+        <RadzenButton Text="Randevu Al" ButtonStyle="ButtonStyle.Success" 
+                    Icon="event" 
+                    Click="ShowAppointmentDialog" 
+                    Size="ButtonSize.Large" />
+    </div>
+</AuthorizeView>
+            <!-- Sekmeler -->
+            <RadzenTabs>
+                <Tabs>
+                    <RadzenTabsItem Text="Hizmetler">
+                        @if (servicesLoading)
+                        {
+                            <div class="text-center">
+                                <RadzenLoader />
+                            </div>
+                        }
+                        else if (services.Any())
+                        {
+                            <RadzenRow>
+                                @foreach (var service in services)
+                                {
+                                    <RadzenColumn Col="12" Sm="6" Md="4">
+                                        <RadzenCard class="h-100">
+                                            <h5>@service.Name</h5>
+                                            @if (!string.IsNullOrEmpty(service.Description))
+                                            {
+                                                <p>@service.Description</p>
+                                            }
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                @if (service.Price.HasValue)
+                                                {
+                                                    <strong>@service.Price.Value.ToString("C")</strong>
+                                                }
+                                                <span class="text-muted">@service.DurationMinutes dk</span>
+                                            </div>
+                                        </RadzenCard>
+                                    </RadzenColumn>
+                                }
+                            </RadzenRow>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <p>Bu işletme henüz hizmet tanımlamamış.</p>
+                            </div>
+                        }
+                    </RadzenTabsItem>
+
+                    <RadzenTabsItem Text="Çalışanlar">
+                        @if (employeesLoading)
+                        {
+                            <div class="text-center">
+                                <RadzenLoader />
+                            </div>
+                        }
+                        else if (employees.Any())
+                        {
+                            <RadzenRow>
+                                @foreach (var employee in employees)
+                                {
+                                    <RadzenColumn Col="12" Sm="6" Md="4">
+                                        <RadzenCard class="h-100">
+                                            <h5>@employee.Name</h5>
+                                            @if (!string.IsNullOrEmpty(employee.Specialization))
+                                            {
+                                                <p class="text-muted">@employee.Specialization</p>
+                                            }
+                                            @if (!string.IsNullOrEmpty(employee.Description))
+                                            {
+                                                <p>@employee.Description</p>
+                                            }
+                                        </RadzenCard>
+                                    </RadzenColumn>
+                                }
+                            </RadzenRow>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <p>Bu işletmede henüz çalışan tanımlanmamış.</p>
+                            </div>
+                        }
+                    </RadzenTabsItem>
+
+                    <RadzenTabsItem Text="Randevular">
+                        <div class="alert alert-info">
+                            <p>Randevu bilgileri için giriş yapmanız gerekmektedir.</p>
+                        </div>
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <div class="alert alert-danger">
+        <p>İşletme bulunamadı.</p>
+    </div>
+}
+
+@code {
+    private BusinessDto? business;
+    private List<ServiceDto> services = new();
+    private List<EmployeeDto> employees = new();
+    private bool isLoading = true;
+    private bool servicesLoading = true;
+    private bool employeesLoading = true;
+
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusiness();
+        await LoadServices();
+        await LoadEmployees();
+    }
+    private async Task ShowAppointmentDialog()
+    {
+        // Kullanıcı ID'sini authentication state'den almak gerekiyor
+        // Şimdilik geçici olarak 1 kullanıyoruz
+        var result = await DialogService.OpenAsync<CreateAppointmentDialog>("Yeni Randevu",
+            new Dictionary<string, object>() { { "CustomerId", 1 }, { "PreselectedBusinessId", BusinessId } },
+            new DialogOptions() { Width = "600px", Resizable = true, Draggable = true });
+
+        if (result is true)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevunuz başarıyla oluşturuldu!");
+        }
+    }
+    private async Task LoadBusiness()
+    {
+        isLoading = true;
+        var response = await BusinessApiService.GetBusinessByIdAsync(BusinessId);
+        if (response.Success)
+        {
+            business = response.Data;
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+        }
+        isLoading = false;
+    }
+
+    private async Task LoadServices()
+    {
+        servicesLoading = true;
+        var response = await ServiceApiService.GetAllServicesAsync(BusinessId);
+        if (response.Success)
+        {
+            services = response.Data ?? new List<ServiceDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+        }
+        servicesLoading = false;
+    }
+
+    private async Task LoadEmployees()
+    {
+        employeesLoading = true;
+        var response = await EmployeeApiService.GetAllEmployeesAsync(BusinessId);
+        if (response.Success)
+        {
+            employees = response.Data ?? new List<EmployeeDto>();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+        }
+        employeesLoading = false;
+    }
+
+    private void EditBusiness()
+    {
+        NotificationService.Notify(NotificationSeverity.Info, "Bilgi", "İşletme düzenleme özelliği yakında eklenecek.");
+    }
+}
