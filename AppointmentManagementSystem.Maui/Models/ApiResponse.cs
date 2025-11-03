@@ -1,4 +1,4 @@
-﻿namespace AppointmentManagementSystem.BlazorUI.Models
+﻿namespace AppointmentManagementSystem.Maui.Models
 {
     public class ApiResponse<T>
     {

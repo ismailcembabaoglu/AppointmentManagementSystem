@@ -1,6 +1,6 @@
 using AppointmentManagementSystem.Application.DTOs;
 
-namespace AppointmentManagementSystem.BlazorUI.Models
+namespace AppointmentManagementSystem.Maui.Models
 {
     public class AvailableEmployeesResponse
     {
