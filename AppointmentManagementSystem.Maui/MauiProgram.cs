@@ -5,6 +5,7 @@ using AppointmentManagementSystem.Maui.Services.Authentication;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
+using Plugin.Permissions.Abstractions;
 
 namespace AppointmentManagementSystem.Maui
 {
@@ -25,7 +26,7 @@ namespace AppointmentManagementSystem.Maui
             // Configure HttpClient for API
             builder.Services.AddScoped(sp => new HttpClient 
             { 
-                BaseAddress = new Uri("http://localhost:5089/") 
+                BaseAddress = new Uri("http://192.168.1.201:5089/") 
             });
 
             // API Services
@@ -55,7 +56,7 @@ namespace AppointmentManagementSystem.Maui
             // Native Features Services
             builder.Services.AddSingleton<ICameraService, CameraService>();
             builder.Services.AddSingleton<ILocationService, LocationService>();
-            builder.Services.AddSingleton<IPermissions>(Permissions.Default);
+            //builder.Services.AddScoped<IPermissions>();
 
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();

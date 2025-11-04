@@ -4,6 +4,8 @@
 @using AppointmentManagementSystem.Maui.Components
 @using Radzen
 @using Microsoft.AspNetCore.Components.Forms
+@using Radzen.Blazor
+@using static AppointmentManagementSystem.Maui.Components.FileUploadComponent
 @inject IEmployeeApiService EmployeeApiService
 @inject IPhotoApiService PhotoApiService
 @inject NotificationService NotificationService
@@ -15,7 +17,7 @@
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
         <div>
             <RadzenLabel Text="Ad Soyad *" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextBox @bind="employeeDto.Name" Placeholder="Çalışan adını girin" Style="width: 100%;" />
+            <RadzenTextBox @bind-value="employeeDto.Name" Placeholder="Çalışan adını girin" Style="width: 100%;" />
             @if (!string.IsNullOrEmpty(nameError))
             {
                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px;">@nameError</RadzenText>
@@ -24,12 +26,12 @@
 
         <div>
             <RadzenLabel Text="Uzmanlık" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextBox @bind="employeeDto.Specialization" Placeholder="Uzmanlık alanı" Style="width: 100%;" />
+            <RadzenTextBox @bind-value="employeeDto.Specialization" Placeholder="Uzmanlık alanı" Style="width: 100%;" />
         </div>
 
         <div>
             <RadzenLabel Text="Açıklama" Style="margin-bottom: 8px; display: block;" />
-            <RadzenTextArea @bind="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" Style="width: 100%;" />
+            <RadzenTextArea @bind-value="employeeDto.Description" Rows="3" Placeholder="Çalışan açıklaması" Style="width: 100%;" />
         </div>
 
         <!-- Photo Upload Section -->
@@ -54,7 +56,7 @@
                         @foreach (var (photo, index) in selectedPhotos.Select((p, i) => (p, i)))
                         {
                             <div style="position: relative; width: 80px; height: 80px;">
-                                <img src="@($"data:image/jpeg;base64,{photo}")"
+                                <img src="@($"{photo}")"
                                      alt="Çalışan fotoğrafı"
                                      style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" />
                                 <RadzenButton Icon="close"
@@ -70,7 +72,7 @@
         </div>
 
         <div>
-            <RadzenCheckBox @bind="employeeDto.IsActive" />
+            <RadzenCheckBox TValue="bool" @bind-value="employeeDto.IsActive" />
             <RadzenLabel Text="Aktif" Style="margin-left: 8px;" />
         </div>
     </RadzenStack>

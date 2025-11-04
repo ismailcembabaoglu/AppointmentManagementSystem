@@ -41,7 +41,7 @@
                     <p><strong>Accuracy:</strong> @currentLocation.Accuracy?.ToString("F2") meters</p>
                     @if (currentLocation.Timestamp != null)
                     {
-                        <p><strong>Time:</strong> @currentLocation.Timestamp.Value.LocalDateTime</p>
+                        <p><strong>Time:</strong> @currentLocation.Timestamp.LocalDateTime</p>
                     }
                 </div>
             }

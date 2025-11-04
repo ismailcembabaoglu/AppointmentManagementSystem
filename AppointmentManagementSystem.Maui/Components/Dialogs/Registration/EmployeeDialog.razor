@@ -1,5 +1,7 @@
 @using Radzen
 @using AppointmentManagementSystem.Maui.Components
+@using Radzen.Blazor
+@using static AppointmentManagementSystem.Maui.Components.FileUploadComponent
 
 <RadzenCard Style="width: 700px; max-width: 100%;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
@@ -8,7 +10,7 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
             <div>
                 <RadzenLabel Text="Ad Soyad *" />
-                <RadzenTextBox @bind="model.Name"
+                <RadzenTextBox @bind-value="model.Name"
                               Placeholder="Örn: Ahmet Yılmaz"
                               Style="width: 100%;" />
                 @if (!string.IsNullOrEmpty(nameError))
@@ -22,14 +24,14 @@
 
             <div>
                 <RadzenLabel Text="Uzmanlık" />
-                <RadzenTextBox @bind="model.Specialization"
+                <RadzenTextBox @bind-value="model.Specialization"
                               Placeholder="Örn: Kuaför, Masöz, Berber"
                               Style="width: 100%;" />
             </div>
 
             <div>
                 <RadzenLabel Text="Açıklama" />
-                <RadzenTextArea @bind="model.Description"
+                <RadzenTextArea @bind-value="model.Description"
                                Rows="3"
                                Placeholder="Çalışan hakkında detaylı bilgi"
                                Style="width: 100%;" />

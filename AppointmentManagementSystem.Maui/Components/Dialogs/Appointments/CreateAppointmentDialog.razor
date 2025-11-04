@@ -2,6 +2,8 @@
 @using AppointmentManagementSystem.Maui.Models
 @using AppointmentManagementSystem.Maui.Services.ApiServices
 @using Radzen
+@using Radzen.Blazor
+@using static AppointmentManagementSystem.Maui.Components.FileUploadComponent
 @inject IAppointmentApiService AppointmentApiService
 @inject IBusinessApiService BusinessApiService
 @inject IServiceApiService ServiceApiService
@@ -61,12 +63,12 @@
                     Randevu Tarihini Seçin
                 </RadzenText>
                 
-                <RadzenDatePicker Value="@selectedDate"
-                                 ValueChanged="@OnDateChanged"
+        <RadzenDatePicker @bind-Value="selectedDate"
                                  Inline="true"
                                  DateFormat="dd/MM/yyyy"
                                  Style="width: 100%;"
-                                 Min="DateTime.Today" />
+                                 Min="DateTime.Today"
+                                 Change="@(args => OnDateChanged(args))" />
                 
                 @if (selectedDate.HasValue)
                 {

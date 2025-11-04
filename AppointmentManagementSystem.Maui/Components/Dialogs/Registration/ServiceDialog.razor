@@ -7,13 +7,13 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
             <div>
                 <RadzenLabel Text="Hizmet Adı *" />
-                <RadzenTextBox @bind="model.Name"
-                              Placeholder="Örn: Saç Kesimi"
-                              Style="width: 100%;" />
+                <RadzenTextBox @bind-Value="model.Name"
+                               Placeholder="Örn: Saç Kesimi"
+                               Style="width: 100%;" />
                 @if (!string.IsNullOrEmpty(nameError))
                 {
                     <RadzenText TextStyle="TextStyle.Caption"
-                               Style="color: var(--rz-danger);">
+                                Style="color: var(--rz-danger);">
                         @nameError
                     </RadzenText>
                 }
@@ -21,36 +21,36 @@
 
             <div>
                 <RadzenLabel Text="Açıklama" />
-                <RadzenTextArea @bind="model.Description"
-                               Rows="3"
-                               Placeholder="Hizmet hakkında detaylı bilgi"
-                               Style="width: 100%;" />
+                <RadzenTextArea @bind-Value="model.Description"
+                                Rows="3"
+                                Placeholder="Hizmet hakkında detaylı bilgi"
+                                Style="width: 100%;" />
             </div>
 
             <RadzenRow>
                 <RadzenColumn Size="12" SizeMD="6">
                     <div>
                         <RadzenLabel Text="Fiyat (TL)" />
-                        <RadzenNumeric @bind="model.Price"
-                                      ShowUpDown="false"
-                                      Placeholder="Fiyat"
-                                      Min="0"
-                                      Style="width: 100%;" />
+                        <RadzenNumeric @bind-Value="model.Price"
+                                       ShowUpDown="false"
+                                       Placeholder="Fiyat"
+                                       Min="0"
+                                       Style="width: 100%;" />
                     </div>
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="6">
                     <div>
                         <RadzenLabel Text="Süre (Dakika) *" />
-                        <RadzenNumeric @bind="model.DurationMinutes"
-                                      ShowUpDown="true"
-                                      Placeholder="Dakika"
-                                      Min="1"
-                                      Max="1440"
-                                      Style="width: 100%;" />
+                        <RadzenNumeric @bind-Value="model.DurationMinutes"
+                                       ShowUpDown="true"
+                                       Placeholder="Dakika"
+                                       Min="1"
+                                       Max="1440"
+                                       Style="width: 100%;" />
                         @if (!string.IsNullOrEmpty(durationError))
                         {
                             <RadzenText TextStyle="TextStyle.Caption"
-                                       Style="color: var(--rz-danger);">
+                                        Style="color: var(--rz-danger);">
                                 @durationError
                             </RadzenText>
                         }
@@ -61,11 +61,11 @@
 
         <div class="d-flex justify-content-end gap-2" style="margin-top: 16px;">
             <RadzenButton Text="İptal"
-                         ButtonStyle="ButtonStyle.Light"
-                         Click="Cancel" />
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="Cancel" />
             <RadzenButton Text="@(IsEdit ? "Güncelle" : "Ekle")"
-                         ButtonStyle="ButtonStyle.Primary"
-                         Click="Save" />
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="Save" />
         </div>
     </RadzenStack>
 </RadzenCard>

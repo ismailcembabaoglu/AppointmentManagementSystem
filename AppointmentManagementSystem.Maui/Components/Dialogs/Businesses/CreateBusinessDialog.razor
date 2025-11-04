@@ -2,6 +2,8 @@
 @using AppointmentManagementSystem.Maui.Models
 @using AppointmentManagementSystem.Maui.Services.ApiServices
 @using Radzen
+@using Radzen.Blazor
+@using static AppointmentManagementSystem.Maui.Components.FileUploadComponent
 @inject IBusinessApiService BusinessApiService
 @inject ICategoryApiService CategoryApiService
 @inject IPhotoApiService PhotoApiService
@@ -23,7 +25,7 @@
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding-top: 16px;">
                         <!-- İşletme Adı -->
                         <RadzenFormField Text="İşletme Adı" Variant="Variant.Outlined" Style="width: 100%;">
-                            <RadzenTextBox @bind=""businessDto.Name" Placeholder="İşletme adını girin" Style="width: 100%;" />
+                            <RadzenTextBox @bind-value="businessDto.Name" Placeholder="İşletme adını girin" Style="width: 100%;" />
                             @if (!string.IsNullOrEmpty(nameError))
                             {
                                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger); margin-top: 4px; display: block;">
@@ -43,7 +45,7 @@
                             }
                             else
                             {
-                                <RadzenDropDown @bind=""businessDto.CategoryId"
+                                <RadzenDropDown @bind-value="businessDto.CategoryId"
                                               Data="categories"
                                               TextProperty="Name"
                                               ValueProperty="Id"
@@ -60,26 +62,26 @@
 
                         <!-- Açıklama -->
                         <RadzenFormField Text="Açıklama" Variant="Variant.Outlined" Style="width: 100%;">
-                            <RadzenTextArea @bind=""businessDto.Description" Rows="3"
+                            <RadzenTextArea @bind-value="businessDto.Description" Rows="3"
                                           Placeholder="İşletme hakkında detaylı açıklama yazın..."
                                           Style="width: 100%;" />
                         </RadzenFormField>
 
                         <!-- Adres -->
                         <RadzenFormField Text="Adres" Variant="Variant.Outlined" Style="width: 100%;">
-                            <RadzenTextBox @bind=""businessDto.Address" Placeholder="Tam adres" Style="width: 100%;" />
+                            <RadzenTextBox @bind-value="businessDto.Address" Placeholder="Tam adres" Style="width: 100%;" />
                         </RadzenFormField>
 
                         <!-- Şehir ve İlçe -->
                         <RadzenRow Gap="12px">
                             <RadzenColumn Size="12" SizeMD="6">
                                 <RadzenFormField Text="Şehir" Variant="Variant.Outlined" Style="width: 100%;">
-                                    <RadzenTextBox @bind=""businessDto.City" Placeholder="Şehir" Style="width: 100%;" />
+                                    <RadzenTextBox @bind-value="businessDto.City" Placeholder="Şehir" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                             <RadzenColumn Size="12" SizeMD="6">
                                 <RadzenFormField Text="İlçe" Variant="Variant.Outlined" Style="width: 100%;">
-                                    <RadzenTextBox @bind=""businessDto.District" Placeholder="İlçe" Style="width: 100%;" />
+                                    <RadzenTextBox @bind-value="businessDto.District" Placeholder="İlçe" Style="width: 100%;" />
                                 </RadzenFormField>
                             </RadzenColumn>
                         </RadzenRow>
@@ -93,7 +95,7 @@
                             <ChildContent>
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
                                     <RadzenText TextStyle="TextStyle.Body1">📞</RadzenText>
-                                    <RadzenTextBox @bind=""businessDto.Phone" Placeholder="(5XX) XXX XX XX" Style="flex: 1;" />
+                                    <RadzenTextBox @bind-value="businessDto.Phone" Placeholder="(5XX) XXX XX XX" Style="flex: 1;" />
                                 </RadzenStack>
                             </ChildContent>
                         </RadzenFormField>
@@ -103,7 +105,7 @@
                             <ChildContent>
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
                                     <RadzenText TextStyle="TextStyle.Body1">📧</RadzenText>
-                                    <RadzenTextBox @bind=""businessDto.Email" Placeholder="ornek@firma.com" Style="flex: 1;" />
+                                    <RadzenTextBox @bind-value="businessDto.Email" Placeholder="ornek@firma.com" Style="flex: 1;" />
                                 </RadzenStack>
                             </ChildContent>
                         </RadzenFormField>
@@ -113,7 +115,7 @@
                             <ChildContent>
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
                                     <RadzenText TextStyle="TextStyle.Body1">🌐</RadzenText>
-                                    <RadzenTextBox @bind=""businessDto.Website" Placeholder="https://www.ornek.com" Style="flex: 1;" />
+                                    <RadzenTextBox @bind-value="businessDto.Website" Placeholder="https://www.ornek.com" Style="flex: 1;" />
                                 </RadzenStack>
                             </ChildContent>
                         </RadzenFormField>

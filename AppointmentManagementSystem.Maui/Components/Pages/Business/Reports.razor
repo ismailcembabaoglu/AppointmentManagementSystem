@@ -3,6 +3,7 @@
 @using AppointmentManagementSystem.Maui.Services.ApiServices
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization
+@using Radzen.Blazor
 @inject IBusinessApiService BusinessService
 @inject IServiceApiService ServiceService
 @inject IEmployeeApiService EmployeeService
@@ -59,7 +60,7 @@ else
             <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
                     <RadzenLabel Text="Başlangıç Tarihi" />
-                    <RadzenDatePicker @bind="startDate"
+                    <RadzenDatePicker @bind-value="startDate"
                                      DateFormat="dd/MM/yyyy"
                                      Style="width: 100%;"
                                      Change="@(args => ApplyFilters())" />
@@ -69,7 +70,7 @@ else
             <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
                     <RadzenLabel Text="Bitiş Tarihi" />
-                    <RadzenDatePicker @bind="endDate"
+                    <RadzenDatePicker @bind-value="endDate"
                                      DateFormat="dd/MM/yyyy"
                                      Style="width: 100%;"
                                      Change="@(args => ApplyFilters())" />
@@ -80,7 +81,7 @@ else
                 <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
                     <RadzenLabel Text="Çalışan" />
                     <RadzenDropDown Data="@employees"
-                                   @bind="selectedEmployeeId"
+                                   @bind-value="selectedEmployeeId"
                                    TextProperty="Name"
                                    ValueProperty="Id"
                                    AllowClear="true"
@@ -94,7 +95,7 @@ else
                 <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
                     <RadzenLabel Text="Durum" />
                     <RadzenDropDown Data="@statusOptions"
-                                   @bind="selectedStatus"
+                                   @bind-value="selectedStatus"
                                    AllowClear="true"
                                    Placeholder="Tüm Durumlar"
                                    Style="width: 100%;"

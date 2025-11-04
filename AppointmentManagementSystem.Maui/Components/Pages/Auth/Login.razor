@@ -4,6 +4,7 @@
 @using AppointmentManagementSystem.Maui.Services
 @using AppointmentManagementSystem.Maui.Services.Authentication
 @using Radzen
+@using Radzen.Blazor
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IApiService ApiService
 @inject NotificationService NotificationService
@@ -21,7 +22,7 @@
 
             <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                 <RadzenTextBox Placeholder="E-posta adresinizi girin"
-                               @bind="loginDto.Email"
+                               @bind-value="loginDto.Email"
                                Icon="email" />
                 @if (!string.IsNullOrEmpty(emailError))
                 {
@@ -29,7 +30,7 @@
                 }
 
                 <RadzenPassword Placeholder="Şifrenizi girin"
-                                @bind="loginDto.Password"
+                                @bind-value="loginDto.Password"
                                 Icon="lock" />
                 @if (!string.IsNullOrEmpty(passwordError))
                 {

@@ -4,6 +4,7 @@
 @using AppointmentManagementSystem.Maui.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using Radzen
+@using Radzen.Blazor
 @inject IBusinessApiService BusinessApiService
 @inject IServiceApiService ServiceApiService
 @inject IEmployeeApiService EmployeeApiService
@@ -138,23 +139,33 @@ else
                     <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📅 Randevu Al</RadzenText>
                     <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                         <div>
-                            <RadzenLabel Text="Hizmet Seçin *" />
-                            <RadzenDropDown @bind="selectedServiceId" Data="@services" TextProperty="Name" ValueProperty="Id" 
-                                          Placeholder="Hizmet seçin" Style="width: 100%;" Change="@(args => OnServiceChanged())" />
-                        </div>
+    <RadzenLabel Text="Hizmet Seçin *" />
+    <RadzenDropDown TValue="int?"
+                    @bind-Value="selectedServiceId"
+                    Data="@services"
+                    TextProperty="Name"
+                    ValueProperty="Id"
+                    Placeholder="Hizmet seçin"
+                    Style="width: 100%;"
+                    Change="@(args => OnServiceChanged())" />
+</div>
 
-                        <div>
-                            <RadzenLabel Text="Çalışan Seçin *" />
-                            <RadzenDropDown @bind="selectedEmployeeId" Data="@employees" TextProperty="Name" ValueProperty="Id" 
-                                          Placeholder="Çalışan seçin" Style="width: 100%;" Disabled="@(!selectedServiceId.HasValue)" />
-                        </div>
+<div>
+    <RadzenLabel Text="Çalışan Seçin *" />
+                            <RadzenDropDown @bind-Value="selectedEmployeeId" Data="@employees" TextProperty="Name" ValueProperty="Id"
+                                            Placeholder="Çalışan seçin" Style="width: 100%;" Disabled="@(!selectedServiceId.HasValue)" />
+</div>
 
-                        <div>
-                            <RadzenLabel Text="Tarih Seçin *" />
-                            <RadzenDatePicker @bind="selectedDate" DateFormat="dd/MM/yyyy" 
-                                            Style="width: 100%;" Min="@DateTime.Today" Disabled="@(!selectedEmployeeId.HasValue)" 
-                                            Change="@(args => LoadAvailableTimeSlots())" />
-                        </div>
+<div>
+    <RadzenLabel Text="Tarih Seçin *" />
+    <RadzenDatePicker TValue="DateTime?"
+                      @bind-Value="selectedDate"
+                      DateFormat="dd/MM/yyyy"
+                      Style="width: 100%;"
+                      Min="@DateTime.Today"
+                      Disabled="@(!selectedEmployeeId.HasValue)"
+                      Change="@(args => LoadAvailableTimeSlots())" />
+</div>
 
                         @if (availableTimeSlots.Any())
                         {
