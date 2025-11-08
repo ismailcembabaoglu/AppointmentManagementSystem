@@ -1,0 +1,192 @@
+@page "/admin/businesses/{BusinessId:int}"
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject IEmployeeApiService EmployeeApiService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>İşletme Detayı - @businessDetail?.Name</PageTitle>
+
+<RadzenStack Gap="1rem">
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenButton Icon="arrow_back" Text="Geri" ButtonStyle="ButtonStyle.Light" 
+                        Click="@(() => NavigationManager.NavigateTo("/admin/businesses"))" />
+        </RadzenColumn>
+    </RadzenRow>
+
+    @if (businessDetail == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+            <Template>Yükleniyor...</Template>
+        </RadzenProgressBarCircular>
+    }
+    else
+    {
+        <!-- Business Info Card -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="8">
+                        <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">
+                            @businessDetail.Name
+                            @if (businessDetail.IsActive)
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Aktif" />
+                            }
+                            else
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Pasif" />
+                            }
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">@businessDetail.CategoryName</RadzenText>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="4" Style="text-align: right;">
+                        <RadzenButton Icon="@(businessDetail.IsActive ? "block" : "check_circle")" 
+                                    Text="@(businessDetail.IsActive ? "Devre Dışı Bırak" : "Aktifleştir")"
+                                    ButtonStyle="@(businessDetail.IsActive ? ButtonStyle.Danger : ButtonStyle.Success)"
+                                    Click="@ToggleBusinessStatus" />
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Gap="0.5rem">
+                            <RadzenText><strong>E-posta:</strong> @businessDetail.Email</RadzenText>
+                            <RadzenText><strong>Telefon:</strong> @businessDetail.Phone</RadzenText>
+                            <RadzenText><strong>Adres:</strong> @businessDetail.Address, @businessDetail.District / @businessDetail.City</RadzenText>
+                            <RadzenText><strong>Kayıt Tarihi:</strong> @businessDetail.CreatedAt.ToString("dd.MM.yyyy")</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Gap="0.5rem">
+                            <RadzenText><strong>Toplam Randevu:</strong> @businessDetail.TotalAppointments</RadzenText>
+                            <RadzenText><strong>Tamamlanan:</strong> @businessDetail.CompletedAppointments</RadzenText>
+                            <RadzenText><strong>İptal Edilen:</strong> @businessDetail.CancelledAppointments</RadzenText>
+                            <RadzenText><strong>Çalışan Sayısı:</strong> @businessDetail.TotalEmployees</RadzenText>
+                            <RadzenText><strong>Hizmet Sayısı:</strong> @businessDetail.TotalServices</RadzenText>
+                            <RadzenText><strong>Ortalama Puan:</strong> @(businessDetail.AverageRating?.ToString("0.0") ?? "N/A") ⭐ (@businessDetail.TotalReviews yorum)</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <!-- Subscription Info -->
+                <RadzenCard Class="rz-background-color-info-lighter">
+                    <RadzenText TextStyle="TextStyle.H6">Abonelik Bilgileri</RadzenText>
+                    <RadzenRow>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenStack Gap="0.5rem">
+                                <RadzenText><strong>Durum:</strong> <RadzenBadge BadgeStyle="@GetSubscriptionBadgeStyle(businessDetail.SubscriptionStatus)" Text="@(businessDetail.SubscriptionStatus ?? "Yok")" /></RadzenText>
+                                <RadzenText><strong>Başlangıç:</strong> @(businessDetail.SubscriptionStartDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
+                                <RadzenText><strong>Sonraki Ödeme:</strong> @(businessDetail.NextBillingDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="6">
+                            <RadzenStack Gap="0.5rem">
+                                <RadzenText><strong>Kart:</strong> @businessDetail.CardType - **** @businessDetail.CardLastFourDigits</RadzenText>
+                                <RadzenText>
+                                    <strong>Otomatik Yenileme:</strong> 
+                                    <RadzenSwitch @bind-Value="@autoRenewal" Change="@OnAutoRenewalChanged" />
+                                    @(businessDetail.AutoRenewal ? "Açık" : "Kapalı")
+                                </RadzenText>
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenCard>
+            </RadzenStack>
+        </RadzenCard>
+
+        <!-- Tabs -->
+        <RadzenTabs>
+            <Tabs>
+                <RadzenTabsItem Text="Randevular">
+                    <AppointmentsTab BusinessId="@BusinessId" />
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Çalışanlar">
+                    <EmployeesTab BusinessId="@BusinessId" />
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Yorumlar & Puanlar">
+                    <ReviewsTab BusinessId="@BusinessId" />
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Ödemeler">
+                    <PaymentsTab BusinessId="@BusinessId" />
+                </RadzenTabsItem>
+            </Tabs>
+        </RadzenTabs>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private BusinessDetailAdminModel? businessDetail;
+    private bool autoRenewal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBusinessDetailAsync();
+    }
+
+    private async Task LoadBusinessDetailAsync()
+    {
+        businessDetail = await AdminApiService.GetBusinessDetailAsync(BusinessId);
+        if (businessDetail != null)
+        {
+            autoRenewal = businessDetail.AutoRenewal;
+        }
+    }
+
+    private async Task ToggleBusinessStatus()
+    {
+        if (businessDetail == null) return;
+
+        var newStatus = !businessDetail.IsActive;
+        var confirmed = await DialogService.Confirm(
+            $"İşletme durumunu '{(newStatus ? "Aktif" : "Pasif")}' olarak değiştirmek istediğinize emin misiniz?",
+            "Durum Değişikliği",
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            var success = await AdminApiService.UpdateBusinessStatusAsync(BusinessId, newStatus);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme durumu güncellendi.");
+                await LoadBusinessDetailAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme durumu güncellenemedi.");
+            }
+        }
+    }
+
+    private async Task OnAutoRenewalChanged(bool value)
+    {
+        var success = await AdminApiService.UpdateSubscriptionAutoRenewalAsync(BusinessId, value);
+        if (success)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Otomatik yenileme ayarı güncellendi.");
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", "Otomatik yenileme ayarı güncellenemedi.");
+            autoRenewal = !value; // Revert
+        }
+    }
+
+    private BadgeStyle GetSubscriptionBadgeStyle(string? status)
+    {
+        return status switch
+        {
+            "Active" => BadgeStyle.Success,
+            "Expired" => BadgeStyle.Danger,
+            "Cancelled" => BadgeStyle.Warning,
+            _ => BadgeStyle.Secondary
+        };
+    }
+}
