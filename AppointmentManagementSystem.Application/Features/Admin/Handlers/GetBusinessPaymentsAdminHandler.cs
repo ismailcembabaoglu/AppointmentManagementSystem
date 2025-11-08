@@ -41,7 +41,7 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
                 BusinessName = business?.Name ?? "N/A",
                 Amount = p.Amount,
                 Status = p.Status,
-                TransactionId = p.TransactionId,
+                TransactionId = p.TransactionId ?? p.PayTRTransactionId ?? "N/A",
                 PaymentDate = p.PaymentDate,
                 CardType = p.CardType,
                 MaskedCardNumber = p.MaskedCardNumber,
