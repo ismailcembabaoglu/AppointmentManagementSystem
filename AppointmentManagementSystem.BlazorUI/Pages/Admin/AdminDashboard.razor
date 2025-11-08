@@ -1,0 +1,128 @@
+@page "/admin/dashboard"
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<RadzenStack Gap="1rem">
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" Class="rz-pt-4 rz-pb-2">
+                <RadzenIcon Icon="dashboard" /> Admin Dashboard
+            </RadzenText>
+        </RadzenColumn>
+    </RadzenRow>
+
+    @if (stats == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+            <Template>Yükleniyor...</Template>
+        </RadzenProgressBarCircular>
+    }
+    else
+    {
+        <!-- Statistics Cards -->
+        <RadzenRow Gap="1rem">
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Class="rz-background-color-primary-light">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                        <RadzenIcon Icon="business" Style="font-size: 3rem;" />
+                        <RadzenStack Gap="0">
+                            <RadzenText TextStyle="TextStyle.Overline">Toplam İşletme</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalBusinesses</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Aktif: @stats.ActiveBusinesses | Pasif: @stats.InactiveBusinesses</RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Class="rz-background-color-success-light">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                        <RadzenIcon Icon="people" Style="font-size: 3rem;" />
+                        <RadzenStack Gap="0">
+                            <RadzenText TextStyle="TextStyle.Overline">Toplam Müşteri</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalCustomers</RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Class="rz-background-color-info-light">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                        <RadzenIcon Icon="event" Style="font-size: 3rem;" />
+                        <RadzenStack Gap="0">
+                            <RadzenText TextStyle="TextStyle.Overline">Toplam Randevu</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Bugün: @stats.TodayAppointments | Bekleyen: @stats.PendingAppointments</RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard Class="rz-background-color-warning-light">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                        <RadzenIcon Icon="attach_money" Style="font-size: 3rem;" />
+                        <RadzenStack Gap="0">
+                            <RadzenText TextStyle="TextStyle.Overline">Toplam Gelir</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalRevenue.ToString("C")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Bu Ay: @stats.MonthlyRevenue.ToString("C")</RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <!-- Subscription Stats -->
+        <RadzenRow Gap="1rem">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-mb-3">
+                        <RadzenIcon Icon="card_membership" /> Abonelik Durumu
+                    </RadzenText>
+                    <RadzenStack Gap="1rem">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText>Aktif Abonelikler:</RadzenText>
+                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@stats.ActiveSubscriptions.ToString()" />
+                        </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText>Süresi Dolan:</RadzenText>
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@stats.ExpiredSubscriptions.ToString()" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H3" Class="rz-mb-3">
+                        Hızlı Erişim
+                    </RadzenText>
+                    <RadzenStack Gap="0.5rem">
+                        <RadzenButton Text="İşletmeleri Yönet" Icon="business" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/admin/businesses"))" Style="width: 100%;" />
+                        <RadzenButton Text="Raporları Görüntüle" Icon="assessment" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/admin/reports"))" Style="width: 100%;" />
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    }
+</RadzenStack>
+
+@code {
+    private AdminDashboardStats? stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatsAsync();
+    }
+
+    private async Task LoadStatsAsync()
+    {
+        stats = await AdminApiService.GetDashboardStatsAsync();
+    }
+}
