@@ -55,7 +55,8 @@
 
     private async Task LoadEmployeesAsync()
     {
-        employees = await EmployeeApiService.GetEmployeesByBusinessIdAsync(BusinessId);
+        var response = await EmployeeApiService.GetAllEmployeesAsync(BusinessId);
+        employees = response?.Data;
     }
 
     private async Task DeleteEmployee(int employeeId)
