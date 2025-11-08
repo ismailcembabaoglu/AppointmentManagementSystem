@@ -78,11 +78,16 @@
 
     private async Task RefundPayment(int paymentId)
     {
-        var reason = await DialogService.Prompt("İade sebebini girin:", "Ödeme İadesi",
-            new PromptOptions { OkButtonText = "İade Et", CancelButtonText = "İptal" });
+        var confirmed = await DialogService.Confirm(
+            "Bu ödemeyi iade etmek istediğinize emin misiniz?",
+            "Ödeme İadesi",
+            new ConfirmOptions() { OkButtonText = "İade Et", CancelButtonText = "İptal" });
 
-        if (!string.IsNullOrEmpty(reason))
+        if (confirmed == true)
         {
+            // Default iade sebebi
+            var reason = "Admin tarafından iade edildi";
+            
             var success = await AdminApiService.RefundPaymentAsync(paymentId, reason);
             if (success)
             {
