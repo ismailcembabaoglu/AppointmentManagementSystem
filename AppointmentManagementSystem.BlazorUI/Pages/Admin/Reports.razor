@@ -1,0 +1,250 @@
+@page "/admin/reports"
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Raporlar</PageTitle>
+
+<RadzenStack Gap="1rem">
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" Class="rz-pt-4">
+                <RadzenIcon Icon="assessment" /> Raporlar ve İstatistikler
+            </RadzenText>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <!-- Date Filters -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+            <RadzenStack Gap="0" Style="width: 200px;">
+                <RadzenLabel Text="Başlangıç Tarihi" />
+                <RadzenDatePicker @bind-Value="@startDate" Style="width: 100%;" />
+            </RadzenStack>
+
+            <RadzenStack Gap="0" Style="width: 200px;">
+                <RadzenLabel Text="Bitiş Tarihi" />
+                <RadzenDatePicker @bind-Value="@endDate" Style="width: 100%;" />
+            </RadzenStack>
+
+            <RadzenButton Icon="search" Text="Rapor Oluştur" Click="@LoadReportsAsync" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Icon="refresh" Text="Son 12 Ay" Click="@SetLast12Months" ButtonStyle="ButtonStyle.Light" />
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (reportsData == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+            <Template>Yükleniyor...</Template>
+        </RadzenProgressBarCircular>
+    }
+    else
+    {
+        <!-- Revenue by Month Chart -->
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
+                <RadzenIcon Icon="trending_up" /> Aylık Gelir Trendi
+            </RadzenText>
+            @if (reportsData.RevenueByMonth.Any())
+            {
+                <RadzenChart>
+                    <RadzenColumnSeries Data="@reportsData.RevenueByMonth" CategoryProperty="Month" ValueProperty="Revenue" Title="Gelir (TL)">
+                        <RadzenSeriesDataLabels Visible="true" />
+                    </RadzenColumnSeries>
+                    <RadzenColumnOptions Radius="5" />
+                    <RadzenValueAxis Formatter="@FormatCurrency">
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenCategoryAxis Padding="20" />
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+
+                <!-- Revenue Table -->
+                <RadzenDataGrid Data="@reportsData.RevenueByMonth" TItem="RevenueByMonthModel" AllowPaging="false" Class="rz-mt-4">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="RevenueByMonthModel" Property="Month" Title="Ay" />
+                        <RadzenDataGridColumn TItem="RevenueByMonthModel" Title="Gelir">
+                            <Template Context="data">
+                                @data.Revenue.ToString("C")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="RevenueByMonthModel" Property="PaymentCount" Title="Ödeme Sayısı" />
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            else
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info">Veri bulunamadı.</RadzenAlert>
+            }
+        </RadzenCard>
+
+        <!-- Appointments by Status -->
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
+                <RadzenIcon Icon="pie_chart" /> Randevu Durum Dağılımı
+            </RadzenText>
+            @if (reportsData.AppointmentsByStatus.Any())
+            {
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenChart>
+                            <RadzenPieSeries Data="@reportsData.AppointmentsByStatus" CategoryProperty="Status" ValueProperty="Count" Title="Randevular">
+                                <RadzenSeriesDataLabels Visible="true" />
+                            </RadzenPieSeries>
+                        </RadzenChart>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenDataGrid Data="@reportsData.AppointmentsByStatus" TItem="AppointmentsByStatusModel" AllowPaging="false">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Property="Status" Title="Durum" />
+                                <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Property="Count" Title="Adet" />
+                                <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Title="Yüzde">
+                                    <Template Context="data">
+                                        %@data.Percentage.ToString("0.00")
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+            else
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info">Veri bulunamadı.</RadzenAlert>
+            }
+        </RadzenCard>
+
+        <!-- Top Businesses -->
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
+                <RadzenIcon Icon="star" /> En Başarılı İşletmeler (Gelir Bazlı)
+            </RadzenText>
+            @if (reportsData.TopBusinesses.Any())
+            {
+                <RadzenChart>
+                    <RadzenBarSeries Data="@reportsData.TopBusinesses" CategoryProperty="BusinessName" ValueProperty="TotalRevenue" Title="Gelir (TL)">
+                        <RadzenSeriesDataLabels Visible="true" />
+                    </RadzenBarSeries>
+                    <RadzenValueAxis Formatter="@FormatCurrency">
+                        <RadzenGridLines Visible="true" />
+                    </RadzenValueAxis>
+                    <RadzenCategoryAxis Padding="20" />
+                    <RadzenLegend Visible="false" />
+                </RadzenChart>
+
+                <RadzenDataGrid Data="@reportsData.TopBusinesses" TItem="TopBusinessesModel" AllowPaging="false" Class="rz-mt-4">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="TopBusinessesModel" Property="BusinessName" Title="İşletme" />
+                        <RadzenDataGridColumn TItem="TopBusinessesModel" Property="TotalAppointments" Title="Toplam Randevu" />
+                        <RadzenDataGridColumn TItem="TopBusinessesModel" Title="Toplam Gelir">
+                            <Template Context="data">
+                                @data.TotalRevenue.ToString("C")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="TopBusinessesModel" Title="Ortalama Puan">
+                            <Template Context="data">
+                                @(data.AverageRating?.ToString("0.0") ?? "N/A") ⭐
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            else
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info">Veri bulunamadı.</RadzenAlert>
+            }
+        </RadzenCard>
+
+        <!-- Top Services -->
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
+                <RadzenIcon Icon="trending_up" /> En Çok Tercih Edilen Hizmetler
+            </RadzenText>
+            @if (reportsData.TopServices.Any())
+            {
+                <RadzenDataGrid Data="@reportsData.TopServices" TItem="TopServicesModel" AllowPaging="true" PageSize="10">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="TopServicesModel" Property="ServiceName" Title="Hizmet" />
+                        <RadzenDataGridColumn TItem="TopServicesModel" Property="BusinessName" Title="İşletme" />
+                        <RadzenDataGridColumn TItem="TopServicesModel" Property="BookingCount" Title="Rezervasyon Sayısı" />
+                        <RadzenDataGridColumn TItem="TopServicesModel" Title="Toplam Gelir">
+                            <Template Context="data">
+                                @(data.TotalRevenue?.ToString("C") ?? "N/A")
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            else
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info">Veri bulunamadı.</RadzenAlert>
+            }
+        </RadzenCard>
+
+        <!-- Category Distribution -->
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
+                <RadzenIcon Icon="category" /> Kategori Dağılımı
+            </RadzenText>
+            @if (reportsData.CategoryDistribution.Any())
+            {
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenChart>
+                            <RadzenDonutSeries Data="@reportsData.CategoryDistribution" CategoryProperty="CategoryName" ValueProperty="BusinessCount" Title="İşletme Sayısı">
+                                <RadzenSeriesDataLabels Visible="true" />
+                            </RadzenDonutSeries>
+                        </RadzenChart>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenDataGrid Data="@reportsData.CategoryDistribution" TItem="CategoryDistributionModel" AllowPaging="false">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="CategoryDistributionModel" Property="CategoryName" Title="Kategori" />
+                                <RadzenDataGridColumn TItem="CategoryDistributionModel" Property="BusinessCount" Title="İşletme Sayısı" />
+                                <RadzenDataGridColumn TItem="CategoryDistributionModel" Property="AppointmentCount" Title="Randevu Sayısı" />
+                            </Columns>
+                        </RadzenDataGrid>
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+            else
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info">Veri bulunamadı.</RadzenAlert>
+            }
+        </RadzenCard>
+    }
+</RadzenStack>
+
+@code {
+    private ReportsDataModel? reportsData;
+    private DateTime? startDate;
+    private DateTime? endDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetLast12Months();
+        await LoadReportsAsync();
+    }
+
+    private void SetLast12Months()
+    {
+        endDate = DateTime.Today;
+        startDate = DateTime.Today.AddMonths(-12);
+    }
+
+    private async Task LoadReportsAsync()
+    {
+        reportsData = await AdminApiService.GetReportsAsync(startDate, endDate);
+    }
+
+    private string FormatCurrency(object value)
+    {
+        if (value is double d)
+            return ((decimal)d).ToString("C0");
+        if (value is decimal dec)
+            return dec.ToString("C0");
+        return value?.ToString() ?? string.Empty;
+    }
+}
