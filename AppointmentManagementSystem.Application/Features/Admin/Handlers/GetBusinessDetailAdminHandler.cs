@@ -34,7 +34,7 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
 
             var appointments = await _appointmentRepository.GetByBusinessAsync(business.Id);
             var employees = await _employeeRepository.GetByBusinessAsync(business.Id);
-            var services = await _serviceRepository.GetByBusinessIdAsync(business.Id);
+            var services = await _serviceRepository.GetByBusinessAsync(business.Id);
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(business.Id);
             var avgRating = await _businessRepository.GetAverageRatingAsync(business.Id);
 
