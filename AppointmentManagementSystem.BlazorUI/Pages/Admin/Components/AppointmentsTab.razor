@@ -125,17 +125,21 @@
             new Dictionary<string, object> { { "CurrentStatus", appointment.Status } },
             new DialogOptions() { Width = "400px", Height = "250px" });
 
-        if (result != null && result is string newStatus)
+        if (result != null && result is string)
         {
-            var success = await AdminApiService.UpdateAppointmentStatusAsync(appointment.Id, newStatus);
-            if (success)
+            var newStatus = result as string;
+            if (!string.IsNullOrEmpty(newStatus))
             {
-                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu durumu güncellendi.");
-                await LoadAppointmentsAsync();
-            }
-            else
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Hata", "Randevu durumu güncellenemedi.");
+                var success = await AdminApiService.UpdateAppointmentStatusAsync(appointment.Id, newStatus);
+                if (success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu durumu güncellendi.");
+                    await LoadAppointmentsAsync();
+                }
+                else
+                {
+                    NotificationService.Notify(NotificationSeverity.Error, "Hata", "Randevu durumu güncellenemedi.");
+                }
             }
         }
     }
