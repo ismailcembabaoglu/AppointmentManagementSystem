@@ -1,0 +1,81 @@
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IEmployeeApiService EmployeeApiService
+@inject IAdminApiService AdminApiService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    @if (employees == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" />
+    }
+    else
+    {
+        <RadzenDataGrid Data="@employees" TItem="EmployeeDto" AllowSorting="true" AllowPaging="true" PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="EmployeeDto" Property="Id" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="EmployeeDto" Property="Name" Title="Ad Soyad" Width="200px" />
+                <RadzenDataGridColumn TItem="EmployeeDto" Property="Specialization" Title="Uzmanlık" Width="200px" />
+                <RadzenDataGridColumn TItem="EmployeeDto" Property="Description" Title="Açıklama" Width="300px" />
+                <RadzenDataGridColumn TItem="EmployeeDto" Title="Durum" Width="100px">
+                    <Template Context="emp">
+                        @if (emp.IsActive)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Aktif" />
+                        }
+                        else
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Pasif" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="EmployeeDto" Title="İşlemler" Width="100px" Frozen="true" Sortable="false">
+                    <Template Context="emp">
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                    Click="@(() => DeleteEmployee(emp.Id))" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private List<EmployeeDto>? employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeesAsync();
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        employees = await EmployeeApiService.GetEmployeesByBusinessIdAsync(BusinessId);
+    }
+
+    private async Task DeleteEmployee(int employeeId)
+    {
+        var confirmed = await DialogService.Confirm(
+            "Bu çalışanı silmek istediğinize emin misiniz?",
+            "Çalışan Silme",
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            var success = await AdminApiService.DeleteEmployeeAsync(employeeId);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Çalışan silindi.");
+                await LoadEmployeesAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "Çalışan silinemedi.");
+            }
+        }
+    }
+}

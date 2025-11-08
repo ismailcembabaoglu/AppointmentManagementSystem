@@ -1,0 +1,154 @@
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    <!-- Filters -->
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+        <RadzenStack Gap="0" Style="width: 150px;">
+            <RadzenLabel Text="Başlangıç" />
+            <RadzenDatePicker @bind-Value="@startDate" Style="width: 100%;" />
+        </RadzenStack>
+
+        <RadzenStack Gap="0" Style="width: 150px;">
+            <RadzenLabel Text="Bitiş" />
+            <RadzenDatePicker @bind-Value="@endDate" Style="width: 100%;" />
+        </RadzenStack>
+
+        <RadzenStack Gap="0" Style="width: 150px;">
+            <RadzenLabel Text="Durum" />
+            <RadzenDropDown @bind-Value="@status" Data="@statusOptions" Placeholder="Tümü" AllowClear="true" Style="width: 100%;" />
+        </RadzenStack>
+
+        <RadzenButton Icon="search" Text="Filtrele" Click="@LoadAppointmentsAsync" ButtonStyle="ButtonStyle.Primary" />
+    </RadzenStack>
+
+    @if (appointments == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" />
+    }
+    else
+    {
+        <RadzenDataGrid Data="@appointments" TItem="AppointmentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="Id" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="AppointmentDate" Title="Tarih" Width="120px" FormatString="{0:dd.MM.yyyy}" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Title="Saat" Width="100px">
+                    <Template Context="appt">
+                        @appt.StartTime.ToString(@"hh\:mm")
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="CustomerName" Title="Müşteri" Width="150px" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="CustomerPhone" Title="Telefon" Width="120px" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="ServiceName" Title="Hizmet" Width="150px" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="EmployeeName" Title="Çalışan" Width="120px" />
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Title="Durum" Width="120px">
+                    <Template Context="appt">
+                        <RadzenBadge BadgeStyle="@GetAppointmentBadgeStyle(appt.Status)" Text="@appt.Status" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Title="Puan" Width="80px">
+                    <Template Context="appt">
+                        @if (appt.Rating.HasValue)
+                        {
+                            <span>@appt.Rating ⭐</span>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AppointmentAdminModel" Title="İşlemler" Width="150px" Frozen="true" Sortable="false">
+                    <Template Context="appt">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Small" 
+                                        Click="@(() => UpdateAppointmentStatus(appt))" />
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                        Click="@(() => DeleteAppointment(appt.Id))" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private List<AppointmentAdminModel>? appointments;
+    private DateTime? startDate;
+    private DateTime? endDate;
+    private string? status;
+
+    private List<string> statusOptions = new() { "Pending", "Confirmed", "Completed", "Cancelled" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointmentsAsync();
+    }
+
+    private async Task LoadAppointmentsAsync()
+    {
+        appointments = await AdminApiService.GetBusinessAppointmentsAsync(BusinessId, startDate, endDate, status);
+    }
+
+    private async Task DeleteAppointment(int appointmentId)
+    {
+        var confirmed = await DialogService.Confirm(
+            "Bu randevuyu silmek istediğinize emin misiniz?",
+            "Randevu Silme",
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            var success = await AdminApiService.DeleteAppointmentAsync(appointmentId);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu silindi.");
+                await LoadAppointmentsAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "Randevu silinemedi.");
+            }
+        }
+    }
+
+    private async Task UpdateAppointmentStatus(AppointmentAdminModel appointment)
+    {
+        var result = await DialogService.OpenAsync<StatusUpdateDialog>("Durum Güncelle",
+            new Dictionary<string, object> { { "CurrentStatus", appointment.Status } },
+            new DialogOptions() { Width = "400px", Height = "250px" });
+
+        if (result != null && result is string newStatus)
+        {
+            var success = await AdminApiService.UpdateAppointmentStatusAsync(appointment.Id, newStatus);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu durumu güncellendi.");
+                await LoadAppointmentsAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "Randevu durumu güncellenemedi.");
+            }
+        }
+    }
+
+    private BadgeStyle GetAppointmentBadgeStyle(string status)
+    {
+        return status switch
+        {
+            "Pending" => BadgeStyle.Warning,
+            "Confirmed" => BadgeStyle.Info,
+            "Completed" => BadgeStyle.Success,
+            "Cancelled" => BadgeStyle.Danger,
+            _ => BadgeStyle.Secondary
+        };
+    }
+}

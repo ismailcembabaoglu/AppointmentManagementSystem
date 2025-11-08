@@ -1,0 +1,110 @@
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenStack Gap="1rem">
+    <!-- Filters -->
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+        <RadzenStack Gap="0" Style="width: 150px;">
+            <RadzenLabel Text="Başlangıç" />
+            <RadzenDatePicker @bind-Value="@startDate" Style="width: 100%;" />
+        </RadzenStack>
+
+        <RadzenStack Gap="0" Style="width: 150px;">
+            <RadzenLabel Text="Bitiş" />
+            <RadzenDatePicker @bind-Value="@endDate" Style="width: 100%;" />
+        </RadzenStack>
+
+        <RadzenButton Icon="search" Text="Filtrele" Click="@LoadPaymentsAsync" ButtonStyle="ButtonStyle.Primary" />
+    </RadzenStack>
+
+    @if (payments == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" />
+    }
+    else
+    {
+        <RadzenDataGrid Data="@payments" TItem="PaymentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
+            <Columns>
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="Id" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="TransactionId" Title="İşlem No" Width="150px" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="PaymentDate" Title="Tarih" Width="120px" FormatString="{0:dd.MM.yyyy}" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Title="Tutar" Width="100px">
+                    <Template Context="payment">
+                        @payment.Amount.ToString("C")
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Title="Durum" Width="120px">
+                    <Template Context="payment">
+                        <RadzenBadge BadgeStyle="@GetPaymentBadgeStyle(payment.Status)" Text="@payment.Status" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="CardType" Title="Kart Tipi" Width="100px" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="MaskedCardNumber" Title="Kart No" Width="150px" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Property="PaymentType" Title="Ödeme Tipi" Width="130px" />
+                <RadzenDataGridColumn TItem="PaymentAdminModel" Title="İşlemler" Width="100px" Frozen="true" Sortable="false">
+                    <Template Context="payment">
+                        @if (payment.Status == "Success")
+                        {
+                            <RadzenButton Icon="undo" Text="İade" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                        Click="@(() => RefundPayment(payment.Id))" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private List<PaymentAdminModel>? payments;
+    private DateTime? startDate;
+    private DateTime? endDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPaymentsAsync();
+    }
+
+    private async Task LoadPaymentsAsync()
+    {
+        payments = await AdminApiService.GetBusinessPaymentsAsync(BusinessId, startDate, endDate);
+    }
+
+    private async Task RefundPayment(int paymentId)
+    {
+        var reason = await DialogService.Prompt("İade sebebini girin:", "Ödeme İadesi",
+            new PromptOptions { OkButtonText = "İade Et", CancelButtonText = "İptal" });
+
+        if (!string.IsNullOrEmpty(reason))
+        {
+            var success = await AdminApiService.RefundPaymentAsync(paymentId, reason);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Ödeme iade edildi.");
+                await LoadPaymentsAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "Ödeme iade edilemedi.");
+            }
+        }
+    }
+
+    private BadgeStyle GetPaymentBadgeStyle(string status)
+    {
+        return status switch
+        {
+            "Success" => BadgeStyle.Success,
+            "Pending" => BadgeStyle.Warning,
+            "Failed" => BadgeStyle.Danger,
+            "Refunded" => BadgeStyle.Info,
+            _ => BadgeStyle.Secondary
+        };
+    }
+}

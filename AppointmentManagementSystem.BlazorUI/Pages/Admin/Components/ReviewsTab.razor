@@ -1,0 +1,55 @@
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+
+<RadzenStack Gap="1rem">
+    @if (appointments == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" />
+    }
+    else
+    {
+        @if (appointmentsWithReviews.Any())
+        {
+            <RadzenDataGrid Data="@appointmentsWithReviews" TItem="AppointmentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
+                <Columns>
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="Id" Title="Randevu ID" Width="100px" />
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="CustomerName" Title="Müşteri" Width="150px" />
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="ServiceName" Title="Hizmet" Width="150px" />
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="AppointmentDate" Title="Tarih" Width="120px" FormatString="{0:dd.MM.yyyy}" />
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Title="Puan" Width="100px">
+                        <Template Context="appt">
+                            <span style="font-size: 1.2rem;">@appt.Rating ⭐</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="Review" Title="Yorum" Width="400px" />
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter">
+                Henüz yorum yapılmamış.
+            </RadzenAlert>
+        }
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int BusinessId { get; set; }
+
+    private List<AppointmentAdminModel>? appointments;
+    private List<AppointmentAdminModel> appointmentsWithReviews => 
+        appointments?.Where(a => a.Rating.HasValue && !string.IsNullOrEmpty(a.Review)).ToList() ?? new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviewsAsync();
+    }
+
+    private async Task LoadReviewsAsync()
+    {
+        appointments = await AdminApiService.GetBusinessAppointmentsAsync(BusinessId);
+    }
+}
