@@ -41,7 +41,7 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
             foreach (var business in businesses)
             {
                 var appointments = await _appointmentRepository.GetByBusinessAsync(business.Id);
-                var employees = await _employeeRepository.GetByBusinessIdAsync(business.Id);
+                var employees = await _employeeRepository.GetByBusinessAsync(business.Id);
                 var subscription = await _subscriptionRepository.GetByBusinessIdAsync(business.Id);
                 var avgRating = await _businessRepository.GetAverageRatingAsync(business.Id);
                 var totalReviews = appointments.Count(a => a.Rating.HasValue);
