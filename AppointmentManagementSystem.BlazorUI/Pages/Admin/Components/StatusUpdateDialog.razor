@@ -1,0 +1,37 @@
+@inject DialogService DialogService
+
+<RadzenStack Gap="1rem">
+    <RadzenText TextStyle="TextStyle.Body1">
+        Yeni durumu seçin:
+    </RadzenText>
+
+    <RadzenDropDown @bind-Value="@selectedStatus" Data="@statusOptions" Style="width: 100%;" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="İptal" Click="@Cancel" ButtonStyle="ButtonStyle.Light" />
+        <RadzenButton Text="Güncelle" Click="@Submit" ButtonStyle="ButtonStyle.Primary" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public string CurrentStatus { get; set; } = string.Empty;
+
+    private string selectedStatus = string.Empty;
+    private List<string> statusOptions = new() { "Pending", "Confirmed", "Completed", "Cancelled" };
+
+    protected override void OnInitialized()
+    {
+        selectedStatus = CurrentStatus;
+    }
+
+    void Submit()
+    {
+        DialogService.Close(selectedStatus);
+    }
+
+    void Cancel()
+    {
+        DialogService.Close(null);
+    }
+}
