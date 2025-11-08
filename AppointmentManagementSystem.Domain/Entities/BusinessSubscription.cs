@@ -17,8 +17,14 @@ namespace AppointmentManagementSystem.Domain.Entities
         [MaxLength(50)]
         public string? CardBrand { get; set; } // Visa, Mastercard, etc.
 
+        [MaxLength(50)]
+        public string? CardType { get; set; } // Visa, Mastercard, etc. (Alias for CardBrand)
+
         [MaxLength(20)]
         public string? MaskedCardNumber { get; set; } // Last 4 digits
+
+        [MaxLength(10)]
+        public string? CardLastFourDigits { get; set; } // Last 4 digits (Alias)
 
         // Subscription Details
         [Required]
@@ -29,14 +35,20 @@ namespace AppointmentManagementSystem.Domain.Entities
 
         [Required]
         [MaxLength(50)]
-        public string SubscriptionStatus { get; set; } = "Active"; // Active, Suspended, Cancelled
+        public string Status { get; set; } = "Active"; // Active, Suspended, Cancelled, Expired
+
+        [Required]
+        [MaxLength(50)]
+        public string SubscriptionStatus { get; set; } = "Active"; // Backward compatibility
 
         public DateTime? NextBillingDate { get; set; }
         public DateTime? LastBillingDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public DateTime? SubscriptionStartDate { get; set; }
         public DateTime? SubscriptionEndDate { get; set; }
 
         public bool IsActive { get; set; } = true;
+        public bool AutoRenewal { get; set; } = true;
 
         // Navigation properties
         public virtual Business? Business { get; set; }
