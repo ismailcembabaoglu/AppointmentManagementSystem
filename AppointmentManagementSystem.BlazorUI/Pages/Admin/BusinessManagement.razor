@@ -1,0 +1,207 @@
+@page "/admin/businesses"
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Models
+@inject IAdminApiService AdminApiService
+@inject ICategoryApiService CategoryApiService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>İşletme Yönetimi</PageTitle>
+
+<RadzenStack Gap="1rem">
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" Class="rz-pt-4">
+                <RadzenIcon Icon="business" /> İşletme Yönetimi
+            </RadzenText>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <!-- Filters -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+            <RadzenStack Gap="0" Style="width: 250px;">
+                <RadzenLabel Text="Arama" />
+                <RadzenTextBox @bind-Value="@searchTerm" Placeholder="İşletme adı..." Style="width: 100%;" />
+            </RadzenStack>
+
+            <RadzenStack Gap="0" Style="width: 200px;">
+                <RadzenLabel Text="Durum" />
+                <RadzenDropDown @bind-Value="@isActive" Data="@statusOptions" TextProperty="Text" ValueProperty="Value" 
+                                Placeholder="Tümü" AllowClear="true" Style="width: 100%;" />
+            </RadzenStack>
+
+            <RadzenStack Gap="0" Style="width: 200px;">
+                <RadzenLabel Text="Kategori" />
+                <RadzenDropDown @bind-Value="@categoryId" Data="@categories" TextProperty="Name" ValueProperty="Id" 
+                                Placeholder="Tümü" AllowClear="true" Style="width: 100%;" />
+            </RadzenStack>
+
+            <RadzenButton Icon="search" Text="Ara" Click="@LoadBusinessesAsync" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Icon="refresh" Text="Temizle" Click="@ClearFilters" ButtonStyle="ButtonStyle.Light" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- Business List -->
+    @if (businesses == null)
+    {
+        <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+            <Template>Yükleniyor...</Template>
+        </RadzenProgressBarCircular>
+    }
+    else
+    {
+        <RadzenDataGrid Data="@businesses" TItem="BusinessAdminModel" AllowSorting="true" AllowFiltering="true" 
+                        AllowPaging="true" PageSize="10" PagerHorizontalAlign="HorizontalAlign.Center">
+            <Columns>
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="Id" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="Name" Title="İşletme Adı" Width="200px" />
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="CategoryName" Title="Kategori" Width="150px" />
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="Email" Title="E-posta" Width="200px" />
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="Phone" Title="Telefon" Width="130px" />
+                
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Title="Durum" Width="100px">
+                    <Template Context="business">
+                        @if (business.IsActive)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Aktif" />
+                        }
+                        else
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Pasif" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Title="İstatistikler" Width="180px">
+                    <Template Context="business">
+                        <RadzenStack Gap="0">
+                            <RadzenText TextStyle="TextStyle.Caption">Randevu: @business.TotalAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Çalışan: @business.TotalEmployees</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">
+                                Rating: @(business.AverageRating?.ToString("0.0") ?? "N/A") ⭐ (@business.TotalReviews)
+                            </RadzenText>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Title="Abonelik" Width="150px">
+                    <Template Context="business">
+                        <RadzenStack Gap="0">
+                            <RadzenBadge BadgeStyle="@GetSubscriptionBadgeStyle(business.SubscriptionStatus)" 
+                                        Text="@(business.SubscriptionStatus ?? "Yok")" />
+                            @if (business.NextBillingDate.HasValue)
+                            {
+                                <RadzenText TextStyle="TextStyle.Caption">
+                                    Sonraki: @business.NextBillingDate.Value.ToString("dd.MM.yyyy")
+                                </RadzenText>
+                            }
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Property="CreatedAt" Title="Kayıt Tarihi" Width="120px" FormatString="{0:dd.MM.yyyy}" />
+
+                <RadzenDataGridColumn TItem="BusinessAdminModel" Title="İşlemler" Width="200px" Frozen="true" Sortable="false" Filterable="false">
+                    <Template Context="business">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small" 
+                                        Click="@(() => ViewBusinessDetail(business.Id))" data-testid="view-business-button" />
+                            <RadzenButton Icon="@(business.IsActive ? "block" : "check_circle")" 
+                                        ButtonStyle="@(business.IsActive ? ButtonStyle.Danger : ButtonStyle.Success)" 
+                                        Size="ButtonSize.Small"
+                                        Click="@(() => ToggleBusinessStatus(business))" 
+                                        data-testid="toggle-status-button" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenStack>
+
+@code {
+    private List<BusinessAdminModel>? businesses;
+    private List<CategoryDto>? categories;
+
+    private string? searchTerm;
+    private bool? isActive;
+    private int? categoryId;
+
+    private List<StatusOption> statusOptions = new()
+    {
+        new StatusOption { Text = "Aktif", Value = true },
+        new StatusOption { Text = "Pasif", Value = false }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+        await LoadBusinessesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        categories = await CategoryApiService.GetAllCategoriesAsync();
+    }
+
+    private async Task LoadBusinessesAsync()
+    {
+        businesses = await AdminApiService.GetAllBusinessesAsync(searchTerm, isActive, categoryId);
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = null;
+        isActive = null;
+        categoryId = null;
+        await LoadBusinessesAsync();
+    }
+
+    private void ViewBusinessDetail(int businessId)
+    {
+        NavigationManager.NavigateTo($"/admin/businesses/{businessId}");
+    }
+
+    private async Task ToggleBusinessStatus(BusinessAdminModel business)
+    {
+        var newStatus = !business.IsActive;
+        var confirmed = await DialogService.Confirm(
+            $"İşletme durumunu '{(newStatus ? "Aktif" : "Pasif")}' olarak değiştirmek istediğinize emin misiniz?",
+            "Durum Değişikliği",
+            new ConfirmOptions() { OkButtonText = "Evet", CancelButtonText = "Hayır" });
+
+        if (confirmed == true)
+        {
+            var success = await AdminApiService.UpdateBusinessStatusAsync(business.Id, newStatus);
+            if (success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme durumu güncellendi.");
+                await LoadBusinessesAsync();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme durumu güncellenemedi.");
+            }
+        }
+    }
+
+    private BadgeStyle GetSubscriptionBadgeStyle(string? status)
+    {
+        return status switch
+        {
+            "Active" => BadgeStyle.Success,
+            "Expired" => BadgeStyle.Danger,
+            "Cancelled" => BadgeStyle.Warning,
+            _ => BadgeStyle.Secondary
+        };
+    }
+
+    public class StatusOption
+    {
+        public string Text { get; set; } = string.Empty;
+        public bool Value { get; set; }
+    }
+}
