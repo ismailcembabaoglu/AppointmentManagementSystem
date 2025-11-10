@@ -17,7 +17,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             try
             {
                 var queryString = businessId.HasValue ? $"?businessId={businessId.Value}" : "";
-                var response = await _httpClient.GetAsync($"api/employees{queryString}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/employees{queryString}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<EmployeeDto>>(response);
             }
             catch (Exception ex)
@@ -39,7 +40,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                                  $"&selectedTime={selectedTime}" +
                                  $"&totalDurationMinutes={totalDurationMinutes}";
                 
-                var response = await _httpClient.GetAsync($"api/employees/available{queryString}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/employees/available{queryString}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<AvailableEmployeesResponse>(response);
             }
             catch (Exception ex)
@@ -52,7 +54,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/employees/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/employees/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<EmployeeDto?>(response);
             }
             catch (Exception ex)
