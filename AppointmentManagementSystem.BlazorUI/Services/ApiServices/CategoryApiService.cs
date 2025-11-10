@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
@@ -16,7 +16,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/categories");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, "api/categories");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<Application.DTOs.CategoryDto>>(response);
             }
             catch (Exception ex)
@@ -29,7 +30,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/categories/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<Application.DTOs.CategoryDto?>(response);
             }
             catch (Exception ex)
@@ -42,7 +44,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/categories/{categoryId}/businesses");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories/{categoryId}/businesses");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<Application.DTOs.BusinessDto>>(response);
             }
             catch (Exception ex)
@@ -50,7 +53,5 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 return new ApiResponse<List<BusinessDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
-
-     
     }
 }

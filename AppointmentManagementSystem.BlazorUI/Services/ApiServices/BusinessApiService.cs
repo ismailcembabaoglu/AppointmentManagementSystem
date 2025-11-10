@@ -35,7 +35,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"minRating={minRating.Value}");
 
                 var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-                var response = await _httpClient.GetAsync($"api/businesses{queryString}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses{queryString}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<BusinessDto>>(response);
             }
             catch (Exception ex)
@@ -48,7 +49,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/businesses/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<BusinessDto?>(response);
             }
             catch (Exception ex)
@@ -61,7 +63,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/businesses/{businessId}/services");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses/{businessId}/services");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<ServiceDto>>(response);
             }
             catch (Exception ex)
@@ -74,7 +77,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/businesses/{businessId}/employees");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses/{businessId}/employees");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<EmployeeDto>>(response);
             }
             catch (Exception ex)
@@ -101,7 +105,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/businesses/{businessId}/reviews");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses/{businessId}/reviews");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<BusinessReviewDto>>(response);
             }
             catch (Exception ex)

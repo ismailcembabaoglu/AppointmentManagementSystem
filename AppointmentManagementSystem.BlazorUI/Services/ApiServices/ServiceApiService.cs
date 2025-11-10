@@ -1,4 +1,4 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Json;
@@ -17,7 +17,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             try
             {
                 var queryString = businessId.HasValue ? $"?businessId={businessId.Value}" : "";
-                var response = await _httpClient.GetAsync($"api/services{queryString}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/services{queryString}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<ServiceDto>>(response);
             }
             catch (Exception ex)
@@ -30,7 +31,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/services/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/services/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<ServiceDto?>(response);
             }
             catch (Exception ex)
