@@ -130,18 +130,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             {
                 var amountStr = ((int)(amount * 100)).ToString(); // Convert to kuruş
 
-                var token = GeneratePayTRToken(
-                    _merchantId,
-                    userIp,
-                    merchantOid,
-                    customerEmail,
-                    amountStr,
-                    "TRY",
-                    _isTestMode ? 1 : 0,
-                    1, // Non-3D for recurring
-                    _merchantSalt,
-                    _merchantKey
-                );
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{customerEmail}{amountStr}card0TRY{(_isTestMode ? 1 : 0)}1";
+                var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
 
                 var content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
