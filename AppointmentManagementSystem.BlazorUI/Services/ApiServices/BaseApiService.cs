@@ -1,6 +1,5 @@
 ﻿using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -17,14 +16,12 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             _localStorage = localStorage;
         }
 
-        protected async Task AddAuthorizationHeader()
+        // AddAuthorizationHeader artık gerekli değil - AuthorizationMessageHandler otomatik ekliyor
+        // Geriye dönük uyumluluk için boş metod bırakıldı
+        [Obsolete("Authorization header artık otomatik ekleniyor. Bu metodu çağırmaya gerek yok.")]
+        protected Task AddAuthorizationHeader()
         {
-            var token = await _localStorage.GetItemAsStringAsync("authToken");
-            if (!string.IsNullOrEmpty(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token.Replace("\"", ""));
-            }
+            return Task.CompletedTask;
         }
 
         protected async Task<ApiResponse<T>> HandleApiResponse<T>(HttpResponseMessage response)
@@ -38,11 +35,22 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 }
                 else
                 {
-                    var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-                    return errorResult ?? new ApiResponse<T>
+                    // Hata durumunda detaylı bilgi ver
+                    string errorMessage;
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
+                        errorMessage = errorResult?.Message ?? $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                    }
+                    catch
+                    {
+                        errorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                    }
+
+                    return new ApiResponse<T>
                     {
                         Success = false,
-                        Message = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}"
+                        Message = errorMessage
                     };
                 }
             }
