@@ -429,26 +429,26 @@
                                     </RadzenStack>
                                 </RadzenAlert>
 
-                                @if (registeredBusinessId.HasValue && !paymentIFrameParameters.Any())
+                                @if (registeredBusinessId.HasValue && string.IsNullOrEmpty(paymentIFrameUrl))
                                 {
-                                    <RadzenCard>
-                                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 40px;">
-                                            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
-                                            <RadzenText TextStyle="TextStyle.H6">Ödeme ekranı hazırlanıyor...</RadzenText>
-                                        </RadzenStack>
-                                    </RadzenCard>
+                                    <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+                                        <Template>⏳</Template>
+                                    </RadzenProgressBarCircular>
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin-top: 16px; text-align: center;">
+                                        Ödeme ekranı hazırlanıyor...
+                                    </RadzenText>
                                 }
-                                else if (paymentIFrameParameters.Any())
+                                else if (!string.IsNullOrEmpty(paymentIFrameUrl))
                                 {
                                     <PayTRIFrameComponent 
-                                        IFrameParameters="@paymentIFrameParameters"
+                                        IFrameUrl="@paymentIFrameUrl"
                                         OnPaymentSuccess="@HandlePaymentSuccess"
                                         OnPaymentFailed="@HandlePaymentFailed" />
                                 }
                                 else
                                 {
                                     <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
-                                        Ödeme ekranı yüklenemedi. Lütfen önceki adımları kontrol edin.
+                                        <RadzenText>Ödeme ekranı yüklenemedi. Lütfen sayfayı yenileyin.</RadzenText>
                                     </RadzenAlert>
                                 }
                             </RadzenStack>
