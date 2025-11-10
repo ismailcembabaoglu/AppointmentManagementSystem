@@ -36,6 +36,12 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         {
             try
             {
+                // IPv6 localhost'u IPv4'e çevir
+                if (userIp == "::1" || userIp == "::ffff:127.0.0.1")
+                {
+                    userIp = "127.0.0.1";
+                }
+
                 // user_basket oluştur - PayTR zorunlu alan
                 var userBasket = new[]
                 {
