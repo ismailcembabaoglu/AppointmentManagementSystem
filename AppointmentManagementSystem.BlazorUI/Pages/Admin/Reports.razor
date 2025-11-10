@@ -1,6 +1,7 @@
 @page "/admin/reports"
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Models
+@using Microsoft.AspNetCore.Authorization
 @inject IAdminApiService AdminApiService
 @inject NavigationManager NavigationManager
 @attribute [Authorize(Roles = "Admin")]

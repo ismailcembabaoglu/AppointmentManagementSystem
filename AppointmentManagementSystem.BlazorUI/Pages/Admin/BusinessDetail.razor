@@ -1,6 +1,7 @@
 @page "/admin/businesses/{BusinessId:int}"
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Models
+@using Microsoft.AspNetCore.Authorization
 @inject IAdminApiService AdminApiService
 @inject IEmployeeApiService EmployeeApiService
 @inject NavigationManager NavigationManager

@@ -48,8 +48,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 // DbContext
-builder.Services.AddDbContext<AppointmentDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<AppointmentDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -95,7 +95,7 @@ builder.Services.AddCors(options =>
 });
 
 // Auto-start Blazor UI service
-builder.Services.AddHostedService<BlazorAutoStartService>();
+//builder.Services.AddHostedService<BlazorAutoStartService>();
 
 var app = builder.Build();
 
@@ -103,11 +103,11 @@ var app = builder.Build();
 // Global exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();

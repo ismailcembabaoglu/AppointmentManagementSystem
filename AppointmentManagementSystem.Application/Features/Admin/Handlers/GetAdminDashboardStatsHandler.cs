@@ -1,7 +1,6 @@
 using AppointmentManagementSystem.Application.Features.Admin.Queries;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
 {
