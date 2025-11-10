@@ -246,23 +246,10 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
-        public string GeneratePayTRToken(
-            string merchantId,
-            string userIp,
-            string merchantOid,
-            string email,
-            string paymentAmount,
-            string currency,
-            int testMode,
-            int non3d,
-            string merchantSalt,
-            string merchantKey)
+        private string GeneratePayTRToken(string hashString, string merchantSalt, string merchantKey)
         {
-            var hashStr = $"{merchantId}{userIp}{merchantOid}{email}{paymentAmount}card0{currency}{testMode}{non3d}";
-            var paytrToken = hashStr + merchantSalt;
-
-            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(merchantKey));
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(paytrToken));
+            var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(merchantKey));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString + merchantSalt));
             return Convert.ToBase64String(hash);
         }
 
