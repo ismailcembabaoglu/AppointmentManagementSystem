@@ -15,20 +15,15 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Local Storage (diğer servislerden önce ekle)
 builder.Services.AddBlazoredLocalStorage();
 
-// Authorization Message Handler
-builder.Services.AddScoped<AuthorizationMessageHandler>();
-
-// HttpClient yapılandırması - timeout ve authorization handler ile
+// HttpClient yapılandırması - Blazor WebAssembly için
 builder.Services.AddScoped(sp =>
 {
-    var handler = sp.GetRequiredService<AuthorizationMessageHandler>();
-    handler.InnerHandler = new HttpClientHandler
-    {
-        // Development ortamı için SSL sertifika doğrulamasını atla
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    };
-
-    var httpClient = new HttpClient(handler)
+    var localStorage = sp.GetRequiredService<ILocalStorageService>();
+    var authHandler = new AuthorizationMessageHandler(localStorage);
+    
+    // Blazor WebAssembly'de InnerHandler'ı manuel set etmemize gerek yok
+    // Tarayıcının kendi HTTP stack'i kullanılır
+    var httpClient = new HttpClient(authHandler)
     {
         BaseAddress = new Uri("https://localhost:5089/"),
         Timeout = TimeSpan.FromSeconds(30) // 30 saniye timeout
