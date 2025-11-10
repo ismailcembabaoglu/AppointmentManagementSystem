@@ -540,7 +540,7 @@
 
     // Payment
     private int? registeredBusinessId = null;
-    private Dictionary<string, string> paymentIFrameParameters = new();
+    private string paymentIFrameUrl = string.Empty;
 
     private string cardStyle => $"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;";
 
