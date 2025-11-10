@@ -59,7 +59,7 @@
 
 @code {
     [Parameter]
-    public Dictionary<string, string>? IFrameParameters { get; set; }
+    public string? IFrameUrl { get; set; }
 
     [Parameter]
     public EventCallback OnPaymentSuccess { get; set; }
@@ -67,79 +67,18 @@
     [Parameter]
     public EventCallback<string> OnPaymentFailed { get; set; }
 
-    private bool IsLoading = false; // Başlangıçta false - form hemen render olsun
+    private bool IsLoading = false;
     private string? ErrorMessage;
-    private ElementReference paytrForm;
-    private bool _formSubmitted = false;
 
     protected override void OnParametersSet()
     {
-        // Parameters geldiğinde debug
-        if (IFrameParameters != null)
+        if (string.IsNullOrEmpty(IFrameUrl))
         {
-            // post_url kontrolü
-            if (!IFrameParameters.ContainsKey("post_url"))
-            {
-                ErrorMessage = "post_url parametresi eksik!";
-            }
+            ErrorMessage = "IFrame URL is required";
         }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && IFrameParameters != null && !_formSubmitted)
+        else
         {
-            try
-            {
-                // Form'un DOM'da render olması için bekle
-                await Task.Delay(500);
-                
-                // Form'u ID ile bul ve submit et
-                await JSRuntime.InvokeVoidAsync("eval", @"
-                    (function() {
-                        console.log('=== PayTR Form Submit Başlıyor ===');
-                        var form = document.getElementById('paytr-form');
-                        console.log('Form bulundu:', form !== null);
-                        
-                        if (form) {
-                            console.log('Form action:', form.action);
-                            console.log('Form target:', form.target);
-                            console.log('Form method:', form.method);
-                            
-                            // Form içindeki tüm input'ları logla
-                            var inputs = form.querySelectorAll('input');
-                            console.log('Toplam input sayısı:', inputs.length);
-                            inputs.forEach(function(input) {
-                                console.log('Input:', input.name, '=', input.value.substring(0, 20) + '...');
-                            });
-                            
-                            // Form'u submit et
-                            form.submit();
-                            console.log('Form submit edildi!');
-                        } else {
-                            console.error('Form bulunamadı!');
-                        }
-                    })();
-                ");
-                
-                _formSubmitted = true;
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = $"Hata: {ex.Message}";
-                await JSRuntime.InvokeVoidAsync("console.error", "PayTR Error:", ex.Message);
-                StateHasChanged();
-            }
-        }
-    }
-
-    private async Task OnIFrameLoad()
-    {
-        // iFrame yüklendiğinde loading'i kapat
-        if (IsLoading)
-        {
-            IsLoading = false;
-            StateHasChanged();
+            ErrorMessage = null;
         }
     }
 
