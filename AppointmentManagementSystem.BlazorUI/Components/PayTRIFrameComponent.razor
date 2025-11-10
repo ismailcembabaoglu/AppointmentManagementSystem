@@ -62,35 +62,32 @@
     [Parameter]
     public EventCallback<string> OnPaymentFailed { get; set; }
 
-    private bool IsLoading = true;
+    private bool IsLoading = false; // Başlangıçta false - form hemen render olsun
     private string? ErrorMessage;
     private ElementReference paytrForm;
+    private bool _formSubmitted = false;
+
+    protected override void OnParametersSet()
+    {
+        // Parameters geldiğinde debug
+        if (IFrameParameters != null)
+        {
+            // post_url kontrolü
+            if (!IFrameParameters.ContainsKey("post_url"))
+            {
+                ErrorMessage = "post_url parametresi eksik!";
+            }
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && IFrameParameters != null)
+        if (firstRender && IFrameParameters != null && !_formSubmitted)
         {
             try
             {
-                // Debug: IFrameParameters'ı console'a yazdır
-                await JSRuntime.InvokeVoidAsync("console.log", "IFrameParameters:", IFrameParameters);
-                
-                // Debug: post_url var mı kontrol et
-                if (!IFrameParameters.ContainsKey("post_url"))
-                {
-                    ErrorMessage = "post_url parametresi eksik! API response'unu kontrol edin.";
-                    IsLoading = false;
-                    StateHasChanged();
-                    return;
-                }
-                
-                // Form'un DOM'da olduğundan emin olmak için bekle
-                await Task.Delay(500);
-                
-                // Debug: Tüm formları say
-                var formCount = await JSRuntime.InvokeAsync<int>("eval", 
-                    "document.querySelectorAll('form').length");
-                await JSRuntime.InvokeVoidAsync("console.log", "Total forms found:", formCount);
+                // Form'un DOM'da render olması için kısa bekle
+                await Task.Delay(300);
                 
                 // Form elementini bul ve submit et
                 var formExists = await JSRuntime.InvokeAsync<bool>("eval", 
@@ -102,20 +99,19 @@
                 {
                     await JSRuntime.InvokeVoidAsync("eval", 
                         "document.querySelector('form[target=\"paytr_iframe\"]').submit();");
+                    _formSubmitted = true;
+                    await JSRuntime.InvokeVoidAsync("console.log", "Form submitted successfully");
                 }
                 else
                 {
-                    ErrorMessage = "Ödeme formu DOM'da bulunamadı. Lütfen console'u kontrol edin.";
+                    ErrorMessage = "Ödeme formu yüklenemedi.";
+                    StateHasChanged();
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Ödeme formu yüklenirken hata oluştu: {ex.Message}";
+                ErrorMessage = $"Hata: {ex.Message}";
                 await JSRuntime.InvokeVoidAsync("console.error", "PayTR Error:", ex.Message);
-            }
-            finally
-            {
-                IsLoading = false;
                 StateHasChanged();
             }
         }
