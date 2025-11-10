@@ -115,7 +115,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSwaggerUI();
 //}
 
-app.UseCors("AllowAll");
+app.UseCors("AllowBlazor");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
