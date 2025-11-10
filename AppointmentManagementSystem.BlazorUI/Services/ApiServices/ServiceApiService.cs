@@ -43,8 +43,9 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PostAsJsonAsync("api/services", createServiceDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Post, "api/services");
+                request.Content = JsonContent.Create(createServiceDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<ServiceDto>(response);
             }
             catch (Exception ex)
@@ -57,8 +58,9 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PutAsJsonAsync($"api/services/{id}", updateServiceDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/services/{id}");
+                request.Content = JsonContent.Create(updateServiceDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<ServiceDto?>(response);
             }
             catch (Exception ex)
@@ -71,8 +73,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.DeleteAsync($"api/services/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Delete, $"api/services/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<bool>(response);
             }
             catch (Exception ex)
