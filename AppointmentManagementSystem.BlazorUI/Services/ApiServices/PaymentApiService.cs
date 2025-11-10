@@ -12,12 +12,13 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<CardRegistrationResponseDto>> InitiateCardRegistrationAsync(InitiateCardRegistrationDto request)
+        public async Task<ApiResponse<CardRegistrationResponseDto>> InitiateCardRegistrationAsync(InitiateCardRegistrationDto requestDto)
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PostAsJsonAsync("api/payments/initiate-card-registration", request);
+                var request = await CreateRequestWithAuth(HttpMethod.Post, "api/payments/initiate-card-registration");
+                request.Content = JsonContent.Create(requestDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<CardRegistrationResponseDto>(response);
             }
             catch (Exception ex)
@@ -34,8 +35,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.GetAsync($"api/payments/subscription/{businessId}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/payments/subscription/{businessId}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<SubscriptionDto>(response);
             }
             catch (Exception ex)
@@ -52,8 +53,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.GetAsync($"api/payments/history/{businessId}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/payments/history/{businessId}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<PaymentDto>>(response);
             }
             catch (Exception ex)
