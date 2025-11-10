@@ -13,8 +13,8 @@ namespace AppointmentManagementSystem.Domain.Interfaces
     {
         public bool Success { get; set; }
         public string? IFrameToken { get; set; }
+        public string? IFrameUrl { get; set; }
         public string? ErrorMessage { get; set; }
-        public Dictionary<string, string>? IFrameParameters { get; set; }
     }
 
     public class PayTRPaymentResult
