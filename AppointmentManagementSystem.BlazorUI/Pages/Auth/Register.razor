@@ -885,9 +885,9 @@
 
             var response = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
 
-            if (response.Success && response.Data?.IFrameParameters != null)
+            if (response.Success && !string.IsNullOrEmpty(response.Data?.IFrameUrl))
             {
-                paymentIFrameParameters = response.Data.IFrameParameters;
+                paymentIFrameUrl = response.Data.IFrameUrl;
                 StateHasChanged();
             }
             else
