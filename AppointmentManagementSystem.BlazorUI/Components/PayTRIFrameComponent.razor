@@ -94,27 +94,38 @@
         {
             try
             {
-                // Form'un DOM'da render olması için kısa bekle
-                await Task.Delay(300);
+                // Form'un DOM'da render olması için bekle
+                await Task.Delay(500);
                 
-                // Form elementini bul ve submit et
-                var formExists = await JSRuntime.InvokeAsync<bool>("eval", 
-                    "document.querySelector('form[target=\"paytr_iframe\"]') !== null");
+                // Form'u ID ile bul ve submit et
+                await JSRuntime.InvokeVoidAsync("eval", @"
+                    (function() {
+                        console.log('=== PayTR Form Submit Başlıyor ===');
+                        var form = document.getElementById('paytr-form');
+                        console.log('Form bulundu:', form !== null);
+                        
+                        if (form) {
+                            console.log('Form action:', form.action);
+                            console.log('Form target:', form.target);
+                            console.log('Form method:', form.method);
+                            
+                            // Form içindeki tüm input'ları logla
+                            var inputs = form.querySelectorAll('input');
+                            console.log('Toplam input sayısı:', inputs.length);
+                            inputs.forEach(function(input) {
+                                console.log('Input:', input.name, '=', input.value.substring(0, 20) + '...');
+                            });
+                            
+                            // Form'u submit et
+                            form.submit();
+                            console.log('Form submit edildi!');
+                        } else {
+                            console.error('Form bulunamadı!');
+                        }
+                    })();
+                ");
                 
-                await JSRuntime.InvokeVoidAsync("console.log", "Form exists:", formExists);
-                
-                if (formExists)
-                {
-                    await JSRuntime.InvokeVoidAsync("eval", 
-                        "document.querySelector('form[target=\"paytr_iframe\"]').submit();");
-                    _formSubmitted = true;
-                    await JSRuntime.InvokeVoidAsync("console.log", "Form submitted successfully");
-                }
-                else
-                {
-                    ErrorMessage = "Ödeme formu yüklenemedi.";
-                    StateHasChanged();
-                }
+                _formSubmitted = true;
             }
             catch (Exception ex)
             {
