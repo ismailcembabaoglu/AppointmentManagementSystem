@@ -33,7 +33,7 @@
 
 **Çözüm:**
 - ✅ HttpClient timeout: 30 saniye
-- ✅ Development için SSL sertifika doğrulama atlandı
+- ✅ Blazor WebAssembly için optimize edildi (tarayıcı HTTP stack kullanılıyor)
 - ✅ Token caching ile performans artışı
 - ✅ Optimized HttpClient yapılandırması
 
