@@ -15,22 +15,19 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Local Storage (diğer servislerden önce ekle)
 builder.Services.AddBlazoredLocalStorage();
 
-// HttpClient yapılandırması - Blazor WebAssembly için
-builder.Services.AddScoped(sp =>
+// HttpClient yapılandırması - Blazor WebAssembly için HttpClientFactory kullan
+builder.Services.AddHttpClient("API", client =>
 {
-    var localStorage = sp.GetRequiredService<ILocalStorageService>();
-    var authHandler = new AuthorizationMessageHandler(localStorage);
-    
-    // Blazor WebAssembly'de InnerHandler'ı manuel set etmemize gerek yok
-    // Tarayıcının kendi HTTP stack'i kullanılır
-    var httpClient = new HttpClient(authHandler)
-    {
-        BaseAddress = new Uri("https://localhost:5089/"),
-        Timeout = TimeSpan.FromSeconds(30) // 30 saniye timeout
-    };
+    client.BaseAddress = new Uri("https://localhost:5089/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+})
+.AddHttpMessageHandler<AuthorizationMessageHandler>();
 
-    return httpClient;
-});
+// AuthorizationMessageHandler'ı servis olarak ekle
+builder.Services.AddScoped<AuthorizationMessageHandler>();
+
+// HttpClient'ı primary olarak kullanmak için
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 
 // API Services
 builder.Services.AddScoped<IApiService, ApiService>();
