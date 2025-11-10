@@ -70,10 +70,34 @@
     {
         if (firstRender && IFrameParameters != null)
         {
-            await Task.Delay(100);
-            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('form').submit();");
-            IsLoading = false;
-            StateHasChanged();
+            try
+            {
+                // Form'un DOM'da olduğundan emin olmak için bekle
+                await Task.Delay(500);
+                
+                // Form elementini bul ve submit et
+                var formExists = await JSRuntime.InvokeAsync<bool>("eval", 
+                    "document.querySelector('form[target=\"paytr_iframe\"]') !== null");
+                
+                if (formExists)
+                {
+                    await JSRuntime.InvokeVoidAsync("eval", 
+                        "document.querySelector('form[target=\"paytr_iframe\"]').submit();");
+                }
+                else
+                {
+                    ErrorMessage = "Ödeme formu yüklenemedi. Lütfen sayfayı yenileyin.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Ödeme formu yüklenirken hata oluştu: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+                StateHasChanged();
+            }
         }
     }
 
