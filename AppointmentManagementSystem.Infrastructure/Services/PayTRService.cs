@@ -62,7 +62,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "test_mode", _isTestMode ? "1" : "0" },
                     { "non_3d", "0" },
                     { "store_card", "1" }, // Store card for future use
-                    { "paytr_token", token }
+                    { "paytr_token", token },
+                    { "post_url", _apiUrl } // PayTR iframe için gerekli
                 };
 
                 _logger.LogInformation($"Card registration initiated for {customerEmail}, MerchantOid: {merchantOid}");
