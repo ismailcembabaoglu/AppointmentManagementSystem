@@ -36,7 +36,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     {
                         Success = true,
                         IFrameToken = result.IFrameToken,
-                        IFrameParameters = result.IFrameParameters
+                        IFrameUrl = result.IFrameUrl
                     };
 
                     return Result<CardRegistrationResponseDto>.SuccessResult(response);
