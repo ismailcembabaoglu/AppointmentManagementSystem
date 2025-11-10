@@ -83,11 +83,17 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "test_mode", testMode }
                 };
 
+                // Debug logging
+                _logger.LogInformation($"PayTR Request - MerchantId: {_merchantId}, UserIp: {userIp}, MerchantOid: {merchantOid}");
+                _logger.LogInformation($"PayTR Request - Email: {customerEmail}, Amount: {paymentAmount}, Basket: {userBasketBase64}");
+                _logger.LogInformation($"PayTR Request - Token: {token.Substring(0, 20)}...");
+
                 var content = new FormUrlEncodedContent(formData);
                 var response = await _httpClient.PostAsync("https://www.paytr.com/odeme/api/get-token", content);
                 var responseText = await response.Content.ReadAsStringAsync();
 
-                _logger.LogInformation($"PayTR token response: {responseText}");
+                _logger.LogInformation($"PayTR Response Status: {response.StatusCode}");
+                _logger.LogInformation($"PayTR Response Body: {responseText}");
 
                 var jsonResponse = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText);
                 
