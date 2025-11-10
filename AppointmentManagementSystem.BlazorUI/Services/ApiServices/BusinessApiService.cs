@@ -87,8 +87,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.GetAsync($"api/businesses/{businessId}/appointments");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses/{businessId}/appointments");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<AppointmentDto>>(response);
             }
             catch (Exception ex)
