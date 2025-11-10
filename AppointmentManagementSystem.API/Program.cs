@@ -82,15 +82,21 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-// CORS
+
+// CORS - Blazor için özel yapılandırma
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
+    options.AddPolicy("AllowBlazor",
+        corsBuilder =>
         {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+            corsBuilder.WithOrigins(
+                "https://localhost:7172",  // Blazor HTTPS
+                "http://localhost:5090",   // Blazor HTTP
+                "https://localhost:5090"   // Blazor alternatif
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); // Authorization header için gerekli
         });
 });
 
