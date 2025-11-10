@@ -72,12 +72,31 @@
         {
             try
             {
+                // Debug: IFrameParameters'ı console'a yazdır
+                await JSRuntime.InvokeVoidAsync("console.log", "IFrameParameters:", IFrameParameters);
+                
+                // Debug: post_url var mı kontrol et
+                if (!IFrameParameters.ContainsKey("post_url"))
+                {
+                    ErrorMessage = "post_url parametresi eksik! API response'unu kontrol edin.";
+                    IsLoading = false;
+                    StateHasChanged();
+                    return;
+                }
+                
                 // Form'un DOM'da olduğundan emin olmak için bekle
                 await Task.Delay(500);
+                
+                // Debug: Tüm formları say
+                var formCount = await JSRuntime.InvokeAsync<int>("eval", 
+                    "document.querySelectorAll('form').length");
+                await JSRuntime.InvokeVoidAsync("console.log", "Total forms found:", formCount);
                 
                 // Form elementini bul ve submit et
                 var formExists = await JSRuntime.InvokeAsync<bool>("eval", 
                     "document.querySelector('form[target=\"paytr_iframe\"]') !== null");
+                
+                await JSRuntime.InvokeVoidAsync("console.log", "Form exists:", formExists);
                 
                 if (formExists)
                 {
@@ -86,12 +105,13 @@
                 }
                 else
                 {
-                    ErrorMessage = "Ödeme formu yüklenemedi. Lütfen sayfayı yenileyin.";
+                    ErrorMessage = "Ödeme formu DOM'da bulunamadı. Lütfen console'u kontrol edin.";
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Ödeme formu yüklenirken hata oluştu: {ex.Message}";
+                await JSRuntime.InvokeVoidAsync("console.error", "PayTR Error:", ex.Message);
             }
             finally
             {
