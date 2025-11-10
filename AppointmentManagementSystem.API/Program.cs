@@ -114,6 +114,13 @@ builder.Services.AddCors(options =>
 // Auto-start Blazor UI service
 //builder.Services.AddHostedService<BlazorAutoStartService>();
 
+// Kestrel server options - büyük response'lar için
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 52428800; // 50 MB
+    serverOptions.Limits.MaxResponseBufferSize = 52428800; // 50 MB
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
