@@ -232,9 +232,10 @@ dotnet run
    - JWT validation
    - HTTPS (production için)
 
-5. ⚠️ **Development Mode**:
-   - SSL sertifika doğrulama atlandı
-   - Production'da mutlaka SSL certificate ekle
+5. ⚠️ **Blazor WebAssembly**:
+   - Tarayıcının kendi HTTP stack'i kullanılır
+   - SSL sertifika tarayıcı tarafından yönetilir
+   - HttpClientHandler kullanılamaz (PlatformNotSupportedException)
 
 ---
 
