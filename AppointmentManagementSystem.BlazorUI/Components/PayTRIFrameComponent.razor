@@ -90,6 +90,13 @@
     }
 }
 
+<script src="https://www.paytr.com/js/iframeResizer.min.js"></script>
+<script>
+    if (typeof iFrameResize === 'function') {
+        iFrameResize({}, '#paytriframe');
+    }
+</script>
+
 <style>
     .paytr-iframe-container {
         width: 100%;
