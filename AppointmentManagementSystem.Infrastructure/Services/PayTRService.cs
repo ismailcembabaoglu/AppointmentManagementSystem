@@ -36,44 +36,76 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         {
             try
             {
-                var token = GeneratePayTRToken(
-                    _merchantId,
-                    userIp,
-                    merchantOid,
-                    customerEmail,
-                    "0", // Card registration doesn't charge
-                    "TRY",
-                    _isTestMode ? 1 : 0,
-                    0, // 3D Secure for card registration
-                    _merchantSalt,
-                    _merchantKey
-                );
+                // user_basket oluştur - PayTR zorunlu alan
+                var userBasket = new[]
+                {
+                    new object[] { "Üyelik Kaydı", "0.00", 1 }
+                };
+                var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                var parameters = new Dictionary<string, string>
+                var paymentAmount = "0"; // Kart kaydı için ücret yok
+                var noInstallment = "0";
+                var maxInstallment = "0";
+                var currency = "TRY";
+                var testMode = _isTestMode ? "1" : "0";
+
+                // Token oluştur
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{customerEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}";
+                var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
+
+                // PayTR API'ye POST isteği gönder
+                var formData = new Dictionary<string, string>
                 {
                     { "merchant_id", _merchantId },
                     { "user_ip", userIp },
                     { "merchant_oid", merchantOid },
                     { "email", customerEmail },
-                    { "payment_amount", "0" },
-                    { "payment_type", "card" },
-                    { "installment_count", "0" },
-                    { "currency", "TRY" },
-                    { "test_mode", _isTestMode ? "1" : "0" },
-                    { "non_3d", "0" },
-                    { "store_card", "1" }, // Store card for future use
+                    { "payment_amount", paymentAmount },
                     { "paytr_token", token },
-                    { "post_url", _apiUrl } // PayTR iframe için gerekli
+                    { "user_basket", userBasketBase64 },
+                    { "debug_on", "1" },
+                    { "no_installment", noInstallment },
+                    { "max_installment", maxInstallment },
+                    { "user_name", customerEmail }, // Placeholder
+                    { "user_address", "Türkiye" }, // Placeholder
+                    { "user_phone", "5555555555" }, // Placeholder
+                    { "merchant_ok_url", $"{_configuration["PayTR:CallbackUrl"]?.Replace("/webhook", "/success")}" },
+                    { "merchant_fail_url", $"{_configuration["PayTR:CallbackUrl"]?.Replace("/webhook", "/fail")}" },
+                    { "timeout_limit", "30" },
+                    { "currency", currency },
+                    { "test_mode", testMode }
                 };
 
-                _logger.LogInformation($"Card registration initiated for {customerEmail}, MerchantOid: {merchantOid}");
+                var content = new FormUrlEncodedContent(formData);
+                var response = await _httpClient.PostAsync("https://www.paytr.com/odeme/api/get-token", content);
+                var responseText = await response.Content.ReadAsStringAsync();
 
-                return new PayTRCardRegistrationResult
+                _logger.LogInformation($"PayTR token response: {responseText}");
+
+                var jsonResponse = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText);
+                
+                if (jsonResponse != null && jsonResponse.ContainsKey("status") && jsonResponse["status"].GetString() == "success")
                 {
-                    Success = true,
-                    IFrameToken = token,
-                    IFrameParameters = parameters
-                };
+                    var iframeToken = jsonResponse["token"].GetString();
+                    
+                    return new PayTRCardRegistrationResult
+                    {
+                        Success = true,
+                        IFrameToken = iframeToken,
+                        IFrameUrl = $"https://www.paytr.com/odeme/guvenli/{iframeToken}"
+                    };
+                }
+                else
+                {
+                    var reason = jsonResponse?.ContainsKey("reason") == true ? jsonResponse["reason"].GetString() : "Unknown error";
+                    _logger.LogError($"PayTR token failed: {reason}");
+                    return new PayTRCardRegistrationResult
+                    {
+                        Success = false,
+                        ErrorMessage = reason
+                    };
+                }
             }
             catch (Exception ex)
             {
