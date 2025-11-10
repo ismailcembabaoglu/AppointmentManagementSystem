@@ -5,7 +5,6 @@ namespace AppointmentManagementSystem.Domain.Interfaces
         Task<PayTRCardRegistrationResult> InitiateCardRegistrationAsync(string customerEmail, string userIp, string merchantOid);
         Task<PayTRPaymentResult> ChargeRecurringPaymentAsync(string customerEmail, string utoken, string ctoken, string merchantOid, decimal amount, string userIp);
         Task<PayTRStatusResult> QueryPaymentStatusAsync(string merchantOid);
-        string GeneratePayTRToken(string merchantId, string userIp, string merchantOid, string email, string paymentAmount, string currency, int testMode, int non3d, string merchantSalt, string merchantKey);
         string ValidateWebhookSignature(string merchantOid, string status, string totalAmount, string merchantSalt);
     }
 
