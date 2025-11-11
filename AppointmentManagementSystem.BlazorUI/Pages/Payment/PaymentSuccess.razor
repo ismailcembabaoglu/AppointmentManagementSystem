@@ -67,28 +67,33 @@
 
             if (!string.IsNullOrEmpty(merchantOid) && status == "success")
             {
-                // API'ye webhook simülasyonu gönder
-                var webhookData = new
+                // API'ye webhook simülasyonu gönder - FormData formatında
+                var formData = new Dictionary<string, string>
                 {
-                    merchant_oid = merchantOid,
-                    status = status,
-                    total_amount = totalAmount,
-                    hash = hash,
-                    utoken = utoken,
-                    ctoken = ctoken,
-                    card_type = cardType,
-                    masked_pan = maskedPan,
-                    payment_id = paymentId,
-                    failed_reason_code = "",
-                    failed_reason_msg = ""
+                    { "merchant_oid", merchantOid ?? "" },
+                    { "status", status ?? "" },
+                    { "total_amount", totalAmount ?? "" },
+                    { "hash", hash ?? "" },
+                    { "utoken", utoken ?? "" },
+                    { "ctoken", ctoken ?? "" },
+                    { "card_type", cardType ?? "" },
+                    { "masked_pan", maskedPan ?? "" },
+                    { "payment_id", paymentId ?? "" },
+                    { "failed_reason_msg", "" }
                 };
 
-                var response = await HttpClient.PostAsJsonAsync("api/payments/webhook", webhookData);
+                var content = new FormUrlEncodedContent(formData);
+                var response = await HttpClient.PostAsync("api/payments/webhook", content);
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Başarılı - business aktifleştirildi
+                    // Başarılı - business aktifleştirildi ve abonelik oluşturuldu
                     await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                }
+                else
+                {
+                    var errorText = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Webhook error: {errorText}");
                 }
             }
         }
