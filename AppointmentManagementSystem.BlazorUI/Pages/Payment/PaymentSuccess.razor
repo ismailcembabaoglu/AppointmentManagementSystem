@@ -1,0 +1,57 @@
+@page "/payment/success"
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+
+<PageTitle>Ödeme Başarılı</PageTitle>
+
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <RadzenCard Style="max-width: 600px; padding: 48px; text-align: center;">
+        <div style="margin-bottom: 24px;">
+            <div style="width: 80px; height: 80px; margin: 0 auto; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <RadzenIcon Icon="check" Style="font-size: 48px; color: white;" />
+            </div>
+        </div>
+
+        <RadzenText TextStyle="TextStyle.H4" Style="color: #4caf50; margin-bottom: 16px;">
+            🎉 Ödeme Başarılı!
+        </RadzenText>
+
+        <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 24px; color: #666;">
+            Tebrikler! İlk abonelik ödemeniz (700 TL) başarıyla alındı. 
+            Hesabınız aktifleştirildi ve hemen kullanmaya başlayabilirsiniz.
+        </RadzenText>
+
+        <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Style="margin-bottom: 24px;">
+            <RadzenText TextStyle="TextStyle.Body2">
+                <strong>Önemli:</strong> Kart bilgileriniz güvenli bir şekilde kaydedildi. 
+                Bir sonraki ödeme tarihiniz: <strong>@NextBillingDate</strong>
+            </RadzenText>
+        </RadzenAlert>
+
+        <RadzenText TextStyle="TextStyle.Body2" Style="color: #888; margin-bottom: 32px;">
+            Aylık 700 TL abonelik ücreti otomatik olarak çekilecektir.
+            İstediğiniz zaman aboneliğinizi iptal edebilirsiniz.
+        </RadzenText>
+
+        <RadzenButton Text="Giriş Yap ve Başla" 
+                      Click="@NavigateToLogin" 
+                      ButtonStyle="ButtonStyle.Success" 
+                      Size="ButtonSize.Large"
+                      Style="width: 100%;" />
+    </RadzenCard>
+</div>
+
+@code {
+    private string NextBillingDate => DateTime.Now.AddDays(30).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+
+    protected override async Task OnInitializedAsync()
+    {
+        // LocalStorage'ı temizle - kayıt tamamlandı
+        await LocalStorage.RemoveItemAsync("registrationBusinessId");
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}
