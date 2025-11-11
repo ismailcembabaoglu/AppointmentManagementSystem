@@ -55,15 +55,15 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     return Result<bool>.FailureResult("Invalid signature");
                 }
 
-                // Check if this is a card registration (amount = 0) or payment
-                if (request.TotalAmount == "0" && request.Status == "success")
+                // Check if this is initial registration (REG prefix) or recurring payment
+                if (request.MerchantOid.StartsWith("REG") && request.Status == "success")
                 {
-                    // This is a card registration callback
-                    return await HandleCardRegistrationCallback(request, cancellationToken);
+                    // This is initial registration + first payment callback
+                    return await HandleInitialRegistrationCallback(request, cancellationToken);
                 }
                 else
                 {
-                    // This is a payment callback
+                    // This is a recurring payment callback
                     return await HandlePaymentCallback(request, cancellationToken);
                 }
             }
