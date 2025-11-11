@@ -1,0 +1,68 @@
+@page "/payment/failed"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Ödeme Başarısız</PageTitle>
+
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <RadzenCard Style="max-width: 600px; padding: 48px; text-align: center;">
+        <div style="margin-bottom: 24px;">
+            <div style="width: 80px; height: 80px; margin: 0 auto; background: #f44336; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <RadzenIcon Icon="close" Style="font-size: 48px; color: white;" />
+            </div>
+        </div>
+
+        <RadzenText TextStyle="TextStyle.H4" Style="color: #f44336; margin-bottom: 16px;">
+            ❌ Ödeme Başarısız
+        </RadzenText>
+
+        <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 24px; color: #666;">
+            Üzgünüz, ödemeniz işlenirken bir sorun oluştu.
+        </RadzenText>
+
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Style="margin-bottom: 24px;">
+            <RadzenText TextStyle="TextStyle.Body2">
+                <strong>Olası Nedenler:</strong>
+                <ul style="text-align: left; margin-top: 12px;">
+                    <li>Kart limitiniz yetersiz olabilir</li>
+                    <li>Kart bilgileri hatalı girilmiş olabilir</li>
+                    <li>Kartınızın online işlemlere kapalı olabilir</li>
+                    <li>Bankanız işlemi reddediyor olabilir</li>
+                </ul>
+            </RadzenText>
+        </RadzenAlert>
+
+        <RadzenText TextStyle="TextStyle.Body2" Style="color: #888; margin-bottom: 32px;">
+            Lütfen kart bilgilerinizi kontrol edip tekrar deneyin veya farklı bir kart kullanın.
+        </RadzenText>
+
+        <div style="display: flex; gap: 16px;">
+            <RadzenButton Text="Tekrar Dene" 
+                          Click="@RetryPayment" 
+                          ButtonStyle="ButtonStyle.Primary" 
+                          Size="ButtonSize.Large"
+                          Style="flex: 1;" />
+            
+            <RadzenButton Text="Ana Sayfa" 
+                          Click="@NavigateHome" 
+                          ButtonStyle="ButtonStyle.Secondary" 
+                          Size="ButtonSize.Large"
+                          Style="flex: 1;" />
+        </div>
+
+        <RadzenText TextStyle="TextStyle.Caption" Style="color: #888; margin-top: 24px;">
+            Sorun devam ederse lütfen bankanızla iletişime geçin.
+        </RadzenText>
+    </RadzenCard>
+</div>
+
+@code {
+    private void RetryPayment()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    private void NavigateHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
