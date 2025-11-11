@@ -103,7 +103,9 @@ builder.Services.AddCors(options =>
             corsBuilder.WithOrigins(
                 "https://localhost:7172",  // Blazor HTTPS
                 "http://localhost:5090",   // Blazor HTTP
-                "https://localhost:5090"   // Blazor alternatif
+                "https://localhost:5090" ,  // Blazor alternatif
+                "https://aptivaplan.com.tr",  
+                "http://aptivaplan.com.tr"   
             )
             .AllowAnyMethod()
             .AllowAnyHeader()

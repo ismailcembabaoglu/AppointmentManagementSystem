@@ -154,7 +154,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "payment_amount", amountStr },
                     { "payment_type", "card" },
                     { "installment_count", "0" },
-                    { "currency", "TRY" },
+                    { "currency", "TL" },
                     { "test_mode", _isTestMode ? "1" : "0" },
                     { "non_3d", "1" },
                     { "recurring_payment", "1" },

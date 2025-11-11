@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppointmentDbContext))]
-    [Migration("20251110200134_v1")]
+    [Migration("20251111202417_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -355,7 +355,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3301),
+                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2086),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -364,7 +364,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3303),
+                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2088),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -373,7 +373,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3304),
+                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2089),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -382,7 +382,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3306),
+                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2090),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,

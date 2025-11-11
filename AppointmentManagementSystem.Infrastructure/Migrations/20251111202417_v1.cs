@@ -397,10 +397,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "Icon", "IsDeleted", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3301), "Erkek Berber Hizmetleri", "healing", false, "Berber", null },
-                    { 2, new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3303), "Güzellik ve bakım hizmetleri", "spa", false, "Güzellik Merkezi", null },
-                    { 3, new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3304), "Diş sağlığı hizmetleri", "local_hospital", false, "Diş Hekimi", null },
-                    { 4, new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3306), "Tıbbi estetik hizmetleri", "healing", false, "Tıbbi Estetik", null }
+                    { 1, new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2086), "Erkek Berber Hizmetleri", "healing", false, "Berber", null },
+                    { 2, new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2088), "Güzellik ve bakım hizmetleri", "spa", false, "Güzellik Merkezi", null },
+                    { 3, new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2089), "Diş sağlığı hizmetleri", "local_hospital", false, "Diş Hekimi", null },
+                    { 4, new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2090), "Tıbbi estetik hizmetleri", "healing", false, "Tıbbi Estetik", null }
                 });
 
             migrationBuilder.CreateIndex(
