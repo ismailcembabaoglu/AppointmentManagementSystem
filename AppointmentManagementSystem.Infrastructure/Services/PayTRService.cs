@@ -76,8 +76,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_name", customerEmail }, // Placeholder
                     { "user_address", "Türkiye" }, // Placeholder
                     { "user_phone", "5555555555" }, // Placeholder
-                    { "merchant_ok_url", $"{_configuration["PayTR:CallbackUrl"]?.Replace("/webhook", "/success")}" },
-                    { "merchant_fail_url", $"{_configuration["PayTR:CallbackUrl"]?.Replace("/webhook", "/fail")}" },
+                    // Callback URL'leri - Frontend sayfalarına yönlendir
+                    { "merchant_ok_url", "https://localhost:7172/payment/success" },
+                    { "merchant_fail_url", "https://localhost:7172/payment/failed" },
                     { "timeout_limit", "30" },
                     { "currency", currency },
                     { "test_mode", testMode }

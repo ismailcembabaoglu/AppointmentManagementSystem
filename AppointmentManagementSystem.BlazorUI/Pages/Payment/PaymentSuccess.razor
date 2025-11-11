@@ -2,20 +2,36 @@
 @using Blazored.LocalStorage
 @inject NavigationManager NavigationManager
 @inject ILocalStorageService LocalStorage
+@inject HttpClient HttpClient
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage2
 
 <PageTitle>Ödeme Başarılı</PageTitle>
 
 <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <RadzenCard Style="max-width: 600px; padding: 48px; text-align: center;">
-        <div style="margin-bottom: 24px;">
-            <div style="width: 80px; height: 80px; margin: 0 auto; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <RadzenIcon Icon="check" Style="font-size: 48px; color: white;" />
+        @if (isProcessing)
+        {
+            <div style="margin-bottom: 24px;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
             </div>
-        </div>
+            <RadzenText TextStyle="TextStyle.H5" Style="margin-top: 16px;">
+                Ödemeniz işleniyor...
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: #888; margin-top: 8px;">
+                Lütfen bekleyin, hesabınız aktifleştiriliyor.
+            </RadzenText>
+        }
+        else
+        {
+            <div style="margin-bottom: 24px;">
+                <div style="width: 80px; height: 80px; margin: 0 auto; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <RadzenIcon Icon="check" Style="font-size: 48px; color: white;" />
+                </div>
+            </div>
 
-        <RadzenText TextStyle="TextStyle.H4" Style="color: #4caf50; margin-bottom: 16px;">
-            🎉 Ödeme Başarılı!
-        </RadzenText>
+            <RadzenText TextStyle="TextStyle.H4" Style="color: #4caf50; margin-bottom: 16px;">
+                🎉 Ödeme Başarılı!
+            </RadzenText>
 
         <RadzenText TextStyle="TextStyle.Body1" Style="margin-bottom: 24px; color: #666;">
             Tebrikler! İlk abonelik ödemeniz (700 TL) başarıyla alındı. 
@@ -34,21 +50,78 @@
             İstediğiniz zaman aboneliğinizi iptal edebilirsiniz.
         </RadzenText>
 
-        <RadzenButton Text="Giriş Yap ve Başla" 
-                      Click="@NavigateToLogin" 
-                      ButtonStyle="ButtonStyle.Success" 
-                      Size="ButtonSize.Large"
-                      Style="width: 100%;" />
+            <RadzenButton Text="Giriş Yap ve Başla" 
+                          Click="@NavigateToLogin" 
+                          ButtonStyle="ButtonStyle.Success" 
+                          Size="ButtonSize.Large"
+                          Style="width: 100%;" />
+        }
     </RadzenCard>
 </div>
 
 @code {
     private string NextBillingDate => DateTime.Now.AddDays(30).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+    private bool isProcessing = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // LocalStorage'ı temizle - kayıt tamamlandı
-        await LocalStorage.RemoveItemAsync("registrationBusinessId");
+        try
+        {
+            // URL'den PayTR parametrelerini al
+            var uri = new Uri(NavigationManager.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+            var merchantOid = query["merchant_oid"];
+            var status = query["status"];
+            var totalAmount = query["total_amount"];
+            var hash = query["hash"];
+            var utoken = query["utoken"];
+            var ctoken = query["ctoken"];
+            var cardType = query["card_type"];
+            var maskedPan = query["masked_pan"];
+            var paymentId = query["payment_id"];
+
+            if (!string.IsNullOrEmpty(merchantOid) && status == "success")
+            {
+                // API'ye webhook simülasyonu gönder - FormData formatında
+                var formData = new Dictionary<string, string>
+                {
+                    { "merchant_oid", merchantOid ?? "" },
+                    { "status", status ?? "" },
+                    { "total_amount", totalAmount ?? "" },
+                    { "hash", hash ?? "" },
+                    { "utoken", utoken ?? "" },
+                    { "ctoken", ctoken ?? "" },
+                    { "card_type", cardType ?? "" },
+                    { "masked_pan", maskedPan ?? "" },
+                    { "payment_id", paymentId ?? "" },
+                    { "failed_reason_msg", "" }
+                };
+
+                var content = new FormUrlEncodedContent(formData);
+                var response = await HttpClient.PostAsync("api/payments/webhook", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Başarılı - business aktifleştirildi ve abonelik oluşturuldu
+                    await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                }
+                else
+                {
+                    var errorText = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Webhook error: {errorText}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing payment callback: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
     }
 
     private void NavigateToLogin()
