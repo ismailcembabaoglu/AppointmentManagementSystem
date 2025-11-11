@@ -33,19 +33,6 @@ namespace AppointmentManagementSystem.API.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("webhook")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ProcessWebhook([FromForm] ProcessPaymentWebhookCommand command)
-        {
-            var result = await _mediator.Send(command);
-            
-            // PayTR requires "OK" response
-            if (result.Success)
-                return Ok("OK");
-            
-            return BadRequest(result.Message);
-        }
-
         [HttpGet("subscription/{businessId}")]
         [Authorize]
         public async Task<IActionResult> GetSubscription(int businessId)
