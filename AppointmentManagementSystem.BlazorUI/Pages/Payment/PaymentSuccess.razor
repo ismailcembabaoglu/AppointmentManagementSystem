@@ -45,11 +45,62 @@
 
 @code {
     private string NextBillingDate => DateTime.Now.AddDays(30).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+    private bool isProcessing = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // LocalStorage'ı temizle - kayıt tamamlandı
-        await LocalStorage.RemoveItemAsync("registrationBusinessId");
+        try
+        {
+            // URL'den PayTR parametrelerini al
+            var uri = new Uri(NavigationManager.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+            var merchantOid = query["merchant_oid"];
+            var status = query["status"];
+            var totalAmount = query["total_amount"];
+            var hash = query["hash"];
+            var utoken = query["utoken"];
+            var ctoken = query["ctoken"];
+            var cardType = query["card_type"];
+            var maskedPan = query["masked_pan"];
+            var paymentId = query["payment_id"];
+
+            if (!string.IsNullOrEmpty(merchantOid) && status == "success")
+            {
+                // API'ye webhook simülasyonu gönder
+                var webhookData = new
+                {
+                    merchant_oid = merchantOid,
+                    status = status,
+                    total_amount = totalAmount,
+                    hash = hash,
+                    utoken = utoken,
+                    ctoken = ctoken,
+                    card_type = cardType,
+                    masked_pan = maskedPan,
+                    payment_id = paymentId,
+                    failed_reason_code = "",
+                    failed_reason_msg = ""
+                };
+
+                var response = await HttpClient.PostAsJsonAsync("api/payments/webhook", webhookData);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Başarılı - business aktifleştirildi
+                    await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing payment callback: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
     }
 
     private void NavigateToLogin()
