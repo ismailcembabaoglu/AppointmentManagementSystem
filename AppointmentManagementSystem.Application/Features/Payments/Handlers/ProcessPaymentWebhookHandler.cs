@@ -74,13 +74,25 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             }
         }
 
-        private async Task<Result<bool>> HandleCardRegistrationCallback(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
+        private async Task<Result<bool>> HandleInitialRegistrationCallback(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
         {
-            // Extract BusinessId from MerchantOid (format: REG-{BusinessId}-{Guid})
-            var parts = request.MerchantOid.Split('-');
-            if (parts.Length < 2 || !int.TryParse(parts[1], out int businessId))
+            // Extract BusinessId from MerchantOid (format: REG{BusinessId}{Guid})
+            var merchantOid = request.MerchantOid;
+            var regPrefix = "REG";
+            
+            if (!merchantOid.StartsWith(regPrefix))
             {
-                _logger.LogWarning($"Invalid MerchantOid format: {request.MerchantOid}");
+                _logger.LogWarning($"Invalid MerchantOid format: {merchantOid}");
+                return Result<bool>.FailureResult("Invalid MerchantOid format");
+            }
+
+            // REG12abc123de -> businessId = 12
+            var afterReg = merchantOid.Substring(regPrefix.Length);
+            var businessIdStr = new string(afterReg.TakeWhile(char.IsDigit).ToArray());
+            
+            if (!int.TryParse(businessIdStr, out int businessId))
+            {
+                _logger.LogWarning($"Could not parse BusinessId from MerchantOid: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
@@ -91,7 +103,24 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Business not found");
             }
 
-            // Create or update subscription
+            // 1. İlk ödeme kaydını oluştur
+            var payment = new Payment
+            {
+                BusinessId = businessId,
+                MerchantOid = request.MerchantOid,
+                Amount = decimal.Parse(request.TotalAmount) / 100, // Kuruştan TL'ye
+                Currency = "TRY",
+                Status = PaymentStatus.Success,
+                PaymentDate = DateTime.UtcNow,
+                CardType = request.CardType,
+                MaskedCardNumber = request.MaskedPan,
+                PaymentType = "InitialSubscription",
+                PayTRTransactionId = request.PaymentId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _paymentRepository.AddAsync(payment);
+
+            // 2. Abonelik oluştur veya güncelle
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
             if (subscription == null)
             {
@@ -105,7 +134,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     MonthlyAmount = 700.00m,
                     SubscriptionStatus = SubscriptionStatus.Active,
                     SubscriptionStartDate = DateTime.UtcNow,
-                    NextBillingDate = DateTime.UtcNow.AddDays(30),
+                    LastBillingDate = DateTime.UtcNow, // İlk ödeme yapıldı
+                    NextBillingDate = DateTime.UtcNow.AddDays(30), // 30 gün sonra
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -118,18 +148,21 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.PayTRCardToken = request.Ctoken;
                 subscription.CardBrand = request.CardType;
                 subscription.MaskedCardNumber = request.MaskedPan;
+                subscription.SubscriptionStatus = SubscriptionStatus.Active;
+                subscription.LastBillingDate = DateTime.UtcNow;
+                subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
                 subscription.UpdatedAt = DateTime.UtcNow;
                 
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
 
-            // Activate business
+            // 3. Business'ı aktifleştir
             business.IsActive = true;
             await _businessRepository.UpdateAsync(business);
 
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation($"Card registered successfully for Business {businessId}");
+            _logger.LogInformation($"Initial registration completed for Business {businessId}. Payment: 700 TL, Next billing: {subscription.NextBillingDate}");
             return Result<bool>.SuccessResult(true);
         }
 
