@@ -74,8 +74,25 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> PaymentWebhook([FromForm] ProcessPaymentWebhookCommand command)
+        public async Task<IActionResult> PaymentWebhook([FromForm] string merchant_oid, [FromForm] string status, 
+            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken, 
+            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan, 
+            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
         {
+            var command = new ProcessPaymentWebhookCommand
+            {
+                MerchantOid = merchant_oid ?? "",
+                Status = status ?? "",
+                TotalAmount = total_amount ?? "",
+                Hash = hash ?? "",
+                Utoken = utoken,
+                Ctoken = ctoken,
+                CardType = card_type,
+                MaskedPan = masked_pan,
+                PaymentId = payment_id,
+                FailedReasonMsg = failed_reason_msg
+            };
+
             var result = await _mediator.Send(command);
             
             if (result.Success)
