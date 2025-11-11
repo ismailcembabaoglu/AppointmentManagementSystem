@@ -352,7 +352,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 23, 22, 11, 559, DateTimeKind.Utc).AddTicks(8389),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3301),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -361,7 +361,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 8, 23, 22, 11, 559, DateTimeKind.Utc).AddTicks(8390),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3303),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -370,7 +370,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 8, 23, 22, 11, 559, DateTimeKind.Utc).AddTicks(8392),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3304),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -379,7 +379,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 8, 23, 22, 11, 559, DateTimeKind.Utc).AddTicks(8393),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3306),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,

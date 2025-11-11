@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppointmentDbContext))]
-    [Migration("20251102165837_v3")]
-    partial class v3
+    [Migration("20251110200134_v1")]
+    partial class v1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -179,10 +179,21 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AutoRenewal")
+                        .HasColumnType("bit");
+
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
                     b.Property<string>("CardBrand")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CardLastFourDigits")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("CardType")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -220,6 +231,14 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Property<string>("PayTRUserToken")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("SubscriptionEndDate")
                         .HasColumnType("datetime2");
@@ -336,7 +355,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 2, 16, 58, 36, 572, DateTimeKind.Utc).AddTicks(6358),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3301),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -345,7 +364,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 2, 16, 58, 36, 572, DateTimeKind.Utc).AddTicks(6359),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3303),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -354,7 +373,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 2, 16, 58, 36, 572, DateTimeKind.Utc).AddTicks(6361),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3304),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -363,7 +382,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 2, 16, 58, 36, 572, DateTimeKind.Utc).AddTicks(6362),
+                            CreatedAt = new DateTime(2025, 11, 10, 20, 1, 34, 61, DateTimeKind.Utc).AddTicks(3306),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -488,6 +507,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
+                    b.Property<string>("CardType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -502,6 +525,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("MaskedCardNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("MaxRetries")
                         .HasColumnType("int");
@@ -521,8 +548,15 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("PaymentDate")
+                    b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RetryAttempt")
+                        .HasColumnType("int");
 
                     b.Property<int>("RetryCount")
                         .HasColumnType("int");
@@ -531,6 +565,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");

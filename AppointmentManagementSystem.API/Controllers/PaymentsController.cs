@@ -18,7 +18,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpPost("initiate-card-registration")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> InitiateCardRegistration([FromBody] InitiateCardRegistrationCommand command)
         {
             // Get user IP
