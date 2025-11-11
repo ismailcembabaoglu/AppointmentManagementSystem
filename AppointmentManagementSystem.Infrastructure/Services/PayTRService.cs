@@ -43,14 +43,15 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 }
 
                 // user_basket oluştur - PayTR zorunlu alan
+                // Not: PayTR 0 tutarı kabul etmiyor, minimum 1 kuruş gerekli
                 var userBasket = new[]
                 {
-                    new object[] { "Üyelik Kaydı", "0.00", 1 }
+                    new object[] { "Üyelik Kaydı", "0.01", 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
                 var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                var paymentAmount = "0"; // Kart kaydı için ücret yok
+                var paymentAmount = "1"; // 1 kuruş (0.01 TL * 100 = 1) - PayTR minimum tutar
                 var noInstallment = "0";
                 var maxInstallment = "0";
                 var currency = "TRY";
