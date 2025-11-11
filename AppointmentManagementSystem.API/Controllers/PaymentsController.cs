@@ -71,5 +71,17 @@ namespace AppointmentManagementSystem.API.Controllers
             
             return BadRequest(result);
         }
+
+        [HttpPost("webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PaymentWebhook([FromForm] ProcessPaymentWebhookCommand command)
+        {
+            var result = await _mediator.Send(command);
+            
+            if (result.Success)
+                return Ok("OK");
+            
+            return BadRequest(result.Message);
+        }
     }
 }
