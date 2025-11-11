@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  BU BASIT VERSİYON - Ana web.config çalışmazsa bu dosyayı kullan
+  Kullanım: web.config.simple dosyasını web.config olarak yeniden adlandır
+-->
+<configuration>
+  <system.webServer>
+    <!-- URL Rewriting - SPA için tüm istekleri index.html'e yönlendir -->
+    <rewrite>
+      <rules>
+        <rule name="SPA Routing" stopProcessing="true">
+          <match url=".*" />
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="/index.html" />
+        </rule>
+      </rules>
+    </rewrite>
+    
+    <!-- MIME Types - Blazor dosyaları için -->
+    <staticContent>
+      <remove fileExtension=".wasm" />
+      <remove fileExtension=".dll" />
+      <remove fileExtension=".dat" />
+      <remove fileExtension=".blat" />
+      <remove fileExtension=".json" />
+      
+      <mimeMap fileExtension=".wasm" mimeType="application/wasm" />
+      <mimeMap fileExtension=".dll" mimeType="application/octet-stream" />
+      <mimeMap fileExtension=".dat" mimeType="application/octet-stream" />
+      <mimeMap fileExtension=".blat" mimeType="application/octet-stream" />
+      <mimeMap fileExtension=".json" mimeType="application/json" />
+    </staticContent>
+    
+    <!-- Compression -->
+    <urlCompression doStaticCompression="true" doDynamicCompression="true" />
+  </system.webServer>
+</configuration>
