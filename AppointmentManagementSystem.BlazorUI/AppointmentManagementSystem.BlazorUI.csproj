@@ -4,7 +4,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RunAOTCompilation>false</RunAOTCompilation>
   </PropertyGroup>
+  
+  <!-- web.config'i publish'e dahil et -->
+  <ItemGroup>
+    <Content Update="wwwroot\web.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
