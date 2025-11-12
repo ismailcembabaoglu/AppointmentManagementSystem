@@ -134,61 +134,99 @@
     </div>
 </div>
 
-<!-- How It Works Section -->
-<div id="how-it-works" style="padding: 80px 24px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 60px;">
-            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
-                Nasıl Çalışır?
-            </RadzenText>
-            <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                3 adımda işletmenizi dijitalleştirin
-            </RadzenText>
+<!-- How It Works Section - Premium -->
+<div id="how-it-works" class="how-it-works-section">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-badge badge-light">
+                <RadzenIcon Icon="info" Style="font-size: 14px; margin-right: 6px;" />
+                NASIL ÇALIŞIR
+            </span>
+            <h2 class="section-title">3 Adımda Başlayın</h2>
+            <p class="section-subtitle">İşletmenizi dijitalleştirmek hiç bu kadar kolay olmamıştı</p>
         </div>
 
-        <RadzenRow Gap="48px">
-            <RadzenColumn Size="12" SizeMD="4">
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
-                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">1</RadzenText>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number-wrapper">
+                    <div class="step-number step-purple">
+                        <span>01</span>
+                        <div class="step-pulse"></div>
                     </div>
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
-                        Kayıt Olun
-                    </RadzenText>
-                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                        İşletmenizi ve hizmetlerinizi sisteme ekleyin. Sadece 5 dakika sürer!
-                    </RadzenText>
-                </RadzenStack>
-            </RadzenColumn>
+                    <div class="step-connector"></div>
+                </div>
+                <div class="step-icon step-icon-purple">
+                    <RadzenIcon Icon="person_add" Style="font-size: 28px;" />
+                </div>
+                <h3 class="step-title">Kayıt Olun</h3>
+                <p class="step-description">
+                    İşletmenizi ve hizmetlerinizi sisteme ekleyin. Sadece 5 dakika sürer!
+                </p>
+                <div class="step-features">
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Hızlı Kurulum</span>
+                    </div>
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Kolay Entegrasyon</span>
+                    </div>
+                </div>
+            </div>
 
-            <RadzenColumn Size="12" SizeMD="4">
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
-                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);">
-                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">2</RadzenText>
+            <div class="step-card">
+                <div class="step-number-wrapper">
+                    <div class="step-number step-green">
+                        <span>02</span>
+                        <div class="step-pulse"></div>
                     </div>
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
-                        Paylaşın
-                    </RadzenText>
-                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                        İşletme profilinizi müşterilerinizle paylaşın. Sosyal medyada duyurun.
-                    </RadzenText>
-                </RadzenStack>
-            </RadzenColumn>
+                    <div class="step-connector"></div>
+                </div>
+                <div class="step-icon step-icon-green">
+                    <RadzenIcon Icon="share" Style="font-size: 28px;" />
+                </div>
+                <h3 class="step-title">Paylaşın</h3>
+                <p class="step-description">
+                    İşletme profilinizi müşterilerinizle paylaşın. Sosyal medyada duyurun.
+                </p>
+                <div class="step-features">
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Özel Link</span>
+                    </div>
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Sosyal Medya</span>
+                    </div>
+                </div>
+            </div>
 
-            <RadzenColumn Size="12" SizeMD="4">
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="20px">
-                    <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);">
-                        <RadzenText Style="color: white; font-size: 48px; font-weight: 800; margin: 0;">3</RadzenText>
+            <div class="step-card">
+                <div class="step-number-wrapper">
+                    <div class="step-number step-orange">
+                        <span>03</span>
+                        <div class="step-pulse"></div>
                     </div>
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
-                        Yönetin
-                    </RadzenText>
-                    <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                        Randevuları yönetin, müşterilerinize harika hizmet verin!
-                    </RadzenText>
-                </RadzenStack>
-            </RadzenColumn>
-        </RadzenRow>
+                </div>
+                <div class="step-icon step-icon-orange">
+                    <RadzenIcon Icon="settings" Style="font-size: 28px;" />
+                </div>
+                <h3 class="step-title">Yönetin</h3>
+                <p class="step-description">
+                    Randevuları yönetin, müşterilerinize harika hizmet verin!
+                </p>
+                <div class="step-features">
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Anlık Takip</span>
+                    </div>
+                    <div class="step-feature-item">
+                        <RadzenIcon Icon="check_circle" Style="font-size: 16px; color: #10b981; margin-right: 8px;" />
+                        <span>Otomatik Bildirimler</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
