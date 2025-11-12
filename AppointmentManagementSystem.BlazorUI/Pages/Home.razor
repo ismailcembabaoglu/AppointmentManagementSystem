@@ -58,85 +58,79 @@
     </div>
 </div>
 
-<!-- Features Section -->
-<div id="features" style="padding: 80px 24px; background: white;">
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 60px;">
-            <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
-                Neden Aptiva Plan?
-            </RadzenText>
-            <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                İşletmenizi bir üst seviyeye taşıyacak özellikler
-            </RadzenText>
+<!-- Features Section - Premium -->
+<div id="features" class="features-section">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-badge">
+                <RadzenIcon Icon="bolt" Style="font-size: 14px; margin-right: 6px;" />
+                ÖZELLİKLER
+            </span>
+            <h2 class="section-title">Neden Aptiva Plan?</h2>
+            <p class="section-subtitle">İşletmenizi bir üst seviyeye taşıyacak güçlü özellikler</p>
         </div>
 
-        <RadzenRow Gap="32px">
-            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
-                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;"
-                           @onmouseenter="@((args) => HandleHover(args, 0))"
-                           @onmouseleave="@((args) => HandleHover(args, -1))">
-                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                            <RadzenIcon Icon="event" Style="font-size: 40px; color: white;" />
-                        </div>
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
-                            Online Randevu
-                        </RadzenText>
-                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                            Müşterileriniz 7/24 online randevu alabilir. Telefon trafiğinden kurtulun.
-                        </RadzenText>
-                    </RadzenStack>
-                </RadzenCard>
-            </RadzenColumn>
+        <div class="features-grid">
+            <div class="feature-card" @onmouseenter="@((args) => HandleHover(args, 0))" @onmouseleave="@((args) => HandleHover(args, -1))">
+                <div class="feature-icon icon-purple">
+                    <RadzenIcon Icon="event" Style="font-size: 32px;" />
+                    <div class="icon-glow glow-purple"></div>
+                </div>
+                <h3 class="feature-title">Online Randevu</h3>
+                <p class="feature-description">
+                    Müşterileriniz 7/24 online randevu alabilir. Telefon trafiğinden kurtulun.
+                </p>
+                <div class="feature-link">
+                    Daha Fazla
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 16px; margin-left: 4px;" />
+                </div>
+            </div>
 
-            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
-                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
-                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); display: flex; align-items: center; justify-content: center;">
-                            <RadzenIcon Icon="notifications" Style="font-size: 40px; color: white;" />
-                        </div>
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
-                            Otomatik Bildirimler
-                        </RadzenText>
-                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                            Randevu hatırlatmaları otomatik gönderilir. No-show oranını düşürün.
-                        </RadzenText>
-                    </RadzenStack>
-                </RadzenCard>
-            </RadzenColumn>
+            <div class="feature-card" @onmouseenter="@((args) => HandleHover(args, 1))" @onmouseleave="@((args) => HandleHover(args, -1))">
+                <div class="feature-icon icon-green">
+                    <RadzenIcon Icon="notifications" Style="font-size: 32px;" />
+                    <div class="icon-glow glow-green"></div>
+                </div>
+                <h3 class="feature-title">Otomatik Bildirimler</h3>
+                <p class="feature-description">
+                    Randevu hatırlatmaları otomatik gönderilir. No-show oranını düşürün.
+                </p>
+                <div class="feature-link">
+                    Daha Fazla
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 16px; margin-left: 4px;" />
+                </div>
+            </div>
 
-            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
-                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
-                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); display: flex; align-items: center; justify-content: center;">
-                            <RadzenIcon Icon="analytics" Style="font-size: 40px; color: white;" />
-                        </div>
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
-                            Detaylı Raporlar
-                        </RadzenText>
-                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                            İşletmenizin performansını anlık takip edin. Veri odaklı kararlar alın.
-                        </RadzenText>
-                    </RadzenStack>
-                </RadzenCard>
-            </RadzenColumn>
+            <div class="feature-card" @onmouseenter="@((args) => HandleHover(args, 2))" @onmouseleave="@((args) => HandleHover(args, -1))">
+                <div class="feature-icon icon-orange">
+                    <RadzenIcon Icon="analytics" Style="font-size: 32px;" />
+                    <div class="icon-glow glow-orange"></div>
+                </div>
+                <h3 class="feature-title">Detaylı Raporlar</h3>
+                <p class="feature-description">
+                    İşletmenizin performansını anlık takip edin. Veri odaklı kararlar alın.
+                </p>
+                <div class="feature-link">
+                    Daha Fazla
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 16px; margin-left: 4px;" />
+                </div>
+            </div>
 
-            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
-                <RadzenCard Style="height: 100%; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;">
-                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 24px;">
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: flex; align-items: center; justify-content: center;">
-                            <RadzenIcon Icon="star" Style="font-size: 40px; color: white;" />
-                        </div>
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600;">
-                            Müşteri Yorumları
-                        </RadzenText>
-                        <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center; line-height: 1.6;">
-                            Müşteri memnuniyetini ölçün. Yorumlar ve puanlamalarla güven kazanın.
-                        </RadzenText>
-                    </RadzenStack>
-                </RadzenCard>
-            </RadzenColumn>
-        </RadzenRow>
+            <div class="feature-card" @onmouseenter="@((args) => HandleHover(args, 3))" @onmouseleave="@((args) => HandleHover(args, -1))">
+                <div class="feature-icon icon-red">
+                    <RadzenIcon Icon="star" Style="font-size: 32px;" />
+                    <div class="icon-glow glow-red"></div>
+                </div>
+                <h3 class="feature-title">Müşteri Yorumları</h3>
+                <p class="feature-description">
+                    Müşteri memnuniyetini ölçün. Yorumlar ve puanlamalarla güven kazanın.
+                </p>
+                <div class="feature-link">
+                    Daha Fazla
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 16px; margin-left: 4px;" />
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
