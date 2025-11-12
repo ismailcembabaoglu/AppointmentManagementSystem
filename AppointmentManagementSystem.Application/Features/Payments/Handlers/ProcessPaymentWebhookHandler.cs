@@ -92,9 +92,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
         private async Task<Result<bool>> HandleInitialRegistrationCallback(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("=== HandleInitialRegistrationCallback Started ===");
+            
             // Extract BusinessId from MerchantOid (format: REG{BusinessId}{Guid})
             var merchantOid = request.MerchantOid;
             var regPrefix = "REG";
+            
+            _logger.LogInformation($"MerchantOid: {merchantOid}");
             
             if (!merchantOid.StartsWith(regPrefix))
             {
@@ -104,7 +108,10 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
             // REG12abc123de -> businessId = 12
             var afterReg = merchantOid.Substring(regPrefix.Length);
+            _logger.LogInformation($"After REG prefix: {afterReg}");
+            
             var businessIdStr = new string(afterReg.TakeWhile(char.IsDigit).ToArray());
+            _logger.LogInformation($"Extracted BusinessId string: {businessIdStr}");
             
             if (!int.TryParse(businessIdStr, out int businessId))
             {
@@ -112,12 +119,16 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
+            _logger.LogInformation($"Parsed BusinessId: {businessId}");
+
             var business = await _businessRepository.GetByIdAsync(businessId);
             if (business == null)
             {
                 _logger.LogWarning($"Business not found: {businessId}");
                 return Result<bool>.FailureResult("Business not found");
             }
+
+            _logger.LogInformation($"Business found: {business.Name} (ID: {business.Id})");
 
             // 1. İlk ödeme kaydını oluştur
             var payment = new Payment
