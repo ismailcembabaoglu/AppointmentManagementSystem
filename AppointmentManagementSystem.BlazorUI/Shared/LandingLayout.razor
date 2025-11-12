@@ -58,16 +58,16 @@
         {
             <div class="mobile-menu">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 24px;">
-                    <a href="#hero" @onclick="ToggleMobileMenu" class="mobile-nav-link">
+                    <a @onclick="@(() => ScrollToSection("#hero"))" @onclick:preventDefault class="mobile-nav-link">
                         Ana Sayfa
                     </a>
-                    <a href="#features" @onclick="ToggleMobileMenu" class="mobile-nav-link">
+                    <a @onclick="@(() => ScrollToSection("#features"))" @onclick:preventDefault class="mobile-nav-link">
                         Özellikler
                     </a>
-                    <a href="#how-it-works" @onclick="ToggleMobileMenu" class="mobile-nav-link">
+                    <a @onclick="@(() => ScrollToSection("#how-it-works"))" @onclick:preventDefault class="mobile-nav-link">
                         Nasıl Çalışır
                     </a>
-                    <a href="#categories" @onclick="ToggleMobileMenu" class="mobile-nav-link">
+                    <a @onclick="@(() => ScrollToSection("#categories"))" @onclick:preventDefault class="mobile-nav-link">
                         Kategoriler
                     </a>
                     <RadzenDivider Style="margin: 8px 0;" />
