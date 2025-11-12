@@ -836,6 +836,12 @@
             {
                 registeredBusinessId = response.Data.BusinessId;
                 
+                // Save to localStorage for payment callback
+                await LocalStorage.SetItemAsync("registrationBusinessId", registeredBusinessId.Value);
+                await LocalStorage.SetItemAsync("registrationEmail", registerDto.Email);
+                
+                Console.WriteLine($"✅ Saved to localStorage: BusinessId={registeredBusinessId.Value}");
+                
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
                     "İşletme kaydınız oluşturuldu. Şimdi ödeme bilgilerinizi ekleyin.");
 
