@@ -28,11 +28,22 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script src="js/smooth-scroll.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="js/mobile-detect.js"></script>
     <script src="js/notification.js"></script>
-    <script src="js/smooth-scroll.js"></script>
+    
+    <script>
+        // Test if smooth-scroll.js loaded
+        console.log('🔍 Checking if smoothScrollTo exists:', typeof window.smoothScrollTo);
+        
+        // Immediate test function
+        window.testScroll = function() {
+            console.log('🧪 Test scroll function called');
+            window.smoothScrollTo('#features');
+        };
+    </script>
 </body>
 
 </html>
