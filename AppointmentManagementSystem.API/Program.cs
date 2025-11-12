@@ -116,6 +116,9 @@ builder.Services.AddCors(options =>
 // Auto-start Blazor UI service
 //builder.Services.AddHostedService<BlazorAutoStartService>();
 
+// Monthly Billing Service - Otomatik aylık ödeme
+builder.Services.AddHostedService<MonthlyBillingService>();
+
 // Kestrel server options - büyük response'lar için
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
