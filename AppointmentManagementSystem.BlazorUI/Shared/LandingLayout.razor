@@ -388,10 +388,17 @@
 
     private async Task ScrollToSection(string sectionId)
     {
+        Console.WriteLine($"🎯 C# ScrollToSection called with: {sectionId}");
+        
         try
         {
+            // Test if JSRuntime is working
+            await JSRuntime.InvokeVoidAsync("console.log", $"✅ JSRuntime is working! Scrolling to: {sectionId}");
+            
             // Call JavaScript smooth scroll function
             await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
+            
+            Console.WriteLine($"✅ JavaScript function called successfully");
             
             // Close mobile menu if open
             if (mobileMenuOpen)
@@ -403,14 +410,17 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ Error in ScrollToSection: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
             // Fallback to simple smooth scroll
             try
             {
                 await JSRuntime.InvokeVoidAsync("smoothScrollToSimple", sectionId);
             }
-            catch
+            catch (Exception ex2)
             {
-                Console.WriteLine($"Scroll error: {ex.Message}");
+                Console.WriteLine($"❌ Fallback also failed: {ex2.Message}");
             }
         }
     }
