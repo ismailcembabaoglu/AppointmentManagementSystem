@@ -58,18 +58,18 @@
         {
             <div class="mobile-menu">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 24px;">
-                    <a @onclick="@(() => ScrollToSection("#hero"))" @onclick:preventDefault class="mobile-nav-link">
+                    <div @onclick="@(() => ScrollToSection("#hero"))" class="mobile-nav-link">
                         Ana Sayfa
-                    </a>
-                    <a @onclick="@(() => ScrollToSection("#features"))" @onclick:preventDefault class="mobile-nav-link">
+                    </div>
+                    <div @onclick="@(() => ScrollToSection("#features"))" class="mobile-nav-link">
                         Özellikler
-                    </a>
-                    <a @onclick="@(() => ScrollToSection("#how-it-works"))" @onclick:preventDefault class="mobile-nav-link">
+                    </div>
+                    <div @onclick="@(() => ScrollToSection("#how-it-works"))" class="mobile-nav-link">
                         Nasıl Çalışır
-                    </a>
-                    <a @onclick="@(() => ScrollToSection("#categories"))" @onclick:preventDefault class="mobile-nav-link">
+                    </div>
+                    <div @onclick="@(() => ScrollToSection("#categories"))" class="mobile-nav-link">
                         Kategoriler
-                    </a>
+                    </div>
                     <RadzenDivider Style="margin: 8px 0;" />
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="12px">
                         <a href="/login" style="flex: 1; text-decoration: none;">
