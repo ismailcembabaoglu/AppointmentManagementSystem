@@ -48,6 +48,20 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 _logger.LogInformation($"Ctoken: {request.Ctoken}");
                 _logger.LogInformation($"CardType: {request.CardType}");
                 _logger.LogInformation($"MaskedPan: {request.MaskedPan}");
+                _logger.LogInformation($"PaymentId: {request.PaymentId}");
+
+                // Validate required fields
+                if (string.IsNullOrEmpty(request.MerchantOid))
+                {
+                    _logger.LogError("MerchantOid is empty!");
+                    return Result<bool>.FailureResult("MerchantOid is required");
+                }
+
+                if (string.IsNullOrEmpty(request.Status))
+                {
+                    _logger.LogError("Status is empty!");
+                    return Result<bool>.FailureResult("Status is required");
+                }
 
                 // Validate webhook signature
                 var merchantSalt = _configuration["PayTR:MerchantSalt"] ?? "";
@@ -66,27 +80,34 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     _logger.LogWarning($"Invalid webhook signature for MerchantOid: {request.MerchantOid}");
                     // Test modunda hash kontrolünü atlayalım (localhost'tan geldiği için)
                     // return Result<bool>.FailureResult("Invalid signature");
-                    _logger.LogWarning("Continuing despite invalid signature (test mode)");
+                    _logger.LogWarning("⚠️ Continuing despite invalid signature (test mode)");
                 }
 
                 // Check if this is initial registration (REG prefix) or recurring payment
                 if (request.MerchantOid.StartsWith("REG") && request.Status == "success")
                 {
-                    _logger.LogInformation("Processing initial registration callback");
+                    _logger.LogInformation("✅ Processing initial registration callback");
                     // This is initial registration + first payment callback
                     return await HandleInitialRegistrationCallback(request, cancellationToken);
                 }
-                else
+                else if (request.Status == "success")
                 {
-                    _logger.LogInformation("Processing recurring payment callback");
+                    _logger.LogInformation("✅ Processing recurring payment callback");
                     // This is a recurring payment callback
                     return await HandlePaymentCallback(request, cancellationToken);
+                }
+                else
+                {
+                    _logger.LogWarning($"⚠️ Payment failed or invalid status: {request.Status}");
+                    return Result<bool>.FailureResult($"Payment status: {request.Status}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing webhook for MerchantOid: {request.MerchantOid}");
-                return Result<bool>.FailureResult("Error processing webhook");
+                _logger.LogError(ex, $"❌ Error processing webhook for MerchantOid: {request.MerchantOid}");
+                _logger.LogError($"Exception details: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return Result<bool>.FailureResult($"Error processing webhook: {ex.Message}");
             }
         }
 
