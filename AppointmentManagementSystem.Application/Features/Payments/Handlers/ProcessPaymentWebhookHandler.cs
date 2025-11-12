@@ -131,6 +131,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             _logger.LogInformation($"Business found: {business.Name} (ID: {business.Id})");
 
             // 1. İlk ödeme kaydını oluştur
+            _logger.LogInformation("Creating payment record...");
             var payment = new Payment
             {
                 BusinessId = businessId,
@@ -146,50 +147,71 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 CreatedAt = DateTime.UtcNow
             };
             await _paymentRepository.AddAsync(payment);
+            _logger.LogInformation($"Payment record created: Amount={payment.Amount} TL");
 
             // 2. Abonelik oluştur veya güncelle
+            _logger.LogInformation("Checking for existing subscription...");
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            
             if (subscription == null)
             {
+                _logger.LogInformation("Creating new subscription...");
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
                     PayTRUserToken = request.Utoken,
                     PayTRCardToken = request.Ctoken,
                     CardBrand = request.CardType,
+                    CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
+                    CardLastFourDigits = request.MaskedPan?.Substring(request.MaskedPan.Length - 4),
                     MonthlyAmount = 700.00m,
+                    Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
+                    StartDate = DateTime.UtcNow,
                     SubscriptionStartDate = DateTime.UtcNow,
                     LastBillingDate = DateTime.UtcNow, // İlk ödeme yapıldı
                     NextBillingDate = DateTime.UtcNow.AddDays(30), // 30 gün sonra
                     IsActive = true,
+                    AutoRenewal = true,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
+                _logger.LogInformation($"New subscription created: Utoken={request.Utoken?.Substring(0, 10)}..., NextBilling={subscription.NextBillingDate}");
             }
             else
             {
+                _logger.LogInformation("Updating existing subscription...");
                 subscription.PayTRUserToken = request.Utoken;
                 subscription.PayTRCardToken = request.Ctoken;
                 subscription.CardBrand = request.CardType;
+                subscription.CardType = request.CardType;
                 subscription.MaskedCardNumber = request.MaskedPan;
+                subscription.CardLastFourDigits = request.MaskedPan?.Substring(request.MaskedPan.Length - 4);
+                subscription.Status = SubscriptionStatus.Active;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.LastBillingDate = DateTime.UtcNow;
                 subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
+                subscription.IsActive = true;
+                subscription.AutoRenewal = true;
                 subscription.UpdatedAt = DateTime.UtcNow;
                 
                 await _subscriptionRepository.UpdateAsync(subscription);
+                _logger.LogInformation($"Subscription updated: ID={subscription.Id}");
             }
 
             // 3. Business'ı aktifleştir
+            _logger.LogInformation($"Activating business... Current status: IsActive={business.IsActive}");
             business.IsActive = true;
+            business.UpdatedAt = DateTime.UtcNow;
             await _businessRepository.UpdateAsync(business);
+            _logger.LogInformation($"Business activated: {business.Name} (ID: {business.Id})");
 
             await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("All changes saved to database!");
 
-            _logger.LogInformation($"Initial registration completed for Business {businessId}. Payment: 700 TL, Next billing: {subscription.NextBillingDate}");
+            _logger.LogInformation($"✅ Initial registration completed for Business {businessId}. Payment: 700 TL, Next billing: {subscription.NextBillingDate}");
             return Result<bool>.SuccessResult(true);
         }
 
