@@ -115,7 +115,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             _logger.LogInformation("=== HandleInitialRegistrationCallback Started ===");
             
-            // Extract BusinessId from MerchantOid (format: REG{BusinessId}{Guid})
+            // Extract BusinessId from MerchantOid 
+            // Format: REG{BusinessId}_{Guid} or REG{BusinessId}{Guid}
             var merchantOid = request.MerchantOid;
             var regPrefix = "REG";
             
@@ -127,12 +128,24 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
-            // REG12abc123de -> businessId = 12
             var afterReg = merchantOid.Substring(regPrefix.Length);
             _logger.LogInformation($"After REG prefix: {afterReg}");
             
-            var businessIdStr = new string(afterReg.TakeWhile(char.IsDigit).ToArray());
-            _logger.LogInformation($"Extracted BusinessId string: {businessIdStr}");
+            string businessIdStr;
+            
+            // Check if underscore separator exists (new format: REG6_abc123)
+            if (afterReg.Contains("_"))
+            {
+                var parts = afterReg.Split('_');
+                businessIdStr = parts[0];
+                _logger.LogInformation($"Extracted BusinessId string (with separator): {businessIdStr}");
+            }
+            else
+            {
+                // Old format: REG6abc123 - take only digits
+                businessIdStr = new string(afterReg.TakeWhile(char.IsDigit).ToArray());
+                _logger.LogInformation($"Extracted BusinessId string (without separator): {businessIdStr}");
+            }
             
             if (!int.TryParse(businessIdStr, out int businessId))
             {
@@ -140,7 +153,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
-            _logger.LogInformation($"Parsed BusinessId: {businessId}");
+            _logger.LogInformation($"✅ Parsed BusinessId: {businessId}");
 
             var business = await _businessRepository.GetByIdAsync(businessId);
             if (business == null)
