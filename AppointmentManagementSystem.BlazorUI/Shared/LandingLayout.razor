@@ -203,14 +203,23 @@
 </RadzenLayout>
 
 <style>
+    /* Base styles */
+    * {
+        box-sizing: border-box;
+    }
+
     /* Responsive Navigation */
     .header-content {
         padding: 12px 20px !important;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     @@media (max-width: 768px) {
         .header-content {
-            padding: 10px 12px !important;
+            padding: 8px 12px !important;
+            gap: 8px !important;
         }
 
         .desktop-nav {
@@ -227,6 +236,22 @@
         
         .auth-buttons {
             display: none !important;
+        }
+
+        /* Header brand on mobile */
+        .header-brand {
+            display: flex !important;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .brand-text {
+            display: none !important;
+        }
+
+        /* Menu toggle button */
+        .menu-toggle-btn {
+            flex-shrink: 0;
         }
     }
 
