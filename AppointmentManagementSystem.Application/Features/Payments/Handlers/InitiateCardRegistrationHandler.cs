@@ -22,8 +22,9 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             try
             {
-                // PayTR merchant_oid sadece alfanumerik kabul ediyor (tire, nokta vb. yok)
-                var merchantOid = $"REG{request.BusinessId}{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+                // Generate merchant_oid: REG{BusinessId}_{Guid}
+                var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
+                var merchantOid = $"REG{request.BusinessId}_{guidPart}";
 
                 var result = await _paytrService.InitiateCardRegistrationAsync(
                     request.Email,
