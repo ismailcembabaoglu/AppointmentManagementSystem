@@ -415,13 +415,21 @@
                     StateHasChanged();
                 }
                 
-                // Wait a bit for state update
-                await Task.Delay(50);
+                // Wait a bit for DOM to be ready
+                await Task.Delay(100);
                 
-                // Call JavaScript smooth scroll function
-                await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
+                // Try V2 first (simpler, more direct)
+                Console.WriteLine($"🚀 Trying scrollToElement (V2)...");
+                var success = await JSRuntime.InvokeAsync<bool>("scrollToElement", sectionId);
                 
-                Console.WriteLine($"✅ JavaScript function called successfully");
+                if (!success)
+                {
+                    // Fallback to V1
+                    Console.WriteLine($"⚠️ V2 failed, trying V1...");
+                    await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
+                }
+                
+                Console.WriteLine($"✅ Scroll function called successfully");
             }
         }
         catch (Exception ex)
@@ -429,14 +437,15 @@
             Console.WriteLine($"❌ Error in ScrollToSection: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
             
-            // Fallback to simple smooth scroll
+            // Last resort fallback
             try
             {
+                Console.WriteLine($"🔄 Last resort: trying smoothScrollToSimple...");
                 await JSRuntime.InvokeVoidAsync("smoothScrollToSimple", sectionId);
             }
             catch (Exception ex2)
             {
-                Console.WriteLine($"❌ Fallback also failed: {ex2.Message}");
+                Console.WriteLine($"❌ All methods failed: {ex2.Message}");
             }
         }
     }
