@@ -390,32 +390,28 @@
     {
         try
         {
-            // Use eval to execute smooth scroll
-            await JSRuntime.InvokeVoidAsync("eval", $@"
-                const element = document.querySelector('{sectionId}');
-                if (element) {{
-                    const headerOffset = 100;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    
-                    window.scrollTo({{
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    }});
-                }}
-            ");
+            // Call JavaScript smooth scroll function
+            await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
             
             // Close mobile menu if open
             if (mobileMenuOpen)
             {
+                await Task.Delay(100); // Small delay before closing
                 mobileMenuOpen = false;
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            // Fallback to anchor link if JS fails
-            Console.WriteLine($"Scroll error: {ex.Message}");
+            // Fallback to simple smooth scroll
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("smoothScrollToSimple", sectionId);
+            }
+            catch
+            {
+                Console.WriteLine($"Scroll error: {ex.Message}");
+            }
         }
     }
 
