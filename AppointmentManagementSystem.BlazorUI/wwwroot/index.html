@@ -29,6 +29,7 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="js/smooth-scroll.js"></script>
+    <script src="js/smooth-scroll-v2.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="js/mobile-detect.js"></script>
@@ -37,11 +38,17 @@
     <script>
         // Test if smooth-scroll.js loaded
         console.log('🔍 Checking if smoothScrollTo exists:', typeof window.smoothScrollTo);
+        console.log('🔍 Checking if scrollToElement exists:', typeof window.scrollToElement);
         
-        // Immediate test function
+        // Test functions
         window.testScroll = function() {
             console.log('🧪 Test scroll function called');
             window.smoothScrollTo('#features');
+        };
+        
+        window.testScroll2 = function() {
+            console.log('🧪 Test scroll V2 function called');
+            window.scrollToElement('#features');
         };
     </script>
 </body>
