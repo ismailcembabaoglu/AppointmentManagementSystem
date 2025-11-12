@@ -390,7 +390,21 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("smoothScrollToEnhanced", sectionId);
+            // Use eval to execute smooth scroll
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                const element = document.querySelector('{sectionId}');
+                if (element) {{
+                    const headerOffset = 100;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({{
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    }});
+                }}
+            ");
+            
             // Close mobile menu if open
             if (mobileMenuOpen)
             {
@@ -407,7 +421,7 @@
 
     private async Task ScrollToTop()
     {
-        await JSRuntime.InvokeVoidAsync("smoothScrollToEnhanced", "#hero");
+        await ScrollToSection("#hero");
     }
 
     private void HoverSocial(int index)
