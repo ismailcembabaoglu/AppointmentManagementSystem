@@ -1121,6 +1121,191 @@
             display: block;
         }
     }
+
+    /* ========================
+       CATEGORIES SECTION
+       ======================== */
+    .categories-section {
+        padding: 100px 24px;
+        background: white;
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .category-card {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 24px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .category-card:hover {
+        transform: translateX(10px);
+        border-color: #667eea;
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+    }
+
+    .category-card:hover::before {
+        opacity: 1;
+    }
+
+    .category-icon-wrapper {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .category-icon {
+        position: relative;
+        z-index: 2;
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 800;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        transition: all 0.4s ease;
+    }
+
+    .category-card:hover .category-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .category-icon-bg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0;
+        filter: blur(20px);
+        transition: opacity 0.4s ease;
+    }
+
+    .category-card:hover .category-icon-bg {
+        opacity: 0.6;
+    }
+
+    .category-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .category-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 8px 0;
+        transition: color 0.3s ease;
+    }
+
+    .category-card:hover .category-title {
+        color: #667eea;
+    }
+
+    .category-description {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .category-arrow {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+        transition: all 0.4s ease;
+    }
+
+    .category-card:hover .category-arrow {
+        background: #667eea;
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .categories-footer {
+        text-align: center;
+    }
+
+    .btn-view-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        font-size: 16px;
+        font-weight: 700;
+        border-radius: 14px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .btn-view-all:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ========================
+       ADDITIONAL RESPONSIVE
+       ======================== */
+    @@media (max-width: 768px) {
+        .categories-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .category-card {
+            padding: 20px;
+        }
+
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+        }
+    }
 </style>
 
 @code {
