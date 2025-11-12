@@ -252,12 +252,23 @@
         }
     }
 
+    /* Header always on top */
+    .rz-header {
+        z-index: 9999 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+
     /* Responsive Navigation */
     .header-content {
         padding: 12px 20px !important;
         width: 100%;
         max-width: 100%;
         overflow: hidden;
+        position: relative;
+        z-index: 10000;
     }
 
     @@media (max-width: 768px) {
