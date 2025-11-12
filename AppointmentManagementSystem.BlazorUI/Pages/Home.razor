@@ -8,29 +8,53 @@
 
 <PageTitle>Aptiva Plan - Online Randevu Sistemi</PageTitle>
 
-<!-- Hero Section -->
-<div id="hero" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 24px; text-align: center;">
-    <div style="max-width: 900px; margin: 0 auto;">
-        <RadzenText TextStyle="TextStyle.DisplayH2" Style="color: white; margin: 0; font-weight: 800; margin-bottom: 24px; animation: fadeInUp 0.8s;">
-            Randevularınızı Kolayca Yönetin
-        </RadzenText>
-        <RadzenText TextStyle="TextStyle.H5" Style="color: rgba(255,255,255,0.95); margin: 0 auto 40px; max-width: 700px; line-height: 1.6; animation: fadeInUp 1s;">
-            Modern, hızlı ve kullanıcı dostu randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterileriniz 7/24 online randevu alabilsin!
-        </RadzenText>
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" JustifyContent="JustifyContent.Center" Wrap="FlexWrap.Wrap" Style="animation: fadeInUp 1.2s;">
-            <RadzenButton Text="Ücretsiz Başla" 
-                         ButtonStyle="ButtonStyle.Light" 
-                         Size="ButtonSize.Large" 
-                         Icon="arrow_forward"
-                         Click="@(() => Navigation.NavigateTo("/register"))"
-                         Style="min-width: 200px; font-weight: 600; font-size: 18px; padding: 16px 32px;" />
-            <RadzenButton Text="Keşfet" 
-                         ButtonStyle="ButtonStyle.Secondary" 
-                         Size="ButtonSize.Large" 
-                         Icon="search"
-                         Click="@(() => Navigation.NavigateTo("/categories"))"
-                         Style="min-width: 200px; font-weight: 600; font-size: 18px; padding: 16px 32px; background: rgba(255,255,255,0.2); border: 2px solid white;" />
-        </RadzenStack>
+<!-- Hero Section - Premium -->
+<div id="hero" class="hero-section">
+    <div class="hero-bg-animation"></div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <RadzenIcon Icon="verified" Style="font-size: 16px; margin-right: 8px;" />
+            <span>Türkiye'nin En Güvenilir Randevu Platformu</span>
+        </div>
+        <h1 class="hero-title">
+            Randevularınızı 
+            <span class="gradient-text">Kolayca Yönetin</span>
+        </h1>
+        <p class="hero-subtitle">
+            Modern, hızlı ve kullanıcı dostu randevu yönetim sistemi ile işletmenizi dijitalleştirin. 
+            <span class="highlight-text">7/24 online randevu</span> imkanı sunun!
+        </p>
+        <div class="hero-buttons">
+            <button class="btn-primary-hero" @onclick="@(() => Navigation.NavigateTo("/register"))">
+                <span>Ücretsiz Başla</span>
+                <RadzenIcon Icon="arrow_forward" Style="font-size: 20px; margin-left: 8px;" />
+            </button>
+            <button class="btn-secondary-hero" @onclick="@(() => Navigation.NavigateTo("/categories"))">
+                <RadzenIcon Icon="play_circle" Style="font-size: 20px; margin-right: 8px;" />
+                <span>Demo İzle</span>
+            </button>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">10K+</div>
+                <div class="stat-label">Aktif İşletme</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Mutlu Müşteri</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-number">99.9%</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-decoration">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
     </div>
 </div>
 
