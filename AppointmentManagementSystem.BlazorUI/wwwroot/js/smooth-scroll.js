@@ -76,7 +76,7 @@ window.smoothScrollTo = function(targetId) {
     }, 100);
 };
 
-// Simple smooth scroll fallback
+// Simple smooth scroll fallback - more direct approach
 window.smoothScrollToSimple = function(targetId) {
     console.log('🎯 Simple smooth scroll to:', targetId);
     
@@ -87,14 +87,33 @@ window.smoothScrollToSimple = function(targetId) {
             return;
         }
         
-        console.log('✅ Element found, scrolling...');
-        const headerOffset = 100;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        console.log('✅ Element found, scrolling with native smooth scroll...');
+        
+        // Try multiple scroll methods
+        
+        // Method 1: element.scrollIntoView
+        try {
+            element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest'
+            });
+            console.log('✅ scrollIntoView called');
+        } catch (e) {
+            console.error('❌ scrollIntoView failed:', e);
+        }
+        
+        // Method 2: Also try window.scrollTo as backup
+        setTimeout(() => {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-        });
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+            console.log('✅ window.scrollTo also called as backup');
+        }, 100);
     }, 50);
 };
