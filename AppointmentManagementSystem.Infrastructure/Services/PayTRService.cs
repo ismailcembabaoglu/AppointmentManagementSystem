@@ -77,8 +77,10 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_address", "Türkiye" }, // Placeholder
                     { "user_phone", "5555555555" }, // Placeholder
                     // Callback URL'leri - Frontend sayfalarına yönlendir
-                    { "merchant_ok_url", "https://aptivaplan.com.tr/payment/success" },
-                    { "merchant_fail_url", "https://aptivaplan.com.tr/payment/failed" },
+                    // PayTR otomatik olarak bu URL'lere query string parametreleri ekler:
+                    // ?merchant_oid=xxx&status=xxx&total_amount=xxx&hash=xxx&utoken=xxx&ctoken=xxx&card_type=xxx&masked_pan=xxx&payment_id=xxx
+                    { "merchant_ok_url", _configuration["PayTR:SuccessUrl"] ?? "https://aptivaplan.com.tr/payment/success" },
+                    { "merchant_fail_url", _configuration["PayTR:FailUrl"] ?? "https://aptivaplan.com.tr/payment/failed" },
                     { "timeout_limit", "30" },
                     { "currency", currency },
                     { "test_mode", testMode }
