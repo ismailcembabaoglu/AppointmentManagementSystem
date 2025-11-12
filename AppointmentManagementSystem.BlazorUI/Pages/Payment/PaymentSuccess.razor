@@ -81,6 +81,15 @@
             var maskedPan = query["masked_pan"];
             var paymentId = query["payment_id"];
 
+            Console.WriteLine($"=== Payment Success Callback ===");
+            Console.WriteLine($"MerchantOid: {merchantOid}");
+            Console.WriteLine($"Status: {status}");
+            Console.WriteLine($"TotalAmount: {totalAmount}");
+            Console.WriteLine($"Utoken: {utoken}");
+            Console.WriteLine($"Ctoken: {ctoken}");
+            Console.WriteLine($"CardType: {cardType}");
+            Console.WriteLine($"MaskedPan: {maskedPan}");
+
             if (!string.IsNullOrEmpty(merchantOid) && status == "success")
             {
                 // API'ye webhook simülasyonu gönder - FormData formatında
@@ -98,19 +107,28 @@
                     { "failed_reason_msg", "" }
                 };
 
+                Console.WriteLine($"Sending webhook to API...");
                 var content = new FormUrlEncodedContent(formData);
                 var response = await HttpClient.PostAsync("api/payments/webhook", content);
                 
+                Console.WriteLine($"Webhook response status: {response.StatusCode}");
+                
                 if (response.IsSuccessStatusCode)
                 {
+                    Console.WriteLine("✅ Webhook successful - Business activated!");
                     // Başarılı - business aktifleştirildi ve abonelik oluşturuldu
                     await LocalStorage.RemoveItemAsync("registrationBusinessId");
                 }
                 else
                 {
                     var errorText = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Webhook error: {errorText}");
+                    Console.WriteLine($"❌ Webhook error: {errorText}");
+                    Console.WriteLine($"Response content: {errorText}");
                 }
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ Webhook not sent - MerchantOid: {merchantOid}, Status: {status}");
             }
         }
         catch (Exception ex)
