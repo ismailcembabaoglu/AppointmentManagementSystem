@@ -389,23 +389,39 @@
     private async Task ScrollToSection(string sectionId)
     {
         Console.WriteLine($"🎯 C# ScrollToSection called with: {sectionId}");
+        Console.WriteLine($"📍 Current URI: {Navigation.Uri}");
         
         try
         {
-            // Test if JSRuntime is working
-            await JSRuntime.InvokeVoidAsync("console.log", $"✅ JSRuntime is working! Scrolling to: {sectionId}");
+            // Check if we're on home page
+            var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+            Console.WriteLine($"📍 Current path: {currentPath}");
             
-            // Call JavaScript smooth scroll function
-            await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
-            
-            Console.WriteLine($"✅ JavaScript function called successfully");
-            
-            // Close mobile menu if open
-            if (mobileMenuOpen)
+            if (currentPath != "/")
             {
-                await Task.Delay(100); // Small delay before closing
-                mobileMenuOpen = false;
-                StateHasChanged();
+                // Navigate to home first, then scroll
+                Console.WriteLine($"🔄 Not on home page, navigating to /{sectionId}");
+                Navigation.NavigateTo($"/{sectionId}");
+            }
+            else
+            {
+                // We're on home page, just scroll
+                Console.WriteLine($"✅ On home page, scrolling...");
+                
+                // Close mobile menu first if open
+                if (mobileMenuOpen)
+                {
+                    mobileMenuOpen = false;
+                    StateHasChanged();
+                }
+                
+                // Wait a bit for state update
+                await Task.Delay(50);
+                
+                // Call JavaScript smooth scroll function
+                await JSRuntime.InvokeVoidAsync("smoothScrollTo", sectionId);
+                
+                Console.WriteLine($"✅ JavaScript function called successfully");
             }
         }
         catch (Exception ex)
