@@ -130,9 +130,9 @@
                         <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 600; margin-bottom: 8px;">
                             Hızlı Linkler
                         </RadzenText>
-                        <a @onclick="@(() => ScrollToSection("#features"))" @onclick:preventDefault style="cursor: pointer;" class="footer-link">Özellikler</a>
-                        <a @onclick="@(() => ScrollToSection("#how-it-works"))" @onclick:preventDefault style="cursor: pointer;" class="footer-link">Nasıl Çalışır</a>
-                        <a @onclick="@(() => ScrollToSection("#categories"))" @onclick:preventDefault style="cursor: pointer;" class="footer-link">Kategoriler</a>
+                        <span @onclick="@(() => ScrollToSection("#features"))" style="cursor: pointer;" class="footer-link">Özellikler</span>
+                        <span @onclick="@(() => ScrollToSection("#how-it-works"))" style="cursor: pointer;" class="footer-link">Nasıl Çalışır</span>
+                        <span @onclick="@(() => ScrollToSection("#categories"))" style="cursor: pointer;" class="footer-link">Kategoriler</span>
                         <a href="/login" class="footer-link">Giriş Yap</a>
                     </RadzenStack>
                 </RadzenColumn>
