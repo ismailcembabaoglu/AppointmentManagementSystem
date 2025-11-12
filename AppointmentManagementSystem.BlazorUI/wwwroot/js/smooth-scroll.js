@@ -15,7 +15,16 @@ window.smoothScrollTo = function(targetId) {
         }
         
         console.log('✅ Element found:', element);
-        console.log('Current scroll position:', window.pageYOffset);
+        console.log('📏 Element rect:', element.getBoundingClientRect());
+        console.log('📍 Current scroll position:', window.pageYOffset);
+        console.log('📜 Document height:', document.documentElement.scrollHeight);
+        console.log('🖼️ Viewport height:', window.innerHeight);
+        
+        // Check if element is already visible
+        const rect = element.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= window.innerHeight) {
+            console.log('⚠️ Element is already in viewport!');
+        }
 
         const headerOffset = 100;
         const elementPosition = element.getBoundingClientRect().top;
@@ -25,11 +34,16 @@ window.smoothScrollTo = function(targetId) {
         const duration = 1000; // 1 second
         
         console.log('📊 Scroll info:', {
-            elementPosition,
-            offsetPosition,
-            startPosition,
-            distance
+            'Element position from top': elementPosition,
+            'Target scroll position': offsetPosition,
+            'Current position': startPosition,
+            'Distance to scroll': distance
         });
+        
+        if (Math.abs(distance) < 5) {
+            console.log('⚠️ Already at target position, no need to scroll');
+            return;
+        }
         
         let start = null;
 
@@ -37,11 +51,15 @@ window.smoothScrollTo = function(targetId) {
             if (start === null) start = currentTime;
             const timeElapsed = currentTime - start;
             const run = ease(timeElapsed, startPosition, distance, duration);
+            
+            console.log(`⏱️ Time: ${timeElapsed}ms, Position: ${run}`);
             window.scrollTo(0, run);
+            
             if (timeElapsed < duration) {
                 requestAnimationFrame(animation);
             } else {
                 console.log('✅ Scroll animation complete!');
+                console.log('📍 Final position:', window.pageYOffset);
             }
         }
 
@@ -55,7 +73,7 @@ window.smoothScrollTo = function(targetId) {
 
         console.log('🚀 Starting scroll animation...');
         requestAnimationFrame(animation);
-    }, 50);
+    }, 100);
 };
 
 // Simple smooth scroll fallback
