@@ -77,8 +77,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_address", "Türkiye" }, // Placeholder
                     { "user_phone", "5555555555" }, // Placeholder
                     // Callback URL'leri - Frontend sayfalarına yönlendir
-                    { "merchant_ok_url", "https://localhost:7172/payment/success" },
-                    { "merchant_fail_url", "https://localhost:7172/payment/failed" },
+                    { "merchant_ok_url", "https://aptivaplan.com.tr/payment/success" },
+                    { "merchant_fail_url", "https://aptivaplan.com.tr/payment/failed" },
                     { "timeout_limit", "30" },
                     { "currency", currency },
                     { "test_mode", testMode }

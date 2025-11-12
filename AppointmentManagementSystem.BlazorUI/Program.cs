@@ -18,9 +18,14 @@ builder.Services.AddBlazoredLocalStorage();
 // HttpClient yapılandırması - Basit ve çalışır
 builder.Services.AddScoped(sp => new HttpClient 
 { 
-    BaseAddress = new Uri("https://localhost:5089/"),
+    BaseAddress = new Uri("https://hub.aptivaplan.com.tr/"),
     Timeout = TimeSpan.FromSeconds(30)
 });
+//builder.Services.AddScoped(sp => new HttpClient
+//{
+//    BaseAddress = new Uri("https://localhost:5089/"),
+//    Timeout = TimeSpan.FromSeconds(30)
+//});
 
 // API Services
 builder.Services.AddScoped<IApiService, ApiService>();

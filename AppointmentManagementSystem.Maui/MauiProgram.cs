@@ -26,7 +26,7 @@ namespace AppointmentManagementSystem.Maui
             // Configure HttpClient for API
             builder.Services.AddScoped(sp => new HttpClient 
             { 
-                BaseAddress = new Uri("http://192.168.1.201:5089/") 
+                BaseAddress = new Uri("https://hub.aptivaplan.com.tr/") 
             });
 
             // API Services
