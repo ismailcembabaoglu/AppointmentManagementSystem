@@ -284,26 +284,45 @@
     </div>
 }
 
-<!-- CTA Section -->
-<div style="padding: 80px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <RadzenText TextStyle="TextStyle.DisplayH3" Style="color: white; margin: 0; font-weight: 800; margin-bottom: 24px;">
-            Hemen Başlayın!
-        </RadzenText>
-        <RadzenText TextStyle="TextStyle.H5" Style="color: rgba(255,255,255,0.95); margin: 0 auto 40px; line-height: 1.6;">
-            İşletmenizi dijitalleştirmek için geç kalmayın. Ücretsiz hesap oluşturun ve tüm özellikleri keşfedin.
-        </RadzenText>
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="16px" JustifyContent="JustifyContent.Center" Wrap="FlexWrap.Wrap">
-            <RadzenButton Text="Ücretsiz Dene" 
-                         ButtonStyle="ButtonStyle.Light" 
-                         Size="ButtonSize.Large" 
-                         Icon="rocket_launch"
-                         Click="@(() => Navigation.NavigateTo("/register"))"
-                         Style="min-width: 220px; font-weight: 600; font-size: 18px; padding: 16px 32px;" />
-        </RadzenStack>
-        <RadzenText Style="color: rgba(255,255,255,0.8); margin-top: 24px;">
-            💳 Kredi kartı gerektirmez • ⚡ Anında başlayın • 🎯 İptal ücretsiz
-        </RadzenText>
+<!-- CTA Section - Premium -->
+<div class="cta-section">
+    <div class="cta-bg-pattern"></div>
+    <div class="cta-content">
+        <div class="cta-badge">
+            <RadzenIcon Icon="rocket_launch" Style="font-size: 16px; margin-right: 8px;" />
+            <span>HEMEN BAŞLAYIN</span>
+        </div>
+        <h2 class="cta-title">
+            İşletmenizi Geleceğe Taşıyın
+        </h2>
+        <p class="cta-subtitle">
+            İşletmenizi dijitalleştirmek için geç kalmayın. Ücretsiz hesap oluşturun ve 
+            <span class="cta-highlight">tüm özellikleri</span> keşfedin.
+        </p>
+        <button class="cta-button" @onclick="@(() => Navigation.NavigateTo("/register"))">
+            <span>Ücretsiz Dene</span>
+            <RadzenIcon Icon="arrow_forward" Style="font-size: 20px; margin-left: 8px;" />
+            <div class="button-shine"></div>
+        </button>
+        <div class="cta-features">
+            <div class="cta-feature">
+                <RadzenIcon Icon="verified" Style="font-size: 20px; color: #10b981;" />
+                <span>Kredi kartı gerektirmez</span>
+            </div>
+            <div class="cta-feature">
+                <RadzenIcon Icon="bolt" Style="font-size: 20px; color: #f59e0b;" />
+                <span>Anında başlayın</span>
+            </div>
+            <div class="cta-feature">
+                <RadzenIcon Icon="cancel" Style="font-size: 20px; color: #3b82f6;" />
+                <span>İptal ücretsiz</span>
+            </div>
+        </div>
+    </div>
+    <div class="cta-decoration">
+        <div class="cta-shape cta-shape-1"></div>
+        <div class="cta-shape cta-shape-2"></div>
+        <div class="cta-shape cta-shape-3"></div>
     </div>
 </div>
 
