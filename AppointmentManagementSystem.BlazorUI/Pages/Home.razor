@@ -1085,34 +1085,207 @@
        RESPONSIVE
        ======================== */
     @@media (max-width: 768px) {
+        /* Hero Section Mobile */
+        .hero-section {
+            padding: 80px 16px 60px;
+            min-height: auto;
+        }
+
         .hero-title {
-            font-size: 42px;
+            font-size: 36px;
+            line-height: 1.2;
+            word-wrap: break-word;
         }
 
         .hero-subtitle {
-            font-size: 18px;
+            font-size: 16px;
+            padding: 0 8px;
         }
 
-        .section-title {
-            font-size: 36px;
+        .hero-badge {
+            font-size: 12px;
+            padding: 8px 16px;
         }
 
-        .cta-title {
-            font-size: 36px;
+        .hero-stats {
+            gap: 16px;
+            padding: 0 8px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+        }
+
+        .stat-label {
+            font-size: 12px;
         }
 
         .stat-divider {
             display: none;
         }
 
-        .hero-stats {
-            gap: 24px;
+        .hero-buttons {
+            gap: 12px;
+            padding: 0 8px;
         }
 
         .btn-primary-hero,
         .btn-secondary-hero {
             width: 100%;
+            max-width: 100%;
             justify-content: center;
+            padding: 14px 24px;
+            font-size: 16px;
+        }
+
+        /* Section Containers */
+        .section-container {
+            padding: 0 8px;
+            max-width: 100%;
+        }
+
+        .section-title {
+            font-size: 32px;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            padding: 0 8px;
+        }
+
+        /* Features Section Mobile */
+        .features-section {
+            padding: 60px 12px;
+        }
+
+        .features-grid {
+            gap: 20px;
+        }
+
+        .feature-card {
+            padding: 24px 20px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+        }
+
+        /* How It Works Mobile */
+        .how-it-works-section {
+            padding: 60px 12px;
+        }
+
+        .steps-container {
+            gap: 24px;
+        }
+
+        .step-card {
+            padding: 24px 20px;
+        }
+
+        .step-title {
+            font-size: 20px;
+        }
+
+        /* Categories Mobile */
+        .categories-section {
+            padding: 60px 12px;
+        }
+
+        .category-card {
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+
+        .category-title {
+            font-size: 18px;
+        }
+
+        .category-description {
+            font-size: 13px;
+        }
+
+        /* CTA Section Mobile */
+        .cta-section {
+            padding: 60px 16px;
+        }
+
+        .cta-title {
+            font-size: 32px;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .cta-subtitle {
+            font-size: 16px;
+            padding: 0 8px;
+        }
+
+        .cta-button {
+            width: 100%;
+            max-width: 100%;
+            padding: 16px 32px;
+            font-size: 18px;
+        }
+
+        .cta-features {
+            gap: 20px;
+            padding: 0 8px;
+        }
+
+        .cta-feature {
+            font-size: 14px;
+        }
+
+        /* Floating shapes - reduce size on mobile */
+        .floating-shape {
+            opacity: 0.3;
+        }
+
+        .shape-1 {
+            width: 150px;
+            height: 150px;
+        }
+
+        .shape-2 {
+            width: 100px;
+            height: 100px;
+        }
+
+        .shape-3 {
+            width: 80px;
+            height: 80px;
+        }
+    }
+
+    /* Extra small devices */
+    @@media (max-width: 480px) {
+        .hero-title {
+            font-size: 28px;
+        }
+
+        .section-title {
+            font-size: 28px;
+        }
+
+        .cta-title {
+            font-size: 28px;
+        }
+
+        .hero-section {
+            padding: 60px 12px 40px;
         }
     }
 
