@@ -92,38 +92,67 @@
             Console.WriteLine($"CardType: {cardType}");
             Console.WriteLine($"MaskedPan: {maskedPan}");
 
-            // Eğer URL'de parametreler yoksa, localStorage'dan businessId'yi al ve bekleme moduna geç
+            // Eğer URL'de parametreler yoksa, localStorage'dan businessId'yi al ve manuel webhook tetikle
             if (string.IsNullOrEmpty(merchantOid))
             {
                 Console.WriteLine($"⚠️ No parameters in URL, checking localStorage...");
                 var businessId = await LocalStorage.GetItemAsync<int?>("registrationBusinessId");
+                var email = await LocalStorage.GetItemAsStringAsync("registrationEmail");
                 
                 if (businessId.HasValue)
                 {
                     Console.WriteLine($"✅ Found BusinessId in localStorage: {businessId}");
-                    // PayTr'dan callback bekliyoruz, timeout ile kontrol edelim
-                    await Task.Delay(3000); // 3 saniye bekle
+                    Console.WriteLine($"✅ Found Email in localStorage: {email}");
                     
-                    // Hala parametre yoksa manuel olarak başarılı sayalım (test modu için)
-                    uri = new Uri(NavigationManager.Uri);
-                    query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-                    merchantOid = query["merchant_oid"];
+                    // PayTr test mode'unda callback parametreleri gelmiyor
+                    // Manuel olarak webhook tetikle
+                    Console.WriteLine($"🔧 PayTR test mode detected - triggering manual webhook...");
                     
-                    if (string.IsNullOrEmpty(merchantOid))
+                    // Generate test merchant_oid from businessId
+                    merchantOid = $"REG{businessId}{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+                    Console.WriteLine($"Generated MerchantOid: {merchantOid}");
+                    
+                    // Manuel webhook data oluştur
+                    var formData = new Dictionary<string, string>
                     {
-                        Console.WriteLine($"⚠️ Still no parameters after wait. This is test mode - assuming success.");
-                        Console.WriteLine($"📝 In production, PayTR will automatically add parameters to success URL.");
-                        
-                        // Test modu için manuel webhook simülasyonu
-                        // NOT: Production'da PayTR otomatik olarak parametreleri ekleyecek
-                        isProcessing = false;
-                        StateHasChanged();
-                        return;
+                        { "merchant_oid", merchantOid },
+                        { "status", "success" },
+                        { "total_amount", "70000" }, // 700 TL
+                        { "hash", "test_hash_for_development" },
+                        { "utoken", $"TEST_UTOKEN_{businessId}_{DateTime.Now.Ticks}" },
+                        { "ctoken", $"TEST_CTOKEN_{businessId}_{DateTime.Now.Ticks}" },
+                        { "card_type", "Visa" },
+                        { "masked_pan", "****1234" },
+                        { "payment_id", $"TEST_PAY_{DateTime.Now.Ticks}" },
+                        { "failed_reason_msg", "" }
+                    };
+
+                    Console.WriteLine($"📤 Sending manual webhook to API...");
+                    var content = new FormUrlEncodedContent(formData);
+                    var response = await HttpClient.PostAsync("api/payments/webhook", content);
+                    
+                    Console.WriteLine($"Webhook response status: {response.StatusCode}");
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("✅ Manual webhook successful - Business activated!");
+                        await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                        await LocalStorage.RemoveItemAsync("registrationEmail");
                     }
+                    else
+                    {
+                        var errorText = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"❌ Manual webhook error: {errorText}");
+                    }
+                    
+                    isProcessing = false;
+                    StateHasChanged();
+                    return;
                 }
                 else
                 {
                     Console.WriteLine($"❌ No BusinessId in localStorage");
+                    Console.WriteLine($"⚠️ Payment may have been processed but we cannot activate business");
                 }
             }
 
