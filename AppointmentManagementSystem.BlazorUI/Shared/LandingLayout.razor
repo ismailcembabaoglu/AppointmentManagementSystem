@@ -208,6 +208,50 @@
         box-sizing: border-box;
     }
 
+    /* Prevent all horizontal overflow */
+    html {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+
+    /* Fix for all Radzen components */
+    .rz-layout,
+    .rz-header,
+    .rz-body,
+    .rz-footer,
+    .rz-stack,
+    .rz-row {
+        max-width: 100vw !important;
+        overflow-x: hidden;
+    }
+
+    /* Mobile specific global fixes */
+    @@media (max-width: 768px) {
+        /* Prevent text overflow */
+        h1, h2, h3, h4, h5, h6, p, span, div {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        /* Ensure images don't overflow */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Fix for any absolute positioned elements */
+        [style*="position: absolute"] {
+            max-width: 100vw;
+        }
+    }
+
     /* Responsive Navigation */
     .header-content {
         padding: 12px 20px !important;
