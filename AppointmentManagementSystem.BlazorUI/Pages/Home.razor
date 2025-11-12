@@ -1109,8 +1109,25 @@
         }
 
         .hero-badge {
-            font-size: 12px;
-            padding: 8px 16px;
+            display: inline-flex !important;
+            font-size: 11px;
+            padding: 8px 12px;
+            margin-bottom: 24px;
+            white-space: nowrap;
+            max-width: 95vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hero-badge span {
+            display: inline-block;
+            line-height: 1.4;
+        }
+
+        .hero-badge .rz-icon {
+            flex-shrink: 0;
+            font-size: 14px !important;
+            margin-right: 6px !important;
         }
 
         .hero-stats {
