@@ -337,6 +337,54 @@
     }
 </style>
 
+<!-- Smooth Scroll Script -->
+<script>
+    window.smoothScrollTo = function(targetId) {
+        const element = document.querySelector(targetId);
+        if (element) {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Enhanced smooth scroll with easing
+    window.smoothScrollToEnhanced = function(targetId) {
+        const element = document.querySelector(targetId);
+        if (!element) return;
+
+        const headerOffset = 100;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        const startPosition = window.pageYOffset;
+        const distance = offsetPosition - startPosition;
+        const duration = 1000; // 1 second
+        let start = null;
+
+        function animation(currentTime) {
+            if (start === null) start = currentTime;
+            const timeElapsed = currentTime - start;
+            const run = ease(timeElapsed, startPosition, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+
+        function ease(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        }
+
+        requestAnimationFrame(animation);
+    };
+</script>
+
 @code {
     private bool mobileMenuOpen = false;
     private int hoveredSocial = -1;
@@ -350,7 +398,13 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("scrollToSection", sectionId);
+            await JSRuntime.InvokeVoidAsync("smoothScrollToEnhanced", sectionId);
+            // Close mobile menu if open
+            if (mobileMenuOpen)
+            {
+                mobileMenuOpen = false;
+                StateHasChanged();
+            }
         }
         catch (Exception ex)
         {
@@ -361,7 +415,7 @@
 
     private async Task ScrollToTop()
     {
-        await JSRuntime.InvokeVoidAsync("window.scrollTo", new { top = 0, behavior = "smooth" });
+        await JSRuntime.InvokeVoidAsync("smoothScrollToEnhanced", "#hero");
     }
 
     private void HoverSocial(int index)
