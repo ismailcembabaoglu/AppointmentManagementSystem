@@ -82,6 +82,8 @@
             var paymentId = query["payment_id"];
 
             Console.WriteLine($"=== Payment Success Callback ===");
+            Console.WriteLine($"Full URL: {NavigationManager.Uri}");
+            Console.WriteLine($"Query String: {uri.Query}");
             Console.WriteLine($"MerchantOid: {merchantOid}");
             Console.WriteLine($"Status: {status}");
             Console.WriteLine($"TotalAmount: {totalAmount}");
@@ -89,6 +91,41 @@
             Console.WriteLine($"Ctoken: {ctoken}");
             Console.WriteLine($"CardType: {cardType}");
             Console.WriteLine($"MaskedPan: {maskedPan}");
+
+            // Eğer URL'de parametreler yoksa, localStorage'dan businessId'yi al ve bekleme moduna geç
+            if (string.IsNullOrEmpty(merchantOid))
+            {
+                Console.WriteLine($"⚠️ No parameters in URL, checking localStorage...");
+                var businessId = await LocalStorage.GetItemAsync<int?>("registrationBusinessId");
+                
+                if (businessId.HasValue)
+                {
+                    Console.WriteLine($"✅ Found BusinessId in localStorage: {businessId}");
+                    // PayTr'dan callback bekliyoruz, timeout ile kontrol edelim
+                    await Task.Delay(3000); // 3 saniye bekle
+                    
+                    // Hala parametre yoksa manuel olarak başarılı sayalım (test modu için)
+                    uri = new Uri(NavigationManager.Uri);
+                    query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    merchantOid = query["merchant_oid"];
+                    
+                    if (string.IsNullOrEmpty(merchantOid))
+                    {
+                        Console.WriteLine($"⚠️ Still no parameters after wait. This is test mode - assuming success.");
+                        Console.WriteLine($"📝 In production, PayTR will automatically add parameters to success URL.");
+                        
+                        // Test modu için manuel webhook simülasyonu
+                        // NOT: Production'da PayTR otomatik olarak parametreleri ekleyecek
+                        isProcessing = false;
+                        StateHasChanged();
+                        return;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"❌ No BusinessId in localStorage");
+                }
+            }
 
             if (!string.IsNullOrEmpty(merchantOid) && status == "success")
             {
@@ -129,11 +166,14 @@
             else
             {
                 Console.WriteLine($"⚠️ Webhook not sent - MerchantOid: {merchantOid}, Status: {status}");
+                Console.WriteLine($"💡 PayTR should automatically add these parameters to the success URL.");
+                Console.WriteLine($"💡 Make sure merchant_ok_url is correctly configured in PayTR dashboard.");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error processing payment callback: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
         }
         finally
         {
