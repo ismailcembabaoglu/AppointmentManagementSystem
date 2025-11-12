@@ -1,12 +1,14 @@
 // Enhanced Smooth Scroll with Easing
 window.smoothScrollTo = function(targetId) {
-    console.log('Smooth scroll to:', targetId);
+    console.log('🎯 Smooth scroll to:', targetId);
     
     const element = document.querySelector(targetId);
     if (!element) {
-        console.error('Element not found:', targetId);
+        console.error('❌ Element not found:', targetId);
         return;
     }
+    
+    console.log('✅ Element found:', element);
 
     const headerOffset = 100;
     const elementPosition = element.getBoundingClientRect().top;
