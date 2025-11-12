@@ -230,55 +230,49 @@
     </div>
 </div>
 
-<!-- Categories Section -->
+<!-- Categories Section - Premium -->
 @if (categories.Any())
 {
-    <div id="categories" style="padding: 80px 24px; background: white;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="text-align: center; margin-bottom: 60px;">
-                <RadzenText TextStyle="TextStyle.DisplayH4" Style="margin: 0; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">
-                    Popüler Kategoriler
-                </RadzenText>
-                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                    Hangi alanda hizmet veriyorsunuz?
-                </RadzenText>
+    <div id="categories" class="categories-section">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <RadzenIcon Icon="category" Style="font-size: 14px; margin-right: 6px;" />
+                    KATEGORİLER
+                </span>
+                <h2 class="section-title">Popüler Kategoriler</h2>
+                <p class="section-subtitle">Hangi alanda hizmet veriyorsunuz?</p>
             </div>
 
-            <RadzenRow Gap="24px">
+            <div class="categories-grid">
                 @foreach (var category in categories.Take(6))
                 {
-                    <RadzenColumn Size="12" SizeMD="6" SizeLG="4">
-                        <RadzenCard Style="height: 100%; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;"
-                                   @onclick="@(() => Navigation.NavigateTo($"/businesses/category/{category.Id}"))">
-                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 16px;">
-                                <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                                    <RadzenText Style="color: white; font-size: 28px; margin: 0;">
-                                        @category.Name.Substring(0, 1).ToUpper()
-                                    </RadzenText>
-                                </div>
-                                <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin: 0; font-weight: 600;">
-                                        @category.Name
-                                    </RadzenText>
-                                    @if (!string.IsNullOrEmpty(category.Description))
-                                    {
-                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                            @category.Description
-                                        </RadzenText>
-                                    }
-                                </RadzenStack>
-                            </RadzenStack>
-                        </RadzenCard>
-                    </RadzenColumn>
+                    <div class="category-card" @onclick="@(() => Navigation.NavigateTo($"/businesses/category/{category.Id}"))">
+                        <div class="category-icon-wrapper">
+                            <div class="category-icon">
+                                @category.Name.Substring(0, 1).ToUpper()
+                            </div>
+                            <div class="category-icon-bg"></div>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">@category.Name</h3>
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                <p class="category-description">@category.Description</p>
+                            }
+                        </div>
+                        <div class="category-arrow">
+                            <RadzenIcon Icon="arrow_forward" Style="font-size: 20px;" />
+                        </div>
+                    </div>
                 }
-            </RadzenRow>
+            </div>
 
-            <div style="text-align: center; margin-top: 40px;">
-                <RadzenButton Text="Tüm Kategorileri Gör" 
-                             ButtonStyle="ButtonStyle.Primary" 
-                             Size="ButtonSize.Large"
-                             Icon="arrow_forward"
-                             Click="@(() => Navigation.NavigateTo("/categories"))" />
+            <div class="categories-footer">
+                <button class="btn-view-all" @onclick="@(() => Navigation.NavigateTo("/categories"))">
+                    <span>Tüm Kategorileri Gör</span>
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 20px; margin-left: 8px;" />
+                </button>
             </div>
         </div>
     </div>
