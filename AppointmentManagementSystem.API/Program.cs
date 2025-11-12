@@ -3,6 +3,7 @@ using AppointmentManagementSystem.API.Services;
 using AppointmentManagementSystem.Application;
 using AppointmentManagementSystem.Infrastructure;
 using AppointmentManagementSystem.Infrastructure.Data;
+using AppointmentManagementSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
