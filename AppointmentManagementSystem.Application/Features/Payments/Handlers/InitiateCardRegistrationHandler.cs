@@ -24,7 +24,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             {
                 // Generate merchant_oid: REG{BusinessId}_{Guid}
                 var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
-                var merchantOid = $"REG{request.BusinessId}_{guidPart}";
+                var merchantOid = $"REG{request.BusinessId}{guidPart}";
 
                 var result = await _paytrService.InitiateCardRegistrationAsync(
                     request.Email,
