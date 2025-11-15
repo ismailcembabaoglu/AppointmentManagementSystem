@@ -73,13 +73,21 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             // Hash password
             var hashedPassword = _passwordHasher.HashPassword(dto.Password);
 
+            // Email doğrulama tokeni oluştur
+            var verificationToken = Guid.NewGuid().ToString();
+            var tokenExpiry = DateTime.UtcNow.AddHours(24);
+
             // Create User
             var user = new User
             {
                 Name = dto.Name,
                 Email = dto.Email,
                 PasswordHash = hashedPassword,
-                Role = "Business"
+                Role = "Business",
+                IsActive = false,
+                IsEmailVerified = false,
+                EmailVerificationToken = verificationToken,
+                EmailVerificationTokenExpiry = tokenExpiry
             };
 
             await _userRepository.AddAsync(user);
