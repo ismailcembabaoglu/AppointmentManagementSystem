@@ -1,7 +1,7 @@
 using AppointmentManagementSystem.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace AppointmentManagementSystem.Infrastructure.Services
 {
