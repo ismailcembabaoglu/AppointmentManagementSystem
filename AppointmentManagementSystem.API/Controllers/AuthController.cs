@@ -70,5 +70,35 @@ namespace AppointmentManagementSystem.API.Controllers
                 return BadRequest(errorResponse);
             }
         }
+
+        [HttpGet("verify-email")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BaseResponse<string>>> VerifyEmail([FromQuery] string token)
+        {
+            try
+            {
+                var command = new VerifyEmailCommand { Token = token };
+                var result = await _mediator.Send(command);
+
+                var response = new BaseResponse<string>
+                {
+                    Data = "Email adresiniz başarıyla doğrulandı. Artık giriş yapabilirsiniz.",
+                    Success = result,
+                    Message = result ? "Email doğrulama başarılı" : "Email doğrulama başarısız"
+                };
+
+                return response.Success ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new BaseResponse<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Errors = new List<string> { ex.Message }
+                };
+                return BadRequest(errorResponse);
+            }
+        }
     }
 }
