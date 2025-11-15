@@ -43,6 +43,7 @@ namespace AppointmentManagementSystem.Infrastructure
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IPayTRService, PayTRService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddHttpClient<IPayTRService, PayTRService>();
 
             // Background Services
