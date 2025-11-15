@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppointmentManagementSystem.Domain.Entities
 {
@@ -40,7 +40,15 @@ namespace AppointmentManagementSystem.Domain.Entities
         public int? OwnedBusinessId { get; set; }
         public virtual Business? OwnedBusiness { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false; // Email doğrulanana kadar false
+
+        // Email Verification
+        public bool IsEmailVerified { get; set; } = false;
+        
+        [MaxLength(255)]
+        public string? EmailVerificationToken { get; set; }
+        
+        public DateTime? EmailVerificationTokenExpiry { get; set; }
 
         // Navigation properties
         public virtual ICollection<BusinessUser>? BusinessUsers { get; set; } 
