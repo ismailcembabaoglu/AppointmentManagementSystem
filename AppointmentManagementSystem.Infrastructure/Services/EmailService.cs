@@ -49,34 +49,26 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         {
             try
             {
-                using var mailMessage = new MailMessage
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_fromName, _fromEmail));
+                message.To.Add(new MailboxAddress("", toEmail));
+                message.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder
                 {
-                    From = new MailAddress(_fromEmail, _fromName),
-                    Subject = subject,
-                    Body = htmlBody,
-                    IsBodyHtml = true
+                    HtmlBody = htmlBody
                 };
+                message.Body = bodyBuilder.ToMessageBody();
 
-                mailMessage.To.Add(toEmail);
-
-                using var client = new SmtpClient(_smtpHost, _smtpPort)
-                {
-                    EnableSsl = true,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(_smtpUsername, _smtpPassword),
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    Timeout = 30000 // 30 saniye timeout
-                };
-
-                // Port 465 için özel ayar (Implicit SSL)
-                if (_smtpPort == 465)
-                {
-                    // .NET'te port 465 için MailKit kullanmak daha iyi olur
-                    // Ama standart SmtpClient ile deneme
-                    client.EnableSsl = true;
-                }
-
-                await client.SendMailAsync(mailMessage);
+                using var client = new SmtpClient();
+                
+                // Port 465 için SSL, port 587 için STARTTLS
+                var useSsl = _smtpPort == 465;
+                
+                await client.ConnectAsync(_smtpHost, _smtpPort, useSsl);
+                await client.AuthenticateAsync(_smtpUsername, _smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
             }
             catch (Exception ex)
             {
