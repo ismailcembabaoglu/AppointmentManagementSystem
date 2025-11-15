@@ -65,13 +65,21 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             // Şifre hashle
             var hashedPassword = _passwordHasher.HashPassword(request.RegisterDto.Password);
 
+            // Email doğrulama tokeni oluştur
+            var verificationToken = Guid.NewGuid().ToString();
+            var tokenExpiry = DateTime.UtcNow.AddHours(24);
+
             // Yeni kullanıcı oluştur
             var user = new User
             {
                 Name = request.RegisterDto.Name,
                 Email = request.RegisterDto.Email,
                 PasswordHash = hashedPassword,
-                Role = request.RegisterDto.Role
+                Role = request.RegisterDto.Role,
+                IsActive = false,
+                IsEmailVerified = false,
+                EmailVerificationToken = verificationToken,
+                EmailVerificationTokenExpiry = tokenExpiry
             };
 
             // Business rolü için business oluştur
