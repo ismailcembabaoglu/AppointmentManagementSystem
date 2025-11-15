@@ -197,6 +197,16 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 }
             }
 
+            // Email doğrulama maili gönder
+            try
+            {
+                await _emailService.SendEmailVerificationAsync(user.Email, user.Name, verificationToken);
+            }
+            catch (Exception ex)
+            {
+                // Email gönderilemezse kullanıcıyı bilgilendir ama kayıt devam etsin
+                Console.WriteLine($"Email gönderimi başarısız: {ex.Message}");
+            }
 
             // Generate token
             var token = _jwtTokenGenerator.GenerateToken(user);
