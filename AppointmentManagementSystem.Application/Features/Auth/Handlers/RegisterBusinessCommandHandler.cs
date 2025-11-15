@@ -18,6 +18,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailService _emailService;
 
         public RegisterBusinessCommandHandler(
             IRepository<User> userRepository,
@@ -29,7 +30,8 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             IRepository<EmployeePhoto> employeePhotoRepository,
             IPasswordHasher passwordHasher,
             IJwtTokenGenerator jwtTokenGenerator,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IEmailService emailService)
         {
             _userRepository = userRepository;
             _categoryRepository = categoryRepository;
@@ -41,6 +43,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             _passwordHasher = passwordHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
             _unitOfWork = unitOfWork;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDto> Handle(RegisterBusinessCommand request, CancellationToken cancellationToken)
