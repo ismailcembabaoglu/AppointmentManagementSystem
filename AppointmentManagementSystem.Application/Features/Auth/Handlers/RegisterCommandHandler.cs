@@ -23,13 +23,17 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IValidator<RegisterDto> _validator; // VALIDATOR EKLE
+        private readonly IEmailService _emailService;
 
         public RegisterCommandHandler(
             IRepository<User> userRepository,
             IPasswordHasher passwordHasher,
             IJwtTokenGenerator jwtTokenGenerator,
             IUnitOfWork unitOfWork,
-            IValidator<RegisterDto> validator, IRepository<Category> categoryRepository, IRepository<Business> businessRepository) // PARAMETRE EKLE
+            IValidator<RegisterDto> validator, 
+            IRepository<Category> categoryRepository, 
+            IRepository<Business> businessRepository,
+            IEmailService emailService) // PARAMETRE EKLE
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
@@ -38,6 +42,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             _validator = validator;
             _CategoryRepository = categoryRepository; // ATA
             _BusinessRepository = businessRepository;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
