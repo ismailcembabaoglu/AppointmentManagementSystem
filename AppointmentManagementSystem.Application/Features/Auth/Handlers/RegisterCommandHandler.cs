@@ -121,7 +121,18 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             await _userRepository.AddAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
-            // Token oluştur
+            // Email doğrulama maili gönder
+            try
+            {
+                await _emailService.SendEmailVerificationAsync(user.Email, user.Name, verificationToken);
+            }
+            catch (Exception ex)
+            {
+                // Email gönderilemezse kullanıcıyı bilgilendir ama kayıt devam etsin
+                Console.WriteLine($"Email gönderimi başarısız: {ex.Message}");
+            }
+
+            // Token oluştur (email doğrulanmasa bile token ver, ama IsActive false olduğu için sistemde kısıtlanacak)
             var token = _jwtTokenGenerator.GenerateToken(user);
 
             return new AuthResponseDto
