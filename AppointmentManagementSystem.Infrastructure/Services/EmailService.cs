@@ -49,14 +49,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         {
             try
             {
-                using var client = new SmtpClient(_smtpHost, _smtpPort)
-                {
-                    EnableSsl = true,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(_smtpUsername, _smtpPassword)
-                };
-
-                var mailMessage = new MailMessage
+                using var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_fromEmail, _fromName),
                     Subject = subject,
@@ -66,12 +59,31 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 mailMessage.To.Add(toEmail);
 
+                using var client = new SmtpClient(_smtpHost, _smtpPort)
+                {
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(_smtpUsername, _smtpPassword),
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    Timeout = 30000 // 30 saniye timeout
+                };
+
+                // Port 465 için özel ayar (Implicit SSL)
+                if (_smtpPort == 465)
+                {
+                    // .NET'te port 465 için MailKit kullanmak daha iyi olur
+                    // Ama standart SmtpClient ile deneme
+                    client.EnableSsl = true;
+                }
+
                 await client.SendMailAsync(mailMessage);
             }
             catch (Exception ex)
             {
-                // Log the error
+                // Detaylı hata logu
                 Console.WriteLine($"Email gönderim hatası: {ex.Message}");
+                Console.WriteLine($"Inner Exception: {ex.InnerException?.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 throw new Exception($"Email gönderilemedi: {ex.Message}", ex);
             }
         }
