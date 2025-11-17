@@ -124,7 +124,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             // Email doğrulama maili gönder
             try
             {
-                await _emailService.SendEmailVerificationAsync(user.Email, user.Name, verificationToken);
+                    await _emailService.SendEmailVerificationAsync(user.Email, user.Name, verificationToken);
             }
             catch (Exception ex)
             {

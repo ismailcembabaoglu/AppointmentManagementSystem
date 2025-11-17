@@ -1,6 +1,7 @@
 using AppointmentManagementSystem.Domain.Interfaces;
-using Microsoft.Extensions.Configuration;
 using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 
 namespace AppointmentManagementSystem.Infrastructure.Services
@@ -61,11 +62,10 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 message.Body = bodyBuilder.ToMessageBody();
 
                 using var client = new SmtpClient();
-                
+
                 // Port 465 için SSL, port 587 için STARTTLS
-                var useSsl = _smtpPort == 465;
-                
-                await client.ConnectAsync(_smtpHost, _smtpPort, useSsl);
+                client.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+                await client.ConnectAsync("aptivaplan.com.tr", 465, SecureSocketOptions.SslOnConnect);
                 await client.AuthenticateAsync(_smtpUsername, _smtpPassword);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
