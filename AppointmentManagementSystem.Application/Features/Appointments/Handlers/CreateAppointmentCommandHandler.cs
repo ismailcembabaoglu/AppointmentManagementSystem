@@ -12,21 +12,33 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IServiceRepository _serviceRepository;
         private readonly IRepository<AppointmentPhoto> _appointmentPhotoRepository;
+        private readonly IRepository<User> _userRepository;
+        private readonly IRepository<Business> _businessRepository;
+        private readonly IRepository<Employee> _employeeRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
         public CreateAppointmentCommandHandler(
             IAppointmentRepository appointmentRepository,
             IServiceRepository serviceRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IRepository<AppointmentPhoto> appointmentPhotoRepository)
+            IRepository<AppointmentPhoto> appointmentPhotoRepository,
+            IRepository<User> userRepository,
+            IRepository<Business> businessRepository,
+            IRepository<Employee> employeeRepository,
+            IEmailService emailService)
         {
             _appointmentRepository = appointmentRepository;
             _serviceRepository = serviceRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _appointmentPhotoRepository = appointmentPhotoRepository;
+            _userRepository = userRepository;
+            _businessRepository = businessRepository;
+            _employeeRepository = employeeRepository;
+            _emailService = emailService;
         }
 
         public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
