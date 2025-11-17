@@ -75,8 +75,38 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
                 }
             }
            
-          
             var appointmentWithDetails = await _appointmentRepository.GetByIdWithDetailsAsync(appointment.Id);
+
+            // Email gönder
+            try
+            {
+                var customer = await _userRepository.GetByIdAsync(appointment.CustomerId);
+                var business = await _businessRepository.GetByIdAsync(appointment.BusinessId);
+                var employee = appointment.EmployeeId.HasValue 
+                    ? await _employeeRepository.GetByIdAsync(appointment.EmployeeId.Value) 
+                    : null;
+
+                if (customer != null && business != null && service != null)
+                {
+                    await _emailService.SendAppointmentConfirmationAsync(
+                        customer.Email,
+                        customer.Name,
+                        business.Name,
+                        service.Name,
+                        appointment.AppointmentDate,
+                        appointment.StartTime,
+                        appointment.EndTime,
+                        employee?.Name,
+                        appointment.Notes
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                // Email gönderilemezse log'la ama randevu oluşturma devam etsin
+                Console.WriteLine($"Randevu email'i gönderilemedi: {ex.Message}");
+            }
+
             return _mapper.Map<AppointmentDto>(appointmentWithDetails);
         }
     }
