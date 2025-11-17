@@ -68,6 +68,20 @@ namespace AppointmentManagementSystem.BlazorUI.Services
             }
         }
 
+        public async Task<ApiResponse<string>> VerifyEmailAsync(string token)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/auth/verify-email?token={token}");
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+                return result ?? new ApiResponse<string> { Success = false, Message = "Bilinmeyen hata" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<string> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+        }
+
         public async Task<ApiResponse<string>> GetProtectedDataAsync()
         {
             await AddAuthorizationHeader();
