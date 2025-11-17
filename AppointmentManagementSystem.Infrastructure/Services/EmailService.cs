@@ -45,6 +45,31 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
+        public async Task SendAppointmentConfirmationAsync(
+            string toEmail, 
+            string customerName, 
+            string businessName, 
+            string serviceName, 
+            DateTime appointmentDate, 
+            TimeSpan startTime, 
+            TimeSpan endTime,
+            string? employeeName,
+            string? notes)
+        {
+            var subject = $"Randevu Onayı - {businessName}";
+            var body = GetAppointmentConfirmationTemplate(
+                customerName, 
+                businessName, 
+                serviceName, 
+                appointmentDate, 
+                startTime, 
+                endTime, 
+                employeeName, 
+                notes);
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
+
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
             try
