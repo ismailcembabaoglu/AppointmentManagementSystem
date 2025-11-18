@@ -90,102 +90,84 @@
     </RadzenBody>
 
     <!-- Modern Footer -->
-    <RadzenFooter class="landing-footer">
+    <footer class="landing-footer">
         <!-- Decorative Background -->
         <div class="footer-decoration"></div>
         
         <div class="footer-container">
-            <RadzenRow Gap="32px" class="footer-main-row">
+            <div class="footer-grid">
                 <!-- Company Info -->
-                <RadzenColumn Size="12" SizeMD="6" SizeLG="4" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
-                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
-                            <div class="footer-brand-icon">
-                                <RadzenIcon Icon="event_available" Style="font-size: 24px;" />
-                            </div>
-                            <RadzenText TextStyle="TextStyle.H5" class="footer-brand-text">
-                                Aptiva Plan
-                            </RadzenText>
-                        </RadzenStack>
-                        <RadzenText class="footer-description">
-                            Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterilerinize 7/24 online randevu imkanı sunun.
-                        </RadzenText>
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" class="social-icons-container">
-                            <div class="social-icon">
-                                <RadzenIcon Icon="facebook" Style="font-size: 20px;" />
-                            </div>
-                            <div class="social-icon">
-                                <RadzenIcon Icon="mail" Style="font-size: 20px;" />
-                            </div>
-                            <div class="social-icon">
-                                <RadzenIcon Icon="phone" Style="font-size: 20px;" />
-                            </div>
-                        </RadzenStack>
-                    </RadzenStack>
-                </RadzenColumn>
+                <div class="footer-col footer-col-brand">
+                    <div class="footer-brand">
+                        <div class="footer-brand-icon">
+                            <RadzenIcon Icon="event_available" Style="font-size: 24px;" />
+                        </div>
+                        <h5 class="footer-brand-text">Aptiva Plan</h5>
+                    </div>
+                    <p class="footer-description">
+                        Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterilerinize 7/24 online randevu imkanı sunun.
+                    </p>
+                    <div class="social-icons-container">
+                        <div class="social-icon">
+                            <RadzenIcon Icon="facebook" Style="font-size: 20px;" />
+                        </div>
+                        <div class="social-icon">
+                            <RadzenIcon Icon="mail" Style="font-size: 20px;" />
+                        </div>
+                        <div class="social-icon">
+                            <RadzenIcon Icon="phone" Style="font-size: 20px;" />
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Quick Links -->
-                <RadzenColumn Size="6" SizeMD="3" SizeLG="2" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            Hızlı Linkler
-                        </RadzenText>
+                <div class="footer-col">
+                    <h6 class="footer-heading">Hızlı Linkler</h6>
+                    <nav class="footer-nav">
                         <span @onclick="@(() => ScrollToSection("#features"))" class="footer-link">Özellikler</span>
                         <span @onclick="@(() => ScrollToSection("#how-it-works"))" class="footer-link">Nasıl Çalışır</span>
                         <span @onclick="@(() => ScrollToSection("#categories"))" class="footer-link">Kategoriler</span>
                         <a href="/login" class="footer-link">Giriş Yap</a>
-                    </RadzenStack>
-                </RadzenColumn>
+                    </nav>
+                </div>
 
                 <!-- Company -->
-                <RadzenColumn Size="6" SizeMD="3" SizeLG="2" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            Şirket
-                        </RadzenText>
+                <div class="footer-col">
+                    <h6 class="footer-heading">Şirket</h6>
+                    <nav class="footer-nav">
                         <a href="/register" class="footer-link">İşletme Kaydı</a>
                         <a href="#" class="footer-link">Hakkımızda</a>
                         <a href="#" class="footer-link">Blog</a>
                         <a href="#" class="footer-link">Kariyer</a>
-                    </RadzenStack>
-                </RadzenColumn>
+                    </nav>
+                </div>
 
                 <!-- Contact -->
-                <RadzenColumn Size="12" SizeMD="6" SizeLG="4" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            İletişim
-                        </RadzenText>
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="email" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    info@aptivaplan.com
-                                </RadzenText>
-                            </RadzenStack>
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="phone" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    0850 123 45 67
-                                </RadzenText>
-                            </RadzenStack>
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="location_on" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    İstanbul, Türkiye
-                                </RadzenText>
-                            </RadzenStack>
-                        </RadzenStack>
-                    </RadzenStack>
-                </RadzenColumn>
-            </RadzenRow>
+                <div class="footer-col footer-col-contact">
+                    <h6 class="footer-heading">İletişim</h6>
+                    <div class="contact-list">
+                        <div class="contact-item">
+                            <RadzenIcon Icon="email" Style="flex-shrink: 0;" />
+                            <span>info@aptivaplan.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <RadzenIcon Icon="phone" Style="flex-shrink: 0;" />
+                            <span>0850 123 45 67</span>
+                        </div>
+                        <div class="contact-item">
+                            <RadzenIcon Icon="location_on" Style="flex-shrink: 0;" />
+                            <span>İstanbul, Türkiye</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <RadzenDivider class="footer-divider" />
+            <div class="footer-divider"></div>
 
             <div class="footer-bottom">
-                <RadzenText class="footer-copyright">
+                <p class="footer-copyright">
                     © 2025 Aptiva Plan. Tüm hakları saklıdır.
-                </RadzenText>
+                </p>
                 <div class="footer-legal-links">
                     <a href="#" class="legal-link">Gizlilik Politikası</a>
                     <a href="#" class="legal-link">Kullanım Şartları</a>
@@ -193,7 +175,7 @@
                 </div>
             </div>
         </div>
-    </RadzenFooter>
+    </footer>
 </RadzenLayout>
 
 <style>
@@ -477,15 +459,13 @@
         }
     }
 
-    /* Footer Styles */
+    /* Footer Styles - Completely Redesigned */
     .landing-footer {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         color: white;
-        padding: 60px 20px 20px;
+        padding: 60px 0 20px;
         position: relative;
         overflow: hidden;
-        margin-top: 0;
-        max-width: 100vw;
         width: 100%;
     }
 
@@ -498,26 +478,35 @@
         background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), 
                     radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
         pointer-events: none;
+        z-index: 0;
     }
 
     .footer-container {
         max-width: 1400px;
         margin: 0 auto;
-        position: relative;
         padding: 0 20px;
-        width: 100%;
-        box-sizing: border-box;
+        position: relative;
+        z-index: 1;
     }
 
-    .footer-main-row {
-        margin-bottom: 32px;
-        margin-left: -16px;
-        margin-right: -16px;
+    .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 40px;
+        margin-bottom: 40px;
     }
 
     .footer-col {
-        padding: 0 16px;
-        margin-bottom: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
     }
 
     .footer-brand-icon {
@@ -534,6 +523,7 @@
     .footer-brand-text {
         margin: 0;
         font-weight: 700;
+        font-size: 22px;
         color: white;
     }
 
@@ -545,6 +535,8 @@
     }
 
     .social-icons-container {
+        display: flex;
+        gap: 12px;
         flex-wrap: wrap;
     }
 
@@ -557,8 +549,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s;
-        flex-shrink: 0;
+        transition: all 0.3s ease;
     }
 
     .social-icon:hover {
@@ -567,19 +558,26 @@
     }
 
     .footer-heading {
-        margin: 0;
+        margin: 0 0 12px 0;
         font-weight: 600;
-        margin-bottom: 8px;
+        font-size: 18px;
         color: white;
+    }
+
+    .footer-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .footer-link {
         color: rgba(255,255,255,0.7);
         text-decoration: none;
         font-size: 15px;
-        transition: all 0.3s;
-        display: inline-block;
+        transition: all 0.3s ease;
+        display: block;
         cursor: pointer;
+        width: fit-content;
     }
 
     .footer-link:hover {
@@ -587,21 +585,29 @@
         transform: translateX(5px);
     }
 
-    .contact-item {
-        flex-wrap: nowrap;
-        align-items: flex-start;
+    .contact-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
     }
 
-    .contact-text {
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
         color: rgba(255,255,255,0.75);
-        margin: 0;
+        font-size: 15px;
         line-height: 1.5;
+    }
+
+    .contact-item span {
         word-break: break-word;
     }
 
     .footer-divider {
-        margin: 32px 0;
+        height: 1px;
         background: rgba(255,255,255,0.15);
+        margin: 40px 0 30px;
     }
 
     .footer-bottom {
@@ -610,7 +616,7 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 20px;
-        padding: 20px 0;
+        padding-bottom: 10px;
     }
 
     .footer-copyright {
@@ -629,36 +635,43 @@
         color: rgba(255,255,255,0.5);
         text-decoration: none;
         font-size: 14px;
-        transition: color 0.3s;
+        transition: color 0.3s ease;
+        white-space: nowrap;
     }
 
     .legal-link:hover {
         color: rgba(255,255,255,0.9);
     }
 
-    /* Mobile Footer Adjustments */
+    /* Tablet Responsive */
+    @@media (max-width: 992px) {
+        .footer-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 35px;
+        }
+
+        .footer-col-brand {
+            grid-column: 1 / -1;
+        }
+    }
+
+    /* Mobile Responsive */
     @@media (max-width: 768px) {
         .landing-footer {
-            padding: 40px 16px 20px;
+            padding: 45px 0 20px;
         }
 
         .footer-container {
-            padding: 0 8px;
+            padding: 0 20px;
         }
 
-        .footer-main-row {
-            margin-left: 0;
-            margin-right: 0;
+        .footer-grid {
+            grid-template-columns: 1fr;
+            gap: 35px;
         }
 
-        .footer-col {
-            padding: 0 8px;
-            margin-bottom: 40px;
-        }
-
-        .footer-brand-icon {
-            width: 40px;
-            height: 40px;
+        .footer-col-brand {
+            grid-column: 1;
         }
 
         .footer-brand-text {
@@ -671,13 +684,14 @@
 
         .footer-heading {
             font-size: 16px;
+            margin-bottom: 10px;
         }
 
         .footer-link {
             font-size: 14px;
         }
 
-        .contact-text {
+        .contact-item {
             font-size: 14px;
         }
 
@@ -689,26 +703,27 @@
 
         .footer-legal-links {
             flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .legal-link {
-            font-size: 13px;
-        }
-
-        .social-icons-container {
-            justify-content: flex-start;
+            gap: 10px;
         }
     }
 
+    /* Small Mobile */
     @@media (max-width: 480px) {
         .landing-footer {
-            padding: 30px 12px 16px;
+            padding: 35px 0 15px;
         }
 
-        .footer-col {
-            margin-bottom: 32px;
+        .footer-container {
+            padding: 0 16px;
+        }
+
+        .footer-grid {
+            gap: 30px;
+        }
+
+        .footer-brand-icon {
+            width: 40px;
+            height: 40px;
         }
 
         .footer-brand-text {
@@ -724,7 +739,8 @@
             font-size: 15px;
         }
 
-        .footer-link {
+        .footer-link,
+        .contact-item {
             font-size: 13px;
         }
 
@@ -733,12 +749,13 @@
             height: 36px;
         }
 
-        .footer-copyright {
+        .footer-copyright,
+        .legal-link {
             font-size: 12px;
         }
 
-        .legal-link {
-            font-size: 12px;
+        .footer-divider {
+            margin: 30px 0 20px;
         }
     }
 </style>
