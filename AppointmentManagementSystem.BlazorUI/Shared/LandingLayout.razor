@@ -98,94 +98,76 @@
             <div class="footer-grid">
                 <!-- Company Info -->
                 <div class="footer-col footer-col-brand">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
-                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
-                            <div class="footer-brand-icon">
-                                <RadzenIcon Icon="event_available" Style="font-size: 24px;" />
-                            </div>
-                            <RadzenText TextStyle="TextStyle.H5" class="footer-brand-text">
-                                Aptiva Plan
-                            </RadzenText>
-                        </RadzenStack>
-                        <RadzenText class="footer-description">
-                            Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterilerinize 7/24 online randevu imkanı sunun.
-                        </RadzenText>
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" class="social-icons-container">
-                            <div class="social-icon">
-                                <RadzenIcon Icon="facebook" Style="font-size: 20px;" />
-                            </div>
-                            <div class="social-icon">
-                                <RadzenIcon Icon="mail" Style="font-size: 20px;" />
-                            </div>
-                            <div class="social-icon">
-                                <RadzenIcon Icon="phone" Style="font-size: 20px;" />
-                            </div>
-                        </RadzenStack>
-                    </RadzenStack>
-                </RadzenColumn>
+                    <div class="footer-brand">
+                        <div class="footer-brand-icon">
+                            <RadzenIcon Icon="event_available" Style="font-size: 24px;" />
+                        </div>
+                        <h5 class="footer-brand-text">Aptiva Plan</h5>
+                    </div>
+                    <p class="footer-description">
+                        Modern randevu yönetim sistemi ile işletmenizi dijitalleştirin. Müşterilerinize 7/24 online randevu imkanı sunun.
+                    </p>
+                    <div class="social-icons-container">
+                        <div class="social-icon">
+                            <RadzenIcon Icon="facebook" Style="font-size: 20px;" />
+                        </div>
+                        <div class="social-icon">
+                            <RadzenIcon Icon="mail" Style="font-size: 20px;" />
+                        </div>
+                        <div class="social-icon">
+                            <RadzenIcon Icon="phone" Style="font-size: 20px;" />
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Quick Links -->
-                <RadzenColumn Size="6" SizeMD="3" SizeLG="2" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            Hızlı Linkler
-                        </RadzenText>
+                <div class="footer-col">
+                    <h6 class="footer-heading">Hızlı Linkler</h6>
+                    <nav class="footer-nav">
                         <span @onclick="@(() => ScrollToSection("#features"))" class="footer-link">Özellikler</span>
                         <span @onclick="@(() => ScrollToSection("#how-it-works"))" class="footer-link">Nasıl Çalışır</span>
                         <span @onclick="@(() => ScrollToSection("#categories"))" class="footer-link">Kategoriler</span>
                         <a href="/login" class="footer-link">Giriş Yap</a>
-                    </RadzenStack>
-                </RadzenColumn>
+                    </nav>
+                </div>
 
                 <!-- Company -->
-                <RadzenColumn Size="6" SizeMD="3" SizeLG="2" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            Şirket
-                        </RadzenText>
+                <div class="footer-col">
+                    <h6 class="footer-heading">Şirket</h6>
+                    <nav class="footer-nav">
                         <a href="/register" class="footer-link">İşletme Kaydı</a>
                         <a href="#" class="footer-link">Hakkımızda</a>
                         <a href="#" class="footer-link">Blog</a>
                         <a href="#" class="footer-link">Kariyer</a>
-                    </RadzenStack>
-                </RadzenColumn>
+                    </nav>
+                </div>
 
                 <!-- Contact -->
-                <RadzenColumn Size="12" SizeMD="6" SizeLG="4" class="footer-col">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
-                        <RadzenText TextStyle="TextStyle.H6" class="footer-heading">
-                            İletişim
-                        </RadzenText>
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="email" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    info@aptivaplan.com
-                                </RadzenText>
-                            </RadzenStack>
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="phone" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    0850 123 45 67
-                                </RadzenText>
-                            </RadzenStack>
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start" class="contact-item">
-                                <RadzenIcon Icon="location_on" Style="margin-top: 2px; opacity: 0.8; flex-shrink: 0;" />
-                                <RadzenText class="contact-text">
-                                    İstanbul, Türkiye
-                                </RadzenText>
-                            </RadzenStack>
-                        </RadzenStack>
-                    </RadzenStack>
-                </RadzenColumn>
-            </RadzenRow>
+                <div class="footer-col footer-col-contact">
+                    <h6 class="footer-heading">İletişim</h6>
+                    <div class="contact-list">
+                        <div class="contact-item">
+                            <RadzenIcon Icon="email" Style="flex-shrink: 0;" />
+                            <span>info@aptivaplan.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <RadzenIcon Icon="phone" Style="flex-shrink: 0;" />
+                            <span>0850 123 45 67</span>
+                        </div>
+                        <div class="contact-item">
+                            <RadzenIcon Icon="location_on" Style="flex-shrink: 0;" />
+                            <span>İstanbul, Türkiye</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <RadzenDivider class="footer-divider" />
+            <div class="footer-divider"></div>
 
             <div class="footer-bottom">
-                <RadzenText class="footer-copyright">
+                <p class="footer-copyright">
                     © 2025 Aptiva Plan. Tüm hakları saklıdır.
-                </RadzenText>
+                </p>
                 <div class="footer-legal-links">
                     <a href="#" class="legal-link">Gizlilik Politikası</a>
                     <a href="#" class="legal-link">Kullanım Şartları</a>
@@ -193,7 +175,7 @@
                 </div>
             </div>
         </div>
-    </RadzenFooter>
+    </footer>
 </RadzenLayout>
 
 <style>
