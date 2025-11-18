@@ -862,3 +862,11 @@ AppointmentManagementSystem.API/wwwroot/blazor/
 # Environment files
 *.env
 *.env.*
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
