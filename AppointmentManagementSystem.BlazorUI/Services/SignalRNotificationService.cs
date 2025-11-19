@@ -61,8 +61,14 @@ namespace AppointmentManagementSystem.BlazorUI.Services
                     .WithUrl(hubUrl, options =>
                     {
                         options.AccessTokenProvider = () => Task.FromResult<string?>(token);
+                        options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets | 
+                                            Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
                     })
                     .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
+                    .ConfigureLogging(logging =>
+                    {
+                        logging.SetMinimumLevel(LogLevel.Information);
+                    })
                     .Build();
 
                 // Event handlers
