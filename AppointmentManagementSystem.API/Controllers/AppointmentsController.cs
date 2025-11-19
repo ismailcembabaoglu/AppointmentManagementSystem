@@ -76,6 +76,9 @@ namespace AppointmentManagementSystem.API.Controllers
             if (result == null)
                 return ErrorResponse<AppointmentDto>("Randevu bulunamadı.", new List<string> { "Geçersiz randevu ID" });
 
+            // SignalR ile durum değişikliği bildirimi gönder
+            await _notificationService.NotifyAppointmentStatusChanged(result, result.CustomerId, result.BusinessId);
+
             return OkResponse(result, "Randevu durumu başarıyla güncellendi.");
         }
 
