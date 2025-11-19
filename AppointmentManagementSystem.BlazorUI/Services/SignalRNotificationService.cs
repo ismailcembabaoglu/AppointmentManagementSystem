@@ -33,18 +33,29 @@ namespace AppointmentManagementSystem.BlazorUI.Services
 
             try
             {
-                var token = await _localStorage.GetItemAsStringAsync("authToken");
+                string? token = null;
+                try
+                {
+                    token = await _localStorage.GetItemAsStringAsync("authToken");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SignalR: Error getting token from localStorage: {ex.Message}");
+                }
+
                 if (string.IsNullOrEmpty(token))
                 {
-                    Console.WriteLine("No auth token found. Cannot start SignalR connection.");
+                    Console.WriteLine("SignalR: No auth token found. Cannot start connection.");
                     return;
                 }
 
                 // Token'dan tırnak işaretlerini temizle
-                token = token.Replace("\"", "");
+                token = token.Replace("\"", "").Trim();
 
                 var apiBaseUrl = _configuration["ApiBaseUrl"] ?? "https://hub.aptivaplan.com.tr";
                 var hubUrl = $"{apiBaseUrl}/notificationHub";
+                
+                Console.WriteLine($"SignalR: Attempting to connect to {hubUrl}");
 
                 _hubConnection = new HubConnectionBuilder()
                     .WithUrl(hubUrl, options =>
