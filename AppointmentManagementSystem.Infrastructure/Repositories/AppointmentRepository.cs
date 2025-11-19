@@ -13,25 +13,37 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
 
         public async Task<IEnumerable<Appointment>> GetByCustomerAsync(int customerId)
         {
+            // Son 6 ayın randevularını al
+            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
+            
             return await _dbSet
+                .AsNoTracking() // ⚡ Performans iyileştirmesi
                 .Include(a => a.Customer)
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
-                .Include(a => a.Photos)
-                .Where(a => a.CustomerId == customerId && !a.IsDeleted) // ISDELETED EKLENDİ
+                // Photos kaldırıldı
+                .Where(a => a.CustomerId == customerId && !a.IsDeleted && a.AppointmentDate >= sixMonthsAgo)
+                .OrderByDescending(a => a.AppointmentDate)
+                .Take(200) // ⚡ Maksimum 200 kayıt
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Appointment>> GetByBusinessAsync(int businessId)
         {
+            // Son 6 ayın randevularını al
+            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
+            
             return await _dbSet
+                .AsNoTracking() // ⚡ Performans iyileştirmesi
                 .Include(a => a.Customer)
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
-                .Include(a => a.Photos)
-                .Where(a => a.BusinessId == businessId && !a.IsDeleted) // ISDELETED EKLENDİ
+                // Photos kaldırıldı
+                .Where(a => a.BusinessId == businessId && !a.IsDeleted && a.AppointmentDate >= sixMonthsAgo)
+                .OrderByDescending(a => a.AppointmentDate)
+                .Take(500) // ⚡ Maksimum 500 kayıt
                 .ToListAsync();
         }
 
