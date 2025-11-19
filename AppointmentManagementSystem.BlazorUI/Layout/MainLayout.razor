@@ -1056,7 +1056,6 @@
     private int notificationCount = 0;
     private int previousNotificationCount = 0;
     private List<AppointmentDto> notificationAppointments = new();
-    private System.Threading.Timer? notificationTimer;
     private string userRole = "";
     private int currentUserId = 0;
     private int? currentBusinessId = null;
@@ -1102,19 +1101,71 @@
                 }
             }
 
-            // Load notifications immediately
+            // Load notifications immediately (initial load)
             await LoadNotifications();
 
-            // Set up periodic check (every 30 seconds)
-            notificationTimer = new System.Threading.Timer(async _ =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await LoadNotifications();
-                    StateHasChanged();
-                });
-            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            // *** SignalR ile Real-time bildirimleri dinle ***
+            await InitializeSignalR();
         }
+    }
+
+    private async Task InitializeSignalR()
+    {
+        try
+        {
+            // SignalR event'lerini dinle
+            SignalRService.OnAppointmentCreated += HandleAppointmentCreated;
+            SignalRService.OnAppointmentStatusChanged += HandleAppointmentStatusChanged;
+            SignalRService.OnAppointmentDeleted += HandleAppointmentDeleted;
+            SignalRService.OnConnectionStateChanged += HandleConnectionStateChanged;
+
+            // SignalR bağlantısını başlat
+            await SignalRService.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR initialization error: {ex.Message}");
+        }
+    }
+
+    private async void HandleAppointmentCreated(AppointmentDto appointment)
+    {
+        await InvokeAsync(async () =>
+        {
+            // Bildirimleri yeniden yükle
+            await LoadNotifications();
+            await PlayNotificationSound();
+            StateHasChanged();
+        });
+    }
+
+    private async void HandleAppointmentStatusChanged(AppointmentDto appointment)
+    {
+        await InvokeAsync(async () =>
+        {
+            // Bildirimleri yeniden yükle
+            await LoadNotifications();
+            await PlayNotificationSound();
+            StateHasChanged();
+        });
+    }
+
+    private async void HandleAppointmentDeleted(int appointmentId)
+    {
+        await InvokeAsync(async () =>
+        {
+            // Bildirimleri yeniden yükle
+            await LoadNotifications();
+            StateHasChanged();
+        });
+    }
+
+    private void HandleConnectionStateChanged()
+    {
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
