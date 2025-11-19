@@ -43,8 +43,8 @@ builder.Services.AddScoped<IDocumentApiService, DocumentApiService>();
 builder.Services.AddScoped<IPaymentApiService, PaymentApiService>();
 builder.Services.AddScoped<IAdminApiService, AdminApiService>();
 
-// SignalR Notification Service
-builder.Services.AddSingleton<SignalRNotificationService>();
+// SignalR Notification Service (Scoped olarak değiştirdik)
+builder.Services.AddScoped<SignalRNotificationService>();
 
 // Authentication
 builder.Services.AddAuthorizationCore();
