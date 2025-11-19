@@ -1255,28 +1255,51 @@
     {
         try
         {
+            // Timeout için CancellationToken
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            
             if (userRole == "Business" && currentBusinessId.HasValue)
             {
                 // Business: Get pending appointments
                 var response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: currentBusinessId.Value);
+                
                 if (response.Success && response.Data != null)
                 {
+                    // Sadece pending olanları al ve maksimum 50 tane ile sınırla
                     notificationAppointments = response.Data
                         .Where(a => a.Status == "Pending")
                         .OrderByDescending(a => a.AppointmentDate)
+                        .Take(50)
                         .ToList();
+                    
+                    Console.WriteLine($"Loaded {notificationAppointments.Count} pending appointments for business");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to load appointments: {response.Message}");
+                    notificationAppointments = new List<AppointmentDto>();
                 }
             }
             else if (userRole == "Customer")
             {
                 // Customer: Get confirmed appointments
                 var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
+                
                 if (response.Success && response.Data != null)
                 {
+                    // Sadece confirmed olanları al ve maksimum 50 tane ile sınırla
                     notificationAppointments = response.Data
                         .Where(a => a.Status == "Confirmed")
                         .OrderByDescending(a => a.AppointmentDate)
+                        .Take(50)
                         .ToList();
+                    
+                    Console.WriteLine($"Loaded {notificationAppointments.Count} confirmed appointments for customer");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to load appointments: {response.Message}");
+                    notificationAppointments = new List<AppointmentDto>();
                 }
             }
 
@@ -1292,10 +1315,24 @@
             previousNotificationCount = newCount;
             notificationCount = newCount;
         }
+        catch (TaskCanceledException)
+        {
+            Console.WriteLine("Notification load timeout - request took too long");
+            notificationAppointments = new List<AppointmentDto>();
+            notificationCount = 0;
+        }
+        catch (HttpRequestException httpEx)
+        {
+            Console.WriteLine($"Network error loading notifications: {httpEx.Message}");
+            notificationAppointments = new List<AppointmentDto>();
+            notificationCount = 0;
+        }
         catch (Exception ex)
         {
-            // Silently fail - don't interrupt user experience
             Console.WriteLine($"Notification load error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            notificationAppointments = new List<AppointmentDto>();
+            notificationCount = 0;
         }
     }
 
