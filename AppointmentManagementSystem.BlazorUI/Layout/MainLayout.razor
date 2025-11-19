@@ -1113,6 +1113,13 @@
     {
         try
         {
+            // Sadece authenticated kullanıcılar için SignalR'ı başlat
+            if (currentUser?.Identity?.IsAuthenticated != true)
+            {
+                Console.WriteLine("SignalR: User not authenticated, skipping initialization");
+                return;
+            }
+
             // SignalR event'lerini dinle
             SignalRService.OnAppointmentCreated += HandleAppointmentCreated;
             SignalRService.OnAppointmentStatusChanged += HandleAppointmentStatusChanged;
@@ -1120,11 +1127,14 @@
             SignalRService.OnConnectionStateChanged += HandleConnectionStateChanged;
 
             // SignalR bağlantısını başlat
+            Console.WriteLine("SignalR: Starting connection...");
             await SignalRService.StartAsync();
+            Console.WriteLine($"SignalR: Connection state - {(SignalRService.IsConnected ? "Connected" : "Disconnected")}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"SignalR initialization error: {ex.Message}");
+            Console.WriteLine($"SignalR stack trace: {ex.StackTrace}");
         }
     }
 
