@@ -155,4 +155,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// SignalR Hub endpoint
+app.MapHub<NotificationHub>("/notificationHub");
+
 app.Run();
