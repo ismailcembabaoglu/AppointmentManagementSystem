@@ -52,6 +52,13 @@ namespace AppointmentManagementSystem.API.Controllers
         {
             var command = new CreateAppointmentCommand { CreateAppointmentDto = createAppointmentDto };
             var result = await _mediator.Send(command);
+            
+            // SignalR ile bildirim gönder
+            if (result != null)
+            {
+                await _notificationService.NotifyAppointmentCreated(result, result.CustomerId, result.BusinessId);
+            }
+            
             return OkResponse(result, "Randevu başarıyla oluşturuldu.");
         }
 
