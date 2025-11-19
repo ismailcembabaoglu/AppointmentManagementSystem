@@ -104,11 +104,21 @@ namespace AppointmentManagementSystem.API.Controllers
         [Authorize(Roles = "Customer,Business,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
+            // Önce randevuyu al (bildirim için bilgilere ihtiyacımız var)
+            var getQuery = new GetAppointmentByIdQuery { Id = id };
+            var appointment = await _mediator.Send(getQuery);
+            
             var command = new DeleteAppointmentCommand { Id = id };
             var result = await _mediator.Send(command);
 
             if (!result)
                 return ErrorResponse<bool>("Randevu bulunamadı.", new List<string> { "Geçersiz randevu ID" });
+
+            // SignalR ile silme bildirimi gönder
+            if (appointment != null)
+            {
+                await _notificationService.NotifyAppointmentDeleted(id, appointment.CustomerId, appointment.BusinessId);
+            }
 
             return OkResponse(result, "Randevu başarıyla silindi.");
         }
