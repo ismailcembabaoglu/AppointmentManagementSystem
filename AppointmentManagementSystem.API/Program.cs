@@ -96,7 +96,13 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// CORS - Blazor için özel yapılandırma
+// SignalR
+builder.Services.AddSignalR();
+
+// Notification Service
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// CORS - Blazor için özel yapılandırma (SignalR için güncellenmiş)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazor",
@@ -111,7 +117,8 @@ builder.Services.AddCors(options =>
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials(); // Authorization header için gerekli
+            .AllowCredentials() // Authorization header ve SignalR için gerekli
+            .WithExposedHeaders("*");
         });
 });
 
