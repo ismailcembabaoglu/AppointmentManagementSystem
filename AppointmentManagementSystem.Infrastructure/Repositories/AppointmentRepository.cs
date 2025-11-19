@@ -42,7 +42,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
-                .Include(a => a.Photos)
+                // Photos kaldırıldı - çok büyük veri çekiyor ve gereksiz
                 .AsQueryable();
 
             if (customerId.HasValue)
