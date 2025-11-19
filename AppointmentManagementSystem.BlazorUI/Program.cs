@@ -12,6 +12,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// Configuration for API Base URL
+builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+{
+    { "ApiBaseUrl", "https://hub.aptivaplan.com.tr" }
+});
+
 // Local Storage (diğer servislerden önce ekle)
 builder.Services.AddBlazoredLocalStorage();
 
