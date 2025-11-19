@@ -69,7 +69,7 @@
         if (confirmed == true)
         {
             var success = await AdminApiService.DeleteEmployeeAsync(employeeId);
-            if (success)
+            if (success.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Çalışan silindi.");
                 await LoadEmployeesAsync();

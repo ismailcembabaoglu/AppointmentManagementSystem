@@ -48,10 +48,10 @@
             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
                 <RadzenIcon Icon="trending_up" /> Aylık Gelir Trendi
             </RadzenText>
-            @if (reportsData.RevenueByMonth.Any())
+            @if (reportsData.Data?.RevenueByMonth?.Count>0)
             {
                 <RadzenChart>
-                    <RadzenColumnSeries Data="@reportsData.RevenueByMonth" CategoryProperty="Month" ValueProperty="Revenue" Title="Gelir (TL)">
+                    <RadzenColumnSeries Data="@reportsData.Data?.RevenueByMonth" CategoryProperty="Month" ValueProperty="Revenue" Title="Gelir (TL)">
                         <RadzenSeriesDataLabels Visible="true" />
                     </RadzenColumnSeries>
                     <RadzenColumnOptions Radius="5" />
@@ -63,12 +63,12 @@
                 </RadzenChart>
 
                 <!-- Revenue Table -->
-                <RadzenDataGrid Data="@reportsData.RevenueByMonth" TItem="RevenueByMonthModel" AllowPaging="false" Class="rz-mt-4">
+                <RadzenDataGrid Data="@reportsData.Data?.RevenueByMonth" TItem="RevenueByMonthModel" AllowPaging="false" Class="rz-mt-4">
                     <Columns>
                         <RadzenDataGridColumn TItem="RevenueByMonthModel" Property="Month" Title="Ay" />
                         <RadzenDataGridColumn TItem="RevenueByMonthModel" Title="Gelir">
                             <Template Context="data">
-                                @data.Revenue.ToString("C")
+                                @data.Revenue?.ToString("C")
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="RevenueByMonthModel" Property="PaymentCount" Title="Ödeme Sayısı" />
@@ -86,24 +86,24 @@
             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
                 <RadzenIcon Icon="pie_chart" /> Randevu Durum Dağılımı
             </RadzenText>
-            @if (reportsData.AppointmentsByStatus.Any())
+            @if (reportsData.Data?.AppointmentsByStatus?.Count>0)
             {
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="6">
                         <RadzenChart>
-                            <RadzenPieSeries Data="@reportsData.AppointmentsByStatus" CategoryProperty="Status" ValueProperty="Count" Title="Randevular">
+                            <RadzenPieSeries Data="@reportsData.Data?.AppointmentsByStatus" CategoryProperty="Status" ValueProperty="Count" Title="Randevular">
                                 <RadzenSeriesDataLabels Visible="true" />
                             </RadzenPieSeries>
                         </RadzenChart>
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="6">
-                        <RadzenDataGrid Data="@reportsData.AppointmentsByStatus" TItem="AppointmentsByStatusModel" AllowPaging="false">
+                        <RadzenDataGrid Data="@reportsData.Data?.AppointmentsByStatus" TItem="AppointmentsByStatusModel" AllowPaging="false">
                             <Columns>
                                 <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Property="Status" Title="Durum" />
                                 <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Property="Count" Title="Adet" />
                                 <RadzenDataGridColumn TItem="AppointmentsByStatusModel" Title="Yüzde">
                                     <Template Context="data">
-                                        %@data.Percentage.ToString("0.00")
+                                        %@data.Percentage?.ToString("0.00")
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>
@@ -122,10 +122,10 @@
             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
                 <RadzenIcon Icon="star" /> En Başarılı İşletmeler (Gelir Bazlı)
             </RadzenText>
-            @if (reportsData.TopBusinesses.Any())
+            @if (reportsData.Data?.TopBusinesses?.Count>0)
             {
                 <RadzenChart>
-                    <RadzenBarSeries Data="@reportsData.TopBusinesses" CategoryProperty="BusinessName" ValueProperty="TotalRevenue" Title="Gelir (TL)">
+                    <RadzenBarSeries Data="@reportsData.Data?.TopBusinesses" CategoryProperty="BusinessName" ValueProperty="TotalRevenue" Title="Gelir (TL)">
                         <RadzenSeriesDataLabels Visible="true" />
                     </RadzenBarSeries>
                     <RadzenValueAxis Formatter="@FormatCurrency">
@@ -135,13 +135,13 @@
                     <RadzenLegend Visible="false" />
                 </RadzenChart>
 
-                <RadzenDataGrid Data="@reportsData.TopBusinesses" TItem="TopBusinessesModel" AllowPaging="false" Class="rz-mt-4">
+                <RadzenDataGrid Data="@reportsData.Data?.TopBusinesses" TItem="TopBusinessesModel" AllowPaging="false" Class="rz-mt-4">
                     <Columns>
                         <RadzenDataGridColumn TItem="TopBusinessesModel" Property="BusinessName" Title="İşletme" />
                         <RadzenDataGridColumn TItem="TopBusinessesModel" Property="TotalAppointments" Title="Toplam Randevu" />
                         <RadzenDataGridColumn TItem="TopBusinessesModel" Title="Toplam Gelir">
                             <Template Context="data">
-                                @data.TotalRevenue.ToString("C")
+                                @data.TotalRevenue?.ToString("C")
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="TopBusinessesModel" Title="Ortalama Puan">
@@ -163,9 +163,9 @@
             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
                 <RadzenIcon Icon="trending_up" /> En Çok Tercih Edilen Hizmetler
             </RadzenText>
-            @if (reportsData.TopServices.Any())
+            @if (reportsData.Data?.TopServices?.Count>0)
             {
-                <RadzenDataGrid Data="@reportsData.TopServices" TItem="TopServicesModel" AllowPaging="true" PageSize="10">
+                <RadzenDataGrid Data="@reportsData.Data?.TopServices" TItem="TopServicesModel" AllowPaging="true" PageSize="10">
                     <Columns>
                         <RadzenDataGridColumn TItem="TopServicesModel" Property="ServiceName" Title="Hizmet" />
                         <RadzenDataGridColumn TItem="TopServicesModel" Property="BusinessName" Title="İşletme" />
@@ -189,18 +189,18 @@
             <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H2" Class="rz-mb-3">
                 <RadzenIcon Icon="category" /> Kategori Dağılımı
             </RadzenText>
-            @if (reportsData.CategoryDistribution.Any())
+            @if (reportsData.Data?.CategoryDistribution?.Count>0)
             {
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="6">
                         <RadzenChart>
-                            <RadzenDonutSeries Data="@reportsData.CategoryDistribution" CategoryProperty="CategoryName" ValueProperty="BusinessCount" Title="İşletme Sayısı">
+                            <RadzenDonutSeries Data="@reportsData.Data?.CategoryDistribution" CategoryProperty="CategoryName" ValueProperty="BusinessCount" Title="İşletme Sayısı">
                                 <RadzenSeriesDataLabels Visible="true" />
                             </RadzenDonutSeries>
                         </RadzenChart>
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="6">
-                        <RadzenDataGrid Data="@reportsData.CategoryDistribution" TItem="CategoryDistributionModel" AllowPaging="false">
+                        <RadzenDataGrid Data="@reportsData.Data?.CategoryDistribution" TItem="CategoryDistributionModel" AllowPaging="false">
                             <Columns>
                                 <RadzenDataGridColumn TItem="CategoryDistributionModel" Property="CategoryName" Title="Kategori" />
                                 <RadzenDataGridColumn TItem="CategoryDistributionModel" Property="BusinessCount" Title="İşletme Sayısı" />
@@ -219,7 +219,7 @@
 </RadzenStack>
 
 @code {
-    private ReportsDataModel? reportsData;
+    private ApiResponse<ReportsDataModel?> reportsData;
     private DateTime? startDate;
     private DateTime? endDate;
 

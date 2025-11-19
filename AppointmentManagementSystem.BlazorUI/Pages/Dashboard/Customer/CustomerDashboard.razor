@@ -167,16 +167,27 @@
 
         if (user.Identity.IsAuthenticated)
         {
+            var userId = 0;
             userName = user.FindFirst("name")?.Value ?? user.Identity.Name ?? "";
-            await LoadAppointments();
+             var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                           ?? user.FindFirst("sub")
+                           ?? user.FindFirst("userId")
+                           ?? user.FindFirst("id");
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var parsedId))
+            {
+                userId = parsedId;
+            }
+            await LoadAppointments(userId);
         }
 
         isLoading = false;
     }
 
-    private async Task LoadAppointments()
+    private async Task LoadAppointments(int userId)
     {
-        var response = await AppointmentApiService.GetAllAppointmentsAsync();
+
+        var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId:userId);
         if (response.Success)
         {
             appointments = response.Data ?? new List<AppointmentDto>();

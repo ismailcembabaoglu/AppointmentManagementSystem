@@ -18,13 +18,16 @@ namespace AppointmentManagementSystem.Application.Validators
                 .MaximumLength(1000).WithMessage("Açıklama en fazla 1000 karakter olabilir.");
 
             RuleFor(x => x.Address)
-                .MaximumLength(500).WithMessage("Adres en fazla 500 karakter olabilir.");
+                .MaximumLength(500).WithMessage("Adres en fazla 500 karakter olabilir.")
+                .NotEmpty().WithMessage("Adress Alanı boş geçilemez");
 
             RuleFor(x => x.City)
-                .MaximumLength(100).WithMessage("Şehir en fazla 100 karakter olabilir.");
+                .MaximumLength(100).WithMessage("İl en fazla 100 karakter olabilir.")
+                .NotEmpty().WithMessage("İl Alanı boş geçilemez"); ;
 
             RuleFor(x => x.District)
-                .MaximumLength(100).WithMessage("İlçe en fazla 100 karakter olabilir.");
+                .MaximumLength(100).WithMessage("İlçe en fazla 100 karakter olabilir.")
+                .NotEmpty().WithMessage("İlçe Alanı boş geçilemez"); ;
 
             RuleFor(x => x.Phone)
                 .MaximumLength(20).WithMessage("Telefon numarası en fazla 20 karakter olabilir.")

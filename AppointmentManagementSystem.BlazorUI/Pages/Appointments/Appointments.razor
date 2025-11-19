@@ -41,33 +41,36 @@
                     @if (userRole == "Customer")
                     {
                         <div style="flex: 1; min-width: 200px;">
-                            <RadzenLabel Text="İşletme" />
+                            <RadzenFormField Text="İşletme" Style="width: 100%;height:50px">
                             <RadzenDropDown @bind-Value="selectedBusinessId"
                                           Data="@businessOptions"
                                           TextProperty="Text"
                                           ValueProperty="Value"
-                                          Style="width: 100%;"
+                                          Style="width: 100%;height:50px;"
                                           Placeholder="Tüm İşletmeler" />
+                                          </RadzenFormField>
                         </div>
                     }
 
                     <div style="flex: 1; min-width: 200px;">
-                        <RadzenLabel Text="Durum" />
+                        <RadzenFormField Text="Durum" Style="width: 100%;height:50px">
                         <RadzenDropDown @bind-Value="selectedStatus"
                                       Data="@statusOptions"
                                       TextProperty="Text"
                                       ValueProperty="Value"
-                                      Style="width: 100%;"
+                                      Style="width: 100%;height:50px;"
                                       Placeholder="Tümü" />
+                                      </RadzenFormField>
                     </div>
 
                     <div style="flex: 1; min-width: 200px;">
-                        <RadzenLabel Text="Sıralama" />
+                                                <RadzenFormField Text="Sıralama" Style="width: 100%;height:50px">
                         <RadzenDropDown @bind-Value="sortBy"
                                       Data="@sortOptions"
                                       TextProperty="Text"
                                       ValueProperty="Value"
-                                      Style="width: 100%;" />
+                                      Style="width: 100%;height:50px" />
+                                      </RadzenFormField>
                     </div>
 
                     <RadzenButton Text="Filtrele" Icon="filter_list" ButtonStyle="ButtonStyle.Primary" Click="@ApplyFilters" />

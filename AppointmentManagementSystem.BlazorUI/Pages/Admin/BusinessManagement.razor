@@ -55,7 +55,7 @@
     }
     else
     {
-        <RadzenDataGrid Data="@businesses" TItem="BusinessAdminModel" AllowSorting="true" AllowFiltering="true" 
+        <RadzenDataGrid Data="@businesses.Data" TItem="BusinessAdminModel" AllowSorting="true" AllowFiltering="true" 
                         AllowPaging="true" PageSize="10" PagerHorizontalAlign="HorizontalAlign.Center">
             <Columns>
                 <RadzenDataGridColumn TItem="BusinessAdminModel" Property="Id" Title="ID" Width="60px" />
@@ -125,7 +125,7 @@
 </RadzenStack>
 
 @code {
-    private List<BusinessAdminModel>? businesses;
+    private ApiResponse< List<BusinessAdminModel>?> businesses;
     private List<CategoryDto>? categories;
 
     private string? searchTerm;
@@ -179,7 +179,7 @@
         if (confirmed == true)
         {
             var success = await AdminApiService.UpdateBusinessStatusAsync(business.Id, newStatus);
-            if (success)
+            if (success.Data)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme durumu güncellendi.");
                 await LoadBusinessesAsync();

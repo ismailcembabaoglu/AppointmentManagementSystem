@@ -61,7 +61,10 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 {
                     return BaseResponse<AuthResponseDto>.ErrorResponse("Geçersiz e-posta veya şifre.");
                 }
-
+                if (!user.IsEmailVerified)
+                {
+                    return BaseResponse<AuthResponseDto>.ErrorResponse("Lütfen Hesabınızı Aktifleştirin");
+                }
                 // Token oluştur
                 var token = _jwtTokenGenerator.GenerateToken(user);
 

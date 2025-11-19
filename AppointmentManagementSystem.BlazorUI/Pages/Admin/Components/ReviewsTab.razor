@@ -39,9 +39,9 @@
     [Parameter]
     public int BusinessId { get; set; }
 
-    private List<AppointmentAdminModel>? appointments;
+    private ApiResponse<List<AppointmentAdminModel>?> appointments;
     private List<AppointmentAdminModel> appointmentsWithReviews => 
-        appointments?.Where(a => a.Rating.HasValue && !string.IsNullOrEmpty(a.Review)).ToList() ?? new();
+        appointments.Data?.Where(a => a.Rating.HasValue && !string.IsNullOrEmpty(a.Review)).ToList() ?? new();
 
     protected override async Task OnInitializedAsync()
     {

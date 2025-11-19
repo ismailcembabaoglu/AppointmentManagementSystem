@@ -31,7 +31,7 @@
     }
     else
     {
-        <RadzenDataGrid Data="@appointments" TItem="AppointmentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
+        <RadzenDataGrid Data="@appointments.Data" TItem="AppointmentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="Id" Title="ID" Width="60px" />
                 <RadzenDataGridColumn TItem="AppointmentAdminModel" Property="AppointmentDate" Title="Tarih" Width="120px" FormatString="{0:dd.MM.yyyy}" />
@@ -80,7 +80,7 @@
     [Parameter]
     public int BusinessId { get; set; }
 
-    private List<AppointmentAdminModel>? appointments;
+    private ApiResponse<List<AppointmentAdminModel>?> appointments;
     private DateTime? startDate;
     private DateTime? endDate;
     private string? status;
@@ -107,7 +107,7 @@
         if (confirmed == true)
         {
             var success = await AdminApiService.DeleteAppointmentAsync(appointmentId);
-            if (success)
+            if (success.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu silindi.");
                 await LoadAppointmentsAsync();
@@ -131,7 +131,7 @@
             if (!string.IsNullOrEmpty(newStatus))
             {
                 var success = await AdminApiService.UpdateAppointmentStatusAsync(appointment.Id, newStatus);
-                if (success)
+                if (success.Success)
                 {
                     NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Randevu durumu güncellendi.");
                     await LoadAppointmentsAsync();

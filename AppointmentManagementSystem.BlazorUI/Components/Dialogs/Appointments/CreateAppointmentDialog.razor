@@ -66,7 +66,8 @@
                                  Inline="true"
                                  DateFormat="dd/MM/yyyy"
                                  Style="width: 100%;"
-                                 Min="DateTime.Today"
+                                 Min="DateTime.Today.AddDays(1)"
+                                 DateRender="@(args => OnDateRender(args))"
                                  Change="@(args => OnDateChanged(args))" />
                 
                 @if (selectedDate.HasValue)
@@ -558,7 +559,16 @@
         servicesLoading = false;
         StateHasChanged();
     }
-
+    private void OnDateRender(DateRenderEventArgs args)
+{
+    // Pazar günlerini devre dışı bırak (DayOfWeek.Sunday = 0)
+    if (args.Date.DayOfWeek == DayOfWeek.Sunday)
+    {
+        args.Disabled = true;
+        // İsteğe bağlı olarak farklı stil uygulanabilir
+        // args.Class = "disabled-sunday";
+    }
+}
     private async Task OnDateChanged(DateTime? value)
     {
         try

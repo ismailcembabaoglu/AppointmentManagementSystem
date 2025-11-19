@@ -58,36 +58,36 @@
             <!-- City and District Filters -->
             <RadzenRow Gap="12px">
                 <RadzenColumn Size="12" SizeMD="6">
-                    <RadzenFormField Text="İl" Style="width: 100%;">
+                    <RadzenFormField Text="İl" Style="width: 100%;height:50px">
                         <RadzenDropDown @bind-Value="selectedCity" 
                                        Data="@cities" 
                                        AllowClear="true"
                                        Placeholder="İl seçin..."
                                        Change="@OnCityChanged"
-                                       Style="width: 100%;" />
+                                        Style="width: 100%;height:50px" />
                     </RadzenFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="12" SizeMD="6">
-                    <RadzenFormField Text="İlçe" Style="width: 100%;">
+                    <RadzenFormField Text="İlçe" Style="width: 100%;height:50px">
                         <RadzenDropDown @bind-Value="selectedDistrict" 
                                        Data="@districts" 
                                        AllowClear="true"
                                        Placeholder="İlçe seçin..."
                                        Disabled="@string.IsNullOrEmpty(selectedCity)"
-                                       Style="width: 100%;" />
+                                        Style="width: 100%;height:50px" />
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
 
             <!-- Star Rating Filter -->
-            <RadzenFormField Text="Minimum Yıldız Puanı" Style="width: 100%;">
+            <RadzenFormField Text="Minimum Yıldız Puanı" Style="width: 100%;height:50px">
                 <RadzenDropDown @bind-Value="selectedRating" 
                                Data="@ratingOptions" 
                                AllowClear="true"
                                Placeholder="Puan seçin..."
                                TextProperty="Text"
                                ValueProperty="Value"
-                               Style="width: 100%;" />
+                                Style="width: 100%;height:50px" />
             </RadzenFormField>
 
             <!-- Filter Button -->
@@ -249,7 +249,7 @@
             new RatingOption { Text = "⭐⭐ 2+ Yıldız", Value = 2.0 },
             new RatingOption { Text = "⭐⭐⭐ 3+ Yıldız", Value = 3.0 },
             new RatingOption { Text = "⭐⭐⭐⭐ 4+ Yıldız", Value = 4.0 },
-            new RatingOption { Text = "⭐⭐⭐⭐⭐ 4.5+ Yıldız", Value = 4.5 }
+            // new RatingOption { Text = "⭐⭐⭐⭐⭐ 4.5+ Yıldız", Value = 4.5 }
         };
     }
 

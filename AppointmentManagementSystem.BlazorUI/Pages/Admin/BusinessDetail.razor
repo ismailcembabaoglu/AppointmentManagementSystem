@@ -9,7 +9,7 @@
 @inject NotificationService NotificationService
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>İşletme Detayı - @businessDetail?.Name</PageTitle>
+<PageTitle>İşletme Detayı - @businessDetail.Data?.Name</PageTitle>
 
 <RadzenStack Gap="1rem">
     <RadzenRow>
@@ -33,8 +33,8 @@
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="8">
                         <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">
-                            @businessDetail.Name
-                            @if (businessDetail.IsActive)
+                            @businessDetail.Data?.Name
+                            @if (businessDetail.Data.IsActive)
                             {
                                 <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Aktif" />
                             }
@@ -43,12 +43,12 @@
                                 <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Pasif" />
                             }
                         </RadzenText>
-                        <RadzenText TextStyle="TextStyle.Body2">@businessDetail.CategoryName</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2">@businessDetail.Data?.CategoryName</RadzenText>
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="4" Style="text-align: right;">
-                        <RadzenButton Icon="@(businessDetail.IsActive ? "block" : "check_circle")" 
-                                    Text="@(businessDetail.IsActive ? "Devre Dışı Bırak" : "Aktifleştir")"
-                                    ButtonStyle="@(businessDetail.IsActive ? ButtonStyle.Danger : ButtonStyle.Success)"
+                        <RadzenButton Icon="@(businessDetail.Data.IsActive ? "block" : "check_circle")" 
+                                    Text="@(businessDetail.Data.IsActive ? "Devre Dışı Bırak" : "Aktifleştir")"
+                                    ButtonStyle="@(businessDetail.Data.IsActive ? ButtonStyle.Danger : ButtonStyle.Success)"
                                     Click="@ToggleBusinessStatus" />
                     </RadzenColumn>
                 </RadzenRow>
@@ -56,20 +56,20 @@
                 <RadzenRow>
                     <RadzenColumn Size="12" SizeMD="6">
                         <RadzenStack Gap="0.5rem">
-                            <RadzenText><strong>E-posta:</strong> @businessDetail.Email</RadzenText>
-                            <RadzenText><strong>Telefon:</strong> @businessDetail.Phone</RadzenText>
-                            <RadzenText><strong>Adres:</strong> @businessDetail.Address, @businessDetail.District / @businessDetail.City</RadzenText>
-                            <RadzenText><strong>Kayıt Tarihi:</strong> @businessDetail.CreatedAt.ToString("dd.MM.yyyy")</RadzenText>
+                            <RadzenText><strong>E-posta:</strong> @businessDetail.Data?.Email</RadzenText>
+                            <RadzenText><strong>Telefon:</strong> @businessDetail.Data?.Phone</RadzenText>
+                            <RadzenText><strong>Adres:</strong> @businessDetail.Data?.Address, @businessDetail.Data?.District / @businessDetail.Data?.City</RadzenText>
+                            <RadzenText><strong>Kayıt Tarihi:</strong> @businessDetail.Data?.CreatedAt.ToString("dd.MM.yyyy")</RadzenText>
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="6">
                         <RadzenStack Gap="0.5rem">
-                            <RadzenText><strong>Toplam Randevu:</strong> @businessDetail.TotalAppointments</RadzenText>
-                            <RadzenText><strong>Tamamlanan:</strong> @businessDetail.CompletedAppointments</RadzenText>
-                            <RadzenText><strong>İptal Edilen:</strong> @businessDetail.CancelledAppointments</RadzenText>
-                            <RadzenText><strong>Çalışan Sayısı:</strong> @businessDetail.TotalEmployees</RadzenText>
-                            <RadzenText><strong>Hizmet Sayısı:</strong> @businessDetail.TotalServices</RadzenText>
-                            <RadzenText><strong>Ortalama Puan:</strong> @(businessDetail.AverageRating?.ToString("0.0") ?? "N/A") ⭐ (@businessDetail.TotalReviews yorum)</RadzenText>
+                            <RadzenText><strong>Toplam Randevu:</strong> @businessDetail.Data?.TotalAppointments</RadzenText>
+                            <RadzenText><strong>Tamamlanan:</strong> @businessDetail.Data?.CompletedAppointments</RadzenText>
+                            <RadzenText><strong>İptal Edilen:</strong> @businessDetail.Data?.CancelledAppointments</RadzenText>
+                            <RadzenText><strong>Çalışan Sayısı:</strong> @businessDetail.Data?.TotalEmployees</RadzenText>
+                            <RadzenText><strong>Hizmet Sayısı:</strong> @businessDetail.Data?.TotalServices</RadzenText>
+                            <RadzenText><strong>Ortalama Puan:</strong> @(businessDetail.Data?.AverageRating?.ToString("0.0") ?? "N/A") ⭐ (@businessDetail.Data?.TotalReviews yorum)</RadzenText>
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>
@@ -80,18 +80,18 @@
                     <RadzenRow>
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenStack Gap="0.5rem">
-                                <RadzenText><strong>Durum:</strong> <RadzenBadge BadgeStyle="@GetSubscriptionBadgeStyle(businessDetail.SubscriptionStatus)" Text="@(businessDetail.SubscriptionStatus ?? "Yok")" /></RadzenText>
-                                <RadzenText><strong>Başlangıç:</strong> @(businessDetail.SubscriptionStartDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
-                                <RadzenText><strong>Sonraki Ödeme:</strong> @(businessDetail.NextBillingDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
+                                <RadzenText><strong>Durum:</strong> <RadzenBadge BadgeStyle="@GetSubscriptionBadgeStyle(businessDetail.Data?.SubscriptionStatus)" Text="@(businessDetail.Data?.SubscriptionStatus ?? "Yok")" /></RadzenText>
+                                <RadzenText><strong>Başlangıç:</strong> @(businessDetail.Data?.SubscriptionStartDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
+                                <RadzenText><strong>Sonraki Ödeme:</strong> @(businessDetail.Data?.NextBillingDate?.ToString("dd.MM.yyyy") ?? "N/A")</RadzenText>
                             </RadzenStack>
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="6">
                             <RadzenStack Gap="0.5rem">
-                                <RadzenText><strong>Kart:</strong> @businessDetail.CardType - **** @businessDetail.CardLastFourDigits</RadzenText>
+                                <RadzenText><strong>Kart:</strong> @businessDetail.Data?.CardType - **** @businessDetail.Data?.CardLastFourDigits</RadzenText>
                                 <RadzenText>
                                     <strong>Otomatik Yenileme:</strong> 
                                     <RadzenSwitch @bind-Value="@autoRenewal" Change="@OnAutoRenewalChanged" />
-                                    @(businessDetail.AutoRenewal ? "Açık" : "Kapalı")
+                                    @(businessDetail.Data.AutoRenewal ? "Açık" : "Kapalı")
                                 </RadzenText>
                             </RadzenStack>
                         </RadzenColumn>
@@ -124,7 +124,7 @@
     [Parameter]
     public int BusinessId { get; set; }
 
-    private BusinessDetailAdminModel? businessDetail;
+    private ApiResponse<BusinessDetailAdminModel?> businessDetail;
     private bool autoRenewal;
 
     protected override async Task OnInitializedAsync()
@@ -137,7 +137,7 @@
         businessDetail = await AdminApiService.GetBusinessDetailAsync(BusinessId);
         if (businessDetail != null)
         {
-            autoRenewal = businessDetail.AutoRenewal;
+            autoRenewal = businessDetail.Data.AutoRenewal;
         }
     }
 
@@ -145,7 +145,7 @@
     {
         if (businessDetail == null) return;
 
-        var newStatus = !businessDetail.IsActive;
+        var newStatus = !businessDetail.Data.IsActive;
         var confirmed = await DialogService.Confirm(
             $"İşletme durumunu '{(newStatus ? "Aktif" : "Pasif")}' olarak değiştirmek istediğinize emin misiniz?",
             "Durum Değişikliği",
@@ -154,7 +154,7 @@
         if (confirmed == true)
         {
             var success = await AdminApiService.UpdateBusinessStatusAsync(BusinessId, newStatus);
-            if (success)
+            if (success.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme durumu güncellendi.");
                 await LoadBusinessDetailAsync();
@@ -169,7 +169,7 @@
     private async Task OnAutoRenewalChanged(bool value)
     {
         var success = await AdminApiService.UpdateSubscriptionAutoRenewalAsync(BusinessId, value);
-        if (success)
+        if (success.Success)
         {
             NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Otomatik yenileme ayarı güncellendi.");
         }

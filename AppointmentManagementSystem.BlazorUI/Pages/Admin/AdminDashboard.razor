@@ -33,8 +33,8 @@
                         <RadzenIcon Icon="business" Style="font-size: 3rem;" />
                         <RadzenStack Gap="0">
                             <RadzenText TextStyle="TextStyle.Overline">Toplam İşletme</RadzenText>
-                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalBusinesses</RadzenText>
-                            <RadzenText TextStyle="TextStyle.Caption">Aktif: @stats.ActiveBusinesses | Pasif: @stats.InactiveBusinesses</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.Data?.TotalBusinesses</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Aktif: @stats.Data?.ActiveBusinesses | Pasif: @stats.Data?.InactiveBusinesses</RadzenText>
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -46,7 +46,7 @@
                         <RadzenIcon Icon="people" Style="font-size: 3rem;" />
                         <RadzenStack Gap="0">
                             <RadzenText TextStyle="TextStyle.Overline">Toplam Müşteri</RadzenText>
-                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalCustomers</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.Data?.TotalCustomers</RadzenText>
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -58,8 +58,8 @@
                         <RadzenIcon Icon="event" Style="font-size: 3rem;" />
                         <RadzenStack Gap="0">
                             <RadzenText TextStyle="TextStyle.Overline">Toplam Randevu</RadzenText>
-                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalAppointments</RadzenText>
-                            <RadzenText TextStyle="TextStyle.Caption">Bugün: @stats.TodayAppointments | Bekleyen: @stats.PendingAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.Data?.TotalAppointments</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Bugün: @stats.Data?.TodayAppointments | Bekleyen: @stats.Data?.PendingAppointments</RadzenText>
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -71,8 +71,8 @@
                         <RadzenIcon Icon="attach_money" Style="font-size: 3rem;" />
                         <RadzenStack Gap="0">
                             <RadzenText TextStyle="TextStyle.Overline">Toplam Gelir</RadzenText>
-                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.TotalRevenue.ToString("C")</RadzenText>
-                            <RadzenText TextStyle="TextStyle.Caption">Bu Ay: @stats.MonthlyRevenue.ToString("C")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H2">@stats.Data?.TotalRevenue?.ToString("C")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption">Bu Ay: @stats.Data?.MonthlyRevenue?.ToString("C")</RadzenText>
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -89,11 +89,11 @@
                     <RadzenStack Gap="1rem">
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                             <RadzenText>Aktif Abonelikler:</RadzenText>
-                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@stats.ActiveSubscriptions.ToString()" />
+                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@stats.Data?.ActiveSubscriptions.ToString()" />
                         </RadzenStack>
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                             <RadzenText>Süresi Dolan:</RadzenText>
-                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@stats.ExpiredSubscriptions.ToString()" />
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@stats.Data?.ExpiredSubscriptions.ToString()" />
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -115,7 +115,7 @@
 </RadzenStack>
 
 @code {
-    private AdminDashboardStats? stats;
+    private ApiResponse<AdminDashboardStats?> stats;
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,6 +124,7 @@
 
     private async Task LoadStatsAsync()
     {
+  
         stats = await AdminApiService.GetDashboardStatsAsync();
     }
 }

@@ -26,7 +26,7 @@
     }
     else
     {
-        <RadzenDataGrid Data="@payments" TItem="PaymentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
+        <RadzenDataGrid Data="@payments.Data" TItem="PaymentAdminModel" AllowSorting="true" AllowPaging="true" PageSize="10">
             <Columns>
                 <RadzenDataGridColumn TItem="PaymentAdminModel" Property="Id" Title="ID" Width="60px" />
                 <RadzenDataGridColumn TItem="PaymentAdminModel" Property="TransactionId" Title="İşlem No" Width="150px" />
@@ -62,7 +62,7 @@
     [Parameter]
     public int BusinessId { get; set; }
 
-    private List<PaymentAdminModel>? payments;
+    private ApiResponse< List<PaymentAdminModel>?> payments;
     private DateTime? startDate;
     private DateTime? endDate;
 
@@ -89,7 +89,7 @@
             var reason = "Admin tarafından iade edildi";
             
             var success = await AdminApiService.RefundPaymentAsync(paymentId, reason);
-            if (success)
+            if (success.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Ödeme iade edildi.");
                 await LoadPaymentsAsync();

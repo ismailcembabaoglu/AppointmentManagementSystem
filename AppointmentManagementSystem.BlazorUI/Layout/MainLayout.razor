@@ -31,7 +31,7 @@
                             class="menu-toggle-btn" Variant="Variant.Text" />
                 
                 <div class="header-brand">
-                    <RadzenIcon Icon="calendar_month" Style="font-size: 28px; color: #667eea;" />
+                    <RadzenIcon Icon="calendar_month" Style="font-size: 30px; color: #667eea;" />
                     <div class="brand-text">
                         <div class="brand-title">@GetBrandName()</div>
                         <div class="brand-subtitle">Aptiva Plan</div>
@@ -69,24 +69,27 @@
                 @if (currentUser != null && currentUser.Identity.IsAuthenticated)
                 {
                     <!-- Notifications -->
-                    <RadzenButton Icon="notifications" ButtonStyle="ButtonStyle.Light" 
-                                Variant="Variant.Text" Size="ButtonSize.Large"
-                                class="header-icon-btn"
-                                Click="@OpenNotifications">
+                    <div style="position: relative; display: inline-block;">
+                        <RadzenButton Icon="notifications" ButtonStyle="ButtonStyle.Light"
+                                      Variant="Variant.Text" Size="ButtonSize.Large"
+                                      class="header-icon-btn"
+                                      Click="@OpenNotifications">
+                        </RadzenButton>
+
                         @if (notificationCount > 0)
                         {
-                            <RadzenBadge Text="@notificationCount.ToString()" BadgeStyle="BadgeStyle.Danger" 
-                                       Style="position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px;" />
+                            <RadzenBadge Text="@notificationCount.ToString()" BadgeStyle="BadgeStyle.Danger"
+                                         Style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%); min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px; z-index: 10;" />
                         }
-                    </RadzenButton>
-
+                    </div>
+@* 
                     <!-- Messages -->
                     <RadzenButton Icon="mail" ButtonStyle="ButtonStyle.Light" 
                                 Variant="Variant.Text" Size="ButtonSize.Large"
-                                class="header-icon-btn" />
+                                class="header-icon-btn" /> *@
 
                     <!-- Divider -->
-                    <div class="header-divider"></div>
+                  @*   <div class="header-divider"></div> *@
 
                     <!-- User Profile -->
                     <RadzenButton Click="OpenProfile" class="header-user-btn" ButtonStyle="ButtonStyle.Light" Variant="Variant.Text">
@@ -178,6 +181,14 @@
                                 <span class="nav-label">Çalışanlar</span>
                                 <div class="nav-indicator"></div>
                             </NavLink>
+                            <NavLink href="business/reports" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="groups" />
+                                </div>
+                                <span class="nav-label">Raporlar</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+                           
                         </RadzenStack>
                     </div>
                 </AuthorizeView>
@@ -225,7 +236,48 @@
                         </RadzenStack>
                     </div>
                 </AuthorizeView>
+                <AuthorizeView Roles="Admin">
+                    <div class="nav-section">
+                        <div class="section-label">
+                            <RadzenIcon Icon="person" Style="font-size: 14px;" />
+                            <span>Admin Paneli</span>
+                        </div>
 
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="margin-top: 12px;">
+                            <NavLink href="admin/dashboard" class="nav-link-premium" Match="NavLinkMatch.All">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="dashboard" />
+                                </div>
+                                <span class="nav-label">Dashboard</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+
+                            <NavLink href="/admin/businesses" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="event_available" />
+                                </div>
+                                <span class="nav-label">İşletmeler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+
+                            <NavLink href="/admin/reports" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="category" />
+                                </div>
+                                <span class="nav-label">Raporlar</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink>
+
+                            @*              <NavLink href="businesses" class="nav-link-premium">
+                                <div class="nav-icon-wrapper">
+                                    <RadzenIcon Icon="store" />
+                                </div>
+                                <span class="nav-label">İşletmeler</span>
+                                <div class="nav-indicator"></div>
+                            </NavLink> *@
+                        </RadzenStack>
+                    </div>
+                </AuthorizeView>
                 <!-- Guest Menu -->
                 <AuthorizeView>
                     <NotAuthorized>
@@ -312,7 +364,7 @@
         <!-- FOOTER -->
         <div class="app-footer">
             <div class="footer-content">
-                © 2024 Appointment Management System
+                © 2026 Aptiva Plan
             </div>
         </div>
     </div>
@@ -375,10 +427,11 @@
         height: 44px;
         border-radius: 12px;
         transition: all 0.3s;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .menu-toggle-btn:hover {
-        background: #f1f5f9 !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         transform: rotate(90deg);
     }
 
@@ -456,10 +509,11 @@
         height: 44px;
         border-radius: 12px;
         transition: all 0.3s;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .header-icon-btn:hover {
-        background: #f1f5f9 !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         transform: translateY(-2px);
     }
 
@@ -517,6 +571,22 @@
     /* ========================
        RESPONSIVE - TABLET
        ======================== */
+    @@media (min-width: 300px) {
+      
+
+        .header-center-section {
+            display: block;
+        }
+
+        .user-info-text {
+            display: flex;
+        }
+
+        .header-container {
+            padding: 12px 32px;
+        }
+    }
+
     @@media (min-width: 768px) {
         .header-brand {
             display: flex;
@@ -1081,28 +1151,6 @@
             var searchResults = new List<BusinessDto>();
             var isLoading = true;
 
-            // Open dialog immediately with loading state
-            var dialogReference = await DialogService.OpenAsync<BusinessSearchResults>("Arama Sonuçları",
-                new Dictionary<string, object>
-                {
-                    { "Businesses", searchResults },
-                    { "SearchQuery", searchQuery },
-                    { "IsLoading", isLoading },
-                    { "OnBusinessClick", new Action<int>(businessId => 
-                        {
-                            DialogService.Close();
-                            Navigation.NavigateTo($"/businesses/{businessId}");
-                        })
-                    }
-                },
-                new DialogOptions 
-                { 
-                    Width = "750px", 
-                    Height = "auto",
-                    CloseDialogOnOverlayClick = true,
-                    ShowClose = true
-                });
-
             // Perform actual search
             var response = await BusinessApiService.GetAllBusinessesAsync(searchTerm: searchQuery);
             
@@ -1111,8 +1159,8 @@
                 searchResults = response.Data;
             }
 
-            // Update dialog with results
-            DialogService.Close();
+            // // Update dialog with results
+            // DialogService.Close();
             await DialogService.OpenAsync<BusinessSearchResults>("Arama Sonuçları",
                 new Dictionary<string, object>
                 {
@@ -1122,7 +1170,7 @@
                     { "OnBusinessClick", new Action<int>(businessId => 
                         {
                             DialogService.Close();
-                            Navigation.NavigateTo($"/businesses/{businessId}");
+                            Navigation.NavigateTo($"/business/{businessId}");
                         })
                     }
                 },
@@ -1290,7 +1338,7 @@
             return role switch
             {
                 "Business" => "İşletme Paneli",
-                "Customer" => "Randevu Sistemi",
+                "Customer" => "Aptiva Plan",
                 _ => "AMS"
             };
         }

@@ -1,31 +1,47 @@
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
+using AppointmentManagementSystem.Domain.Entities;
+using Blazored.LocalStorage;
 using System.Net.Http.Json;
 
 namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
 {
-    public class AdminApiService : IAdminApiService
+    public class AdminApiService : BaseApiService,IAdminApiService
     {
-        private readonly HttpClient _httpClient;
 
-        public AdminApiService(HttpClient httpClient)
+        public AdminApiService(HttpClient httpClient, ILocalStorageService localStorage) 
+            : base(httpClient, localStorage)
         {
-            _httpClient = httpClient;
         }
 
-        public async Task<AdminDashboardStats?> GetDashboardStatsAsync()
+        public async Task<ApiResponse<AdminDashboardStats?>> GetDashboardStatsAsync()
         {
+
             try
             {
-                return await _httpClient.GetFromJsonAsync<AdminDashboardStats>("api/Admin/dashboard/stats");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/dashboard/stats");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<AdminDashboardStats?>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return new ApiResponse<AdminDashboardStats?> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+
+            //try
+            //{
+
+            //    return await _httpClient.GetFromJsonAsync<AdminDashboardStats>("api/Admin/dashboard/stats");
+            //}
+            //catch
+            //{
+            //    return null;
+            //}
         }
 
-        public async Task<List<BusinessAdminModel>?> GetAllBusinessesAsync(string? searchTerm = null, bool? isActive = null, int? categoryId = null)
+        public async Task<ApiResponse< List<BusinessAdminModel>?>> GetAllBusinessesAsync(string? searchTerm = null, bool? isActive = null, int? categoryId = null)
         {
+
             try
             {
                 var queryParams = new List<string>();
@@ -37,40 +53,55 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"categoryId={categoryId.Value}");
 
                 var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                return await _httpClient.GetFromJsonAsync<List<BusinessAdminModel>>($"api/Admin/businesses{query}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/businesses{query}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<List<BusinessAdminModel>?>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return new ApiResponse<List<BusinessAdminModel>?> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
-        public async Task<BusinessDetailAdminModel?> GetBusinessDetailAsync(int businessId)
+        public async Task<ApiResponse<BusinessDetailAdminModel?>> GetBusinessDetailAsync(int businessId)
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<BusinessDetailAdminModel>($"api/Admin/businesses/{businessId}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/businesses/{businessId}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<BusinessDetailAdminModel?>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return new ApiResponse<BusinessDetailAdminModel?> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
-        public async Task<bool> UpdateBusinessStatusAsync(int businessId, bool isActive)
+        public async Task<ApiResponse<bool>> UpdateBusinessStatusAsync(int businessId, bool isActive)
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/Admin/businesses/{businessId}/status", new { IsActive = isActive });
-                return response.IsSuccessStatusCode;
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/Admin/businesses/{businessId}/status");
+                request.Content = JsonContent.Create( new { IsActive = isActive });
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+            //try
+            //{
+            //    var response = await _httpClient.PutAsJsonAsync($"api/Admin/businesses/{businessId}/status", new { IsActive = isActive });
+            //    return response.IsSuccessStatusCode;
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
         }
 
-        public async Task<List<AppointmentAdminModel>?> GetBusinessAppointmentsAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null, string? status = null)
+        public async Task<ApiResponse<List<AppointmentAdminModel>?>> GetBusinessAppointmentsAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null, string? status = null)
         {
             try
             {
@@ -83,99 +114,62 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"status={Uri.EscapeDataString(status)}");
 
                 var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                return await _httpClient.GetFromJsonAsync<List<AppointmentAdminModel>>($"api/Admin/businesses/{businessId}/appointments{query}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/businesses/{businessId}/appointments{query}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<List<AppointmentAdminModel>?>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return new ApiResponse<List<AppointmentAdminModel>?> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
-        public async Task<bool> DeleteAppointmentAsync(int appointmentId)
+        public async Task<ApiResponse<bool>> DeleteAppointmentAsync(int appointmentId)
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/Admin/appointments/{appointmentId}");
-                return response.IsSuccessStatusCode;
+                var request = await CreateRequestWithAuth(HttpMethod.Delete, $"api/Admin/appointments/{appointmentId}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
-        public async Task<bool> UpdateAppointmentStatusAsync(int appointmentId, string status)
+        public async Task<ApiResponse<bool>> UpdateAppointmentStatusAsync(int appointmentId, string status)
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/Admin/appointments/{appointmentId}/status", new { Status = status });
-                return response.IsSuccessStatusCode;
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/Admin/appointments/{appointmentId}/status");
+                request.Content = JsonContent.Create(new { Status = status });
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+           
         }
 
-        public async Task<bool> DeleteEmployeeAsync(int employeeId)
+        public async Task<ApiResponse<bool>> DeleteEmployeeAsync(int employeeId)
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/Admin/employees/{employeeId}");
-                return response.IsSuccessStatusCode;
+                var request = await CreateRequestWithAuth(HttpMethod.Delete, $"api/Admin/employees/{employeeId}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+         
         }
 
-        public async Task<List<PaymentAdminModel>?> GetBusinessPaymentsAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null)
-        {
-            try
-            {
-                var queryParams = new List<string>();
-                if (startDate.HasValue)
-                    queryParams.Add($"startDate={startDate.Value:yyyy-MM-dd}");
-                if (endDate.HasValue)
-                    queryParams.Add($"endDate={endDate.Value:yyyy-MM-dd}");
-
-                var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                return await _httpClient.GetFromJsonAsync<List<PaymentAdminModel>>($"api/Admin/businesses/{businessId}/payments{query}");
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public async Task<bool> UpdateSubscriptionAutoRenewalAsync(int businessId, bool autoRenewal)
-        {
-            try
-            {
-                var response = await _httpClient.PutAsJsonAsync($"api/Admin/businesses/{businessId}/subscription/auto-renewal", new { AutoRenewal = autoRenewal });
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> RefundPaymentAsync(int paymentId, string reason)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync($"api/Admin/payments/{paymentId}/refund", new { Reason = reason });
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public async Task<ReportsDataModel?> GetReportsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<ApiResponse<List<PaymentAdminModel>?>> GetBusinessPaymentsAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
@@ -186,11 +180,70 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"endDate={endDate.Value:yyyy-MM-dd}");
 
                 var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                return await _httpClient.GetFromJsonAsync<ReportsDataModel>($"api/Admin/reports{query}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/businesses/{businessId}/payments{query}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<List<PaymentAdminModel>?>(response);
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return new ApiResponse<List<PaymentAdminModel>?> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+            
+        }
+
+        public async Task<ApiResponse<bool>> UpdateSubscriptionAutoRenewalAsync(int businessId, bool autoRenewal)
+        {
+            try
+            {
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/Admin/businesses/{businessId}/subscription/auto-renewal");
+                request.Content = JsonContent.Create(new { AutoRenewal = autoRenewal });
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+           
+        }
+
+        public async Task<ApiResponse<bool>> RefundPaymentAsync(int paymentId, string reason)
+        {
+
+            try
+            {
+                var request = await CreateRequestWithAuth(HttpMethod.Post, $"api/Admin/payments/{paymentId}/refund");
+                request.Content = JsonContent.Create(new { Reason = reason });
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<bool> { Success = false, Message = $"Hata: {ex.Message}" };
+            }
+           
+        }
+
+        public async Task<ApiResponse<ReportsDataModel?>> GetReportsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+                if (startDate.HasValue)
+                    queryParams.Add($"startDate={startDate.Value:yyyy-MM-dd}");
+                if (endDate.HasValue)
+                    queryParams.Add($"endDate={endDate.Value:yyyy-MM-dd}");
+
+                var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/Admin/reports{query}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<ReportsDataModel?>(response);
+                //return await _httpClient.GetFromJsonAsync<ReportsDataModel>($"api/Admin/reports{query}");
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<ReportsDataModel?> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
     }
