@@ -1337,8 +1337,13 @@
     public void Dispose()
     {
         AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
-        notificationTimer?.Dispose();
         searchDebounceTimer?.Dispose();
+        
+        // SignalR event'lerini temizle
+        SignalRService.OnAppointmentCreated -= HandleAppointmentCreated;
+        SignalRService.OnAppointmentStatusChanged -= HandleAppointmentStatusChanged;
+        SignalRService.OnAppointmentDeleted -= HandleAppointmentDeleted;
+        SignalRService.OnConnectionStateChanged -= HandleConnectionStateChanged;
     }
 
     private void ToggleSidebar()
