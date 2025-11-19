@@ -1,4 +1,5 @@
 ﻿using AppointmentManagementSystem.API.Controllers;
+using AppointmentManagementSystem.API.Services;
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Features.Appointments.Commands;
 using AppointmentManagementSystem.Application.Features.Appointments.Queries;
@@ -11,10 +12,12 @@ namespace AppointmentManagementSystem.API.Controllers
     public class AppointmentsController : BaseController
     {
         private readonly IMediator _mediator;
+        private readonly INotificationService _notificationService;
 
-        public AppointmentsController(IMediator mediator)
+        public AppointmentsController(IMediator mediator, INotificationService notificationService)
         {
             _mediator = mediator;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
