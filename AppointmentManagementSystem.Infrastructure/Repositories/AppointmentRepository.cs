@@ -81,10 +81,18 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
-                .Include(a => a.Photos)
+                //.Include(a => a.Photos)
                 .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted); // ISDELETED EKLENDİ
         }
-
+        // ⚡ YENI: Sadece fotoğrafları getir (lazy loading)
+        public async Task<IEnumerable<AppointmentPhoto>> GetAppointmentPhotosAsync(int appointmentId)
+        {
+            return await _context.Set<AppointmentPhoto>()
+                .AsNoTracking()
+                .Where(p => p.AppointmentId == appointmentId)
+                .OrderBy(p => p.Id)
+                .ToListAsync();
+        }
         public async Task UpdateStatusAsync(int id, string status)
         {
             var appointment = await _dbSet.FindAsync(id);

@@ -7,6 +7,7 @@ namespace AppointmentManagementSystem.Domain.Interfaces
         Task<IEnumerable<Appointment>> GetByCustomerAsync(int customerId);
         Task<IEnumerable<Appointment>> GetByBusinessAsync(int businessId);
         Task<IEnumerable<Appointment>> GetAllWithDetailsAsync(int? customerId = null, int? businessId = null);
+        Task<IEnumerable<AppointmentPhoto>> GetAppointmentPhotosAsync(int appointmentId); // Yeni
         Task<Appointment?> GetByIdWithDetailsAsync(int id);
         Task UpdateStatusAsync(int id, string status);
         Task AddRatingAsync(int id, int rating, string? review);

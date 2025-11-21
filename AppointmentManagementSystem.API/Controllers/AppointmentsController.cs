@@ -45,7 +45,14 @@ namespace AppointmentManagementSystem.API.Controllers
 
             return OkResponse(result, "Randevu başarıyla getirildi.");
         }
-
+        [HttpGet("{id:int}/photos")]
+       [Authorize]
+        public async Task<IActionResult> GetPhotos(int id)
+        {
+            var query = new GetAppointmentPhotosQuery { AppointmentId = id };
+            var result = await _mediator.Send(query);
+            return OkResponse(result, "Fotoğraflar başarıyla getirildi.");
+        }
         [HttpPost]
         [Authorize(Roles = "Customer,Business")]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentDto createAppointmentDto)

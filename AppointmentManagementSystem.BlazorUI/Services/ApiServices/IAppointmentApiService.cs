@@ -11,5 +11,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         Task<ApiResponse<AppointmentDto?>> UpdateAppointmentStatusAsync(int id, string status);
         Task<ApiResponse<AppointmentDto?>> AddAppointmentRatingAsync(int id, AddAppointmentRatingDto ratingDto);
         Task<ApiResponse<bool>> DeleteAppointmentAsync(int id);
+        Task<ApiResponse<List<string>>> GetAppointmentPhotosAsync(int appointmentId); // Yeni
+
     }
 }

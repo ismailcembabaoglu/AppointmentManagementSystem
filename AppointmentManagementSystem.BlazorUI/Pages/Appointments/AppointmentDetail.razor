@@ -201,12 +201,17 @@
                             </RadzenCard>
 
                             <!-- Photos -->
-                            @if (appointment.PhotoUrls != null && appointment.PhotoUrls.Any())
+                             @if (isLoadingPhotos)
+        {
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            <p>Fotoğraflar yükleniyor...</p>
+        }
+                            @if (photos.Any())
                             {
                                 <RadzenCard>
                                     <RadzenText TextStyle="TextStyle.H6" Style="margin: 0 0 20px 0; font-weight: 600;">📸 Fotoğraflar</RadzenText>
                                     <RadzenRow Gap="12px">
-                                        @foreach (var photoUrl in appointment.PhotoUrls)
+                                        @foreach (var photoUrl in photos)
                                         {
                                             <RadzenColumn Size="6" SizeSM="4" SizeMD="3">
                                                 <div style="position: relative; padding-top: 100%; border-radius: 8px; overflow: hidden; cursor: pointer;"
@@ -220,7 +225,10 @@
                                     </RadzenRow>
                                 </RadzenCard>
                             }
-
+                            else if (photosLoaded && !photos.Any())
+        {
+            <p>Fotoğraf bulunamadı.</p>
+        }
                             <!-- Rating & Review -->
                             @if (appointment.Status == "Completed")
                             {
@@ -381,7 +389,9 @@
 @code {
     [Parameter]
     public int Id { get; set; }
-
+        private List<string> photos = new();
+    private bool isLoadingPhotos = false;
+    private bool photosLoaded = false;
     private AppointmentDto? appointment;
     private bool isLoading = true;
     private string userRole = "";
@@ -393,6 +403,7 @@
     {
         await GetUserRole();
         await LoadAppointment();
+        await LoadPhotos();
     }
 
     private async Task GetUserRole()
@@ -409,7 +420,30 @@
             }
         }
     }
-
+     private async Task LoadPhotos()
+    {
+        isLoadingPhotos = true;
+        StateHasChanged();
+        
+        try
+        {
+            var response = await AppointmentApiService.GetAppointmentPhotosAsync(Id);
+            if (response.Success && response.Data != null)
+            {
+                photos = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fotoğraf yükleme hatası: {ex.Message}");
+        }
+        finally
+        {
+            isLoadingPhotos = false;
+            photosLoaded = true;
+            StateHasChanged();
+        }
+    }
     private async Task LoadAppointment()
     {
         isLoading = true;
@@ -439,6 +473,7 @@
             StateHasChanged();
         }
     }
+
 
     private async Task UpdateStatus(string newStatus)
     {

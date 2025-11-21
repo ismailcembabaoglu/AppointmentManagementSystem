@@ -31,7 +31,22 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 return new ApiResponse<List<AppointmentDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
-
+        public async Task<ApiResponse<List<string>>> GetAppointmentPhotosAsync(int appointmentId)
+        {
+            try
+            {
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/appointments/{appointmentId}/photos");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<List<string>>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<string>>
+                {
+                    Success = false,
+                    Message = $"Hata: {ex.Message}" };
+                }
+        }
         public async Task<ApiResponse<AppointmentDto?>> GetAppointmentByIdAsync(int id)
         {
             try
