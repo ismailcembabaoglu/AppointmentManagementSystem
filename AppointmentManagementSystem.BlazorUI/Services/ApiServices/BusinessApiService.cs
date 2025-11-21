@@ -13,11 +13,13 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         }
 
         public async Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
-            int? categoryId = null, 
+            int? categoryId = null,
             string? searchTerm = null,
             string? city = null,
             string? district = null,
-            double? minRating = null)
+            double? minRating = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             try
             {
@@ -33,6 +35,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"district={Uri.EscapeDataString(district)}");
                 if (minRating.HasValue)
                     queryParams.Add($"minRating={minRating.Value}");
+                queryParams.Add($"pageNumber={pageNumber}");
+                queryParams.Add($"pageSize={pageSize}");
 
                 var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
                 var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses{queryString}");

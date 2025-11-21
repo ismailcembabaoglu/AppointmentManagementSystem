@@ -3,6 +3,7 @@ using AppointmentManagementSystem.Application.Features.Businesses.Queries;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
@@ -39,7 +40,8 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
                 businessDtos.Add(dto);
             }
 
-            return businessDtos;
+            var paged = businessDtos.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
+            return paged;
         }
     }
 }
