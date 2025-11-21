@@ -3,6 +3,7 @@ using AppointmentManagementSystem.Application.Features.Categories.Queries;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Categories.Handlers
 {
@@ -20,7 +21,8 @@ namespace AppointmentManagementSystem.Application.Features.Categories.Handlers
         public async Task<List<BusinessDto>> Handle(GetBusinessesByCategoryQuery request, CancellationToken cancellationToken)
         {
             var businesses = await _businessRepository.GetByCategoryAsync(request.CategoryId);
-            return _mapper.Map<List<BusinessDto>>(businesses);
+            var paged = businesses.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize);
+            return _mapper.Map<List<BusinessDto>>(paged);
         }
     }
 }

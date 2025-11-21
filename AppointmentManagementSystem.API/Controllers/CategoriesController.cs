@@ -18,9 +18,13 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var query = new GetAllCategoriesQuery();
+            var query = new GetAllCategoriesQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
             var result = await _mediator.Send(query);
             return OkResponse(result, "Kategoriler başarıyla getirildi.");
         }
@@ -40,9 +44,9 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpGet("{id:int}/businesses")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetBusinessesByCategory(int id)
+        public async Task<IActionResult> GetBusinessesByCategory(int id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var query = new GetBusinessesByCategoryQuery { CategoryId = id };
+            var query = new GetBusinessesByCategoryQuery { CategoryId = id, PageNumber = pageNumber, PageSize = pageSize };
             var result = await _mediator.Send(query);
             return OkResponse(result, "Kategoriye ait işletmeler başarıyla getirildi.");
         }

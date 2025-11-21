@@ -12,11 +12,11 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<List<CategoryDto>>> GetAllCategoriesAsync()
+        public async Task<ApiResponse<List<CategoryDto>>> GetAllCategoriesAsync(int pageNumber = 1, int pageSize = 10)
         {
             try
             {
-                var request = await CreateRequestWithAuth(HttpMethod.Get, "api/categories");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories?pageNumber={pageNumber}&pageSize={pageSize}");
                 var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<Application.DTOs.CategoryDto>>(response);
             }
@@ -40,11 +40,11 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             }
         }
 
-        public async Task<ApiResponse<List<BusinessDto>>> GetBusinessesByCategoryAsync(int categoryId)
+        public async Task<ApiResponse<List<BusinessDto>>> GetBusinessesByCategoryAsync(int categoryId, int pageNumber = 1, int pageSize = 10)
         {
             try
             {
-                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories/{categoryId}/businesses");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories/{categoryId}/businesses?pageNumber={pageNumber}&pageSize={pageSize}");
                 var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<List<Application.DTOs.BusinessDto>>(response);
             }
