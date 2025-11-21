@@ -12,17 +12,17 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<List<CategoryDto>>> GetAllCategoriesAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<ApiResponse<PaginatedResult<CategoryDto>>> GetAllCategoriesAsync(int pageNumber = 1, int pageSize = 10)
         {
             try
             {
                 var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories?pageNumber={pageNumber}&pageSize={pageSize}");
                 var response = await _httpClient.SendAsync(request);
-                return await HandleApiResponse<List<Application.DTOs.CategoryDto>>(response);
+                return await HandleApiResponse<PaginatedResult<Application.DTOs.CategoryDto>>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<CategoryDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<PaginatedResult<CategoryDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
@@ -40,17 +40,17 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             }
         }
 
-        public async Task<ApiResponse<List<BusinessDto>>> GetBusinessesByCategoryAsync(int categoryId, int pageNumber = 1, int pageSize = 10)
+        public async Task<ApiResponse<PaginatedResult<BusinessDto>>> GetBusinessesByCategoryAsync(int categoryId, int pageNumber = 1, int pageSize = 10)
         {
             try
             {
                 var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/categories/{categoryId}/businesses?pageNumber={pageNumber}&pageSize={pageSize}");
                 var response = await _httpClient.SendAsync(request);
-                return await HandleApiResponse<List<Application.DTOs.BusinessDto>>(response);
+                return await HandleApiResponse<PaginatedResult<Application.DTOs.BusinessDto>>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<BusinessDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<PaginatedResult<BusinessDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
     }

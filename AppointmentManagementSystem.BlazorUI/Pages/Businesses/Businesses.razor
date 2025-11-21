@@ -82,7 +82,7 @@
             </RadzenRow>
 
             <div class="d-flex justify-content-center mt-4">
-                <RadzenPager Count="int.MaxValue"
+                <RadzenPager Count="totalCount"
                              PageSize="pageSize"
                              PageIndex="currentPage - 1"
                              PageChanged="OnPageChanged"
@@ -110,6 +110,7 @@
     private string noResultsMessage = "Henüz işletme bulunmamaktadır.";
     private int currentPage = 1;
     private int pageSize = 9;
+    private int totalCount = 0;
 
     [Parameter]
     public int CategoryId { get; set; }
@@ -143,12 +144,14 @@
             pageSize: pageSize);
         if (response.Success)
         {
-            businesses = response.Data ?? new List<BusinessDto>();
+            totalCount = response.Data?.TotalCount ?? 0;
+            businesses = response.Data?.Items ?? new List<BusinessDto>();
         }
         else
         {
             NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
             businesses = new List<BusinessDto>();
+            totalCount = 0;
         }
 
         isLoading = false;

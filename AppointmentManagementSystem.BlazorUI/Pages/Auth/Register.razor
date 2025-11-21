@@ -623,10 +623,10 @@
     private async Task LoadCategories()
     {
         categoriesLoading = true;
-        var response = await CategoryApiService.GetAllCategoriesAsync();
+        var response = await CategoryApiService.GetAllCategoriesAsync(pageSize: 100);
         if (response.Success)
         {
-            categories = response.Data ?? new List<CategoryDto>();
+            categories = response.Data?.Items ?? new List<CategoryDto>();
         }
         categoriesLoading = false;
     }

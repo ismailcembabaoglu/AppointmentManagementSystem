@@ -1,10 +1,11 @@
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Models;
+using AppointmentManagementSystem.Application.Shared;
 using MediatR;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Queries
 {
-    public class GetAllBusinessesQuery : PaginationParameters, IRequest<List<BusinessDto>>
+    public class GetAllBusinessesQuery : PaginationParameters, IRequest<PaginatedResult<BusinessDto>>
     {
         public int? CategoryId { get; set; }
         public string? SearchTerm { get; set; }

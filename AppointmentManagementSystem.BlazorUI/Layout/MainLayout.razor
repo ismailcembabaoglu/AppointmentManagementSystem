@@ -1215,11 +1215,11 @@
             var isLoading = true;
 
             // Perform actual search
-            var response = await BusinessApiService.GetAllBusinessesAsync(searchTerm: searchQuery);
-            
+            var response = await BusinessApiService.GetAllBusinessesAsync(searchTerm: searchQuery, pageSize: 50);
+
             if (response.Success && response.Data != null)
             {
-                searchResults = response.Data;
+                searchResults = response.Data.Items;
             }
 
             // // Update dialog with results

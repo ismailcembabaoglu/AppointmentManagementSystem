@@ -146,8 +146,8 @@
 
     private async Task LoadCategoriesAsync()
     {
-        var response = await CategoryApiService.GetAllCategoriesAsync();
-        categories = response?.Data;
+        var response = await CategoryApiService.GetAllCategoriesAsync(pageSize: 100);
+        categories = response?.Data?.Items;
     }
 
     private async Task LoadBusinessesAsync()

@@ -5,7 +5,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
 {
     public interface IBusinessApiService
     {
-        Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
+        Task<ApiResponse<PaginatedResult<BusinessDto>>> GetAllBusinessesAsync(
             int? categoryId = null,
             string? searchTerm = null,
             string? city = null,
