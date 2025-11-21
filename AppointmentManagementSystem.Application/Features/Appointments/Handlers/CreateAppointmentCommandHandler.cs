@@ -18,6 +18,7 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
+        private readonly IImageOptimizationService _imageOptimizationService;
 
         public CreateAppointmentCommandHandler(
             IAppointmentRepository appointmentRepository,
@@ -28,7 +29,8 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
             IRepository<User> userRepository,
             IRepository<Business> businessRepository,
             IRepository<Employee> employeeRepository,
-            IEmailService emailService)
+            IEmailService emailService,
+            IImageOptimizationService imageOptimizationService)
         {
             _appointmentRepository = appointmentRepository;
             _serviceRepository = serviceRepository;
@@ -39,6 +41,7 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
             _businessRepository = businessRepository;
             _employeeRepository = employeeRepository;
             _emailService = emailService;
+            _imageOptimizationService = imageOptimizationService;
         }
 
         public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
@@ -60,14 +63,15 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
                 {
                     if (!string.IsNullOrEmpty(photos))
                     {
+                        var optimized = _imageOptimizationService.OptimizeImage(photos);
                         var appointmentPhoto = new AppointmentPhoto
                         {
                             AppointmentId = appointment.Id,
                             Appointment = appointment,
-                            FileName = $"business_{appointment.Id}_photo.jpg",
-                            Base64Data = photos,
-                            ContentType = "image/jpeg",
-                            FileSize = photos.Length
+                            FileName = $"appointment_{appointment.Id}_photo.jpg",
+                            Base64Data = optimized.Base64Data,
+                            ContentType = optimized.ContentType,
+                            FileSize = optimized.FileSize
                         };
                         await _appointmentPhotoRepository.AddAsync(appointmentPhoto);
                         await _unitOfWork.SaveChangesAsync();

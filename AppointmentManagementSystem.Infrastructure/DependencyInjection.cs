@@ -44,6 +44,7 @@ namespace AppointmentManagementSystem.Infrastructure
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IPayTRService, PayTRService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IImageOptimizationService, ImageOptimizationService>();
             services.AddHttpClient<IPayTRService, PayTRService>();
 
             // Background Services
