@@ -19,6 +19,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
+        private readonly IImageOptimizationService _imageOptimizationService;
 
         public RegisterBusinessCommandHandler(
             IRepository<User> userRepository,
@@ -31,7 +32,8 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             IPasswordHasher passwordHasher,
             IJwtTokenGenerator jwtTokenGenerator,
             IUnitOfWork unitOfWork,
-            IEmailService emailService)
+            IEmailService emailService,
+            IImageOptimizationService imageOptimizationService)
         {
             _userRepository = userRepository;
             _categoryRepository = categoryRepository;
@@ -44,6 +46,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             _jwtTokenGenerator = jwtTokenGenerator;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _imageOptimizationService = imageOptimizationService;
         }
 
         public async Task<AuthResponseDto> Handle(RegisterBusinessCommand request, CancellationToken cancellationToken)
@@ -121,14 +124,15 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
             // Add Business Photo if provided
             if (!string.IsNullOrEmpty(dto.BusinessPhotoBase64))
             {
+                var optimizedBusinessPhoto = _imageOptimizationService.OptimizeImage(dto.BusinessPhotoBase64);
                 var businessPhoto = new BusinessPhoto
                 {
                     BusinessId = business.Id,
                     Business=business,
                     FileName = $"business_{business.Id}_photo.jpg",
-                    Base64Data = dto.BusinessPhotoBase64,
-                    ContentType = "image/jpeg",
-                    FileSize = dto.BusinessPhotoBase64.Length
+                    Base64Data = optimizedBusinessPhoto.Base64Data,
+                    ContentType = optimizedBusinessPhoto.ContentType,
+                    FileSize = optimizedBusinessPhoto.FileSize
                 };
                 await _businessPhotoRepository.AddAsync(businessPhoto);
                 await _unitOfWork.SaveChangesAsync();
@@ -180,14 +184,15 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                             if (!string.IsNullOrEmpty(photoBase64))
                             {
                                 photoIndex++;
+                                var optimized = _imageOptimizationService.OptimizeImage(photoBase64);
                                 var employeePhoto = new EmployeePhoto
                                 {
                                     EmployeeId = employee.Id,
                                     Employee=employee,
                                     FileName = $"employee_{employee.Id}_photo_{photoIndex}.jpg",
-                                    Base64Data = photoBase64,
-                                    ContentType = "image/jpeg",
-                                    FileSize = photoBase64.Length
+                                    Base64Data = optimized.Base64Data,
+                                    ContentType = optimized.ContentType,
+                                    FileSize = optimized.FileSize
                                 };
                                 await _employeePhotoRepository.AddAsync(employeePhoto);
                                 await _unitOfWork.SaveChangesAsync();

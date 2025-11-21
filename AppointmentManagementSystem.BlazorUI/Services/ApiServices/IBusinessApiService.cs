@@ -5,12 +5,14 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
 {
     public interface IBusinessApiService
     {
-        Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
-            int? categoryId = null, 
+        Task<ApiResponse<PaginatedResult<BusinessDto>>> GetAllBusinessesAsync(
+            int? categoryId = null,
             string? searchTerm = null,
             string? city = null,
             string? district = null,
-            double? minRating = null);
+            double? minRating = null,
+            int pageNumber = 1,
+            int pageSize = 10);
         Task<ApiResponse<BusinessDto?>> GetBusinessByIdAsync(int id);
         Task<ApiResponse<List<ServiceDto>>> GetServicesByBusinessAsync(int businessId);
         Task<ApiResponse<List<EmployeeDto>>> GetEmployeesByBusinessAsync(int businessId);

@@ -552,15 +552,17 @@
 
     private string GetPhotoDataUri(string base64Data)
     {
-        if (string.IsNullOrEmpty(base64Data))
-            return "";
+        if (string.IsNullOrWhiteSpace(base64Data))
+            return string.Empty;
+
+        var normalized = base64Data.Trim();
 
         // Check if already has data URI prefix
-        if (base64Data.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
-            return base64Data;
+        if (normalized.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+            return normalized;
 
         // Add data URI prefix for Base64 images
-        return $"{base64Data}";
+        return $"data:image/jpeg;base64,{normalized}";
     }
 
     private string GetStatusColor(string status) => status switch

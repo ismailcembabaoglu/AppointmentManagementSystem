@@ -1,12 +1,14 @@
 using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Application.Features.Businesses.Queries;
+using AppointmentManagementSystem.Application.Shared;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
-    public class GetAllBusinessesQueryHandler : IRequestHandler<GetAllBusinessesQuery, List<BusinessDto>>
+    public class GetAllBusinessesQueryHandler : IRequestHandler<GetAllBusinessesQuery, PaginatedResult<BusinessDto>>
     {
         private readonly IBusinessRepository _businessRepository;
         private readonly IMapper _mapper;
@@ -17,10 +19,10 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
             _mapper = mapper;
         }
 
-        public async Task<List<BusinessDto>> Handle(GetAllBusinessesQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<BusinessDto>> Handle(GetAllBusinessesQuery request, CancellationToken cancellationToken)
         {
             var businesses = await _businessRepository.GetAllWithDetailsAsync(
-                request.CategoryId, 
+                request.CategoryId,
                 request.SearchTerm,
                 request.City,
                 request.District
@@ -39,7 +41,16 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
                 businessDtos.Add(dto);
             }
 
-            return businessDtos;
+            var totalCount = businessDtos.Count;
+            var paged = businessDtos.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
+
+            return new PaginatedResult<BusinessDto>
+            {
+                Items = paged,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
         }
     }
 }

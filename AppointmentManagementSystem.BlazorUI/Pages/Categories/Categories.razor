@@ -71,6 +71,17 @@
                 </RadzenColumn>
             }
         </RadzenRow>
+
+        <div class="d-flex justify-content-center mt-4">
+            <RadzenPager Count="totalCount"
+                         PageSize="pageSize"
+                         PageIndex="currentPage - 1"
+                         PageChanged="OnPageChanged"
+                         ShowPagingSummary="false"
+                         ShowPageSizeDropDown="false"
+                         ShowFirstLastButtons="false"
+                         ShowInfo="false" />
+        </div>
     }
     else
     {
@@ -95,6 +106,9 @@
 @code {
     private List<CategoryDto> categories = new();
     private bool isLoading = true;
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,15 +120,17 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await CategoryApiService.GetAllCategoriesAsync();
+        var response = await CategoryApiService.GetAllCategoriesAsync(currentPage, pageSize);
         if (response.Success)
         {
-            categories = response.Data ?? new List<CategoryDto>();
+            totalCount = response.Data?.TotalCount ?? 0;
+            categories = response.Data?.Items ?? new List<CategoryDto>();
         }
         else
         {
             NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
             categories = new List<CategoryDto>();
+            totalCount = 0;
         }
 
         isLoading = false;
@@ -124,6 +140,12 @@
     private void NavigateToBusinesses(int categoryId)
     {
         Navigation.NavigateTo($"/businesses/category/{categoryId}");
+    }
+
+    private async Task OnPageChanged(PagerEventArgs args)
+    {
+        currentPage = args.PageIndex + 1;
+        await LoadCategories();
     }
 
     private string GetCategoryIcon(string categoryName)

@@ -304,10 +304,10 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await BusinessApiService.GetAllBusinessesAsync(CategoryId);
+        var response = await BusinessApiService.GetAllBusinessesAsync(CategoryId, pageSize: 200);
         if (response.Success)
         {
-            businesses = response.Data ?? new List<BusinessDto>();
+            businesses = response.Data?.Items ?? new List<BusinessDto>();
             filteredBusinesses = businesses;
         }
         else
@@ -331,12 +331,13 @@
             searchTerm: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
             city: selectedCity,
             district: selectedDistrict,
-            minRating: selectedRating
+            minRating: selectedRating,
+            pageSize: 200
         );
 
         if (response.Success)
         {
-            filteredBusinesses = response.Data ?? new List<BusinessDto>();
+            filteredBusinesses = response.Data?.Items ?? new List<BusinessDto>();
             
             if (filteredBusinesses.Count == 0)
             {

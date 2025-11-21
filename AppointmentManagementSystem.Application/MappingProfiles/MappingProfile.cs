@@ -1,6 +1,8 @@
 ﻿using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Domain.Entities;
 using AutoMapper;
+using System;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.MappingProfiles
 {
@@ -17,21 +19,30 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
             // Business mappings
             CreateMap<Business, BusinessDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos.Select(p => p.Base64Data ?? "").ToList()));
+                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos
+                    .Select(FormatImageData)
+                    .Where(data => !string.IsNullOrEmpty(data))
+                    .ToList()));
 
             CreateMap<CreateBusinessDto, Business>();
 
             // Service mappings
             CreateMap<Service, ServiceDto>()
                 .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business.Name))
-                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos.Select(p => p.Base64Data ?? "").ToList()));
+                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos
+                    .Select(FormatImageData)
+                    .Where(data => !string.IsNullOrEmpty(data))
+                    .ToList()));
 
             CreateMap<CreateServiceDto, Service>();
 
             // Employee mappings
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business.Name))
-                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos.Select(p => p.Base64Data ?? "").ToList()))
+                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos
+                    .Select(FormatImageData)
+                    .Where(data => !string.IsNullOrEmpty(data))
+                    .ToList()))
                 .ForMember(dest => dest.DocumentUrls, opt => opt.MapFrom(src => src.Documents.Select(d => d.Base64Data ?? "").ToList()));
 
             CreateMap<CreateEmployeeDto, Employee>();
@@ -42,7 +53,11 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
                 .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business != null ? src.Business.Name : ""))
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.Name : null))
                 .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service != null ? src.Service.Name : ""))
-                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos != null ? src.Photos.Select(p => p.Base64Data ?? "").ToList() : new List<string>()));
+                .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos != null
+                    ? src.Photos.Select(FormatImageData)
+                        .Where(data => !string.IsNullOrEmpty(data))
+                        .ToList()
+                    : new List<string>()));
 
             CreateMap<CreateAppointmentDto, Appointment>()
                 .ForMember(dest => dest.Customer, opt => opt.Ignore())
@@ -73,13 +88,46 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
             CreateMap<CreateBusinessUserDto, BusinessUser>(); // BU SATIR EKLENDİ
 
             // Photo mappings
-            CreateMap<BusinessPhoto, PhotoDto>();
-            CreateMap<EmployeePhoto, PhotoDto>();
-            CreateMap<ServicePhoto, PhotoDto>();
-            CreateMap<AppointmentPhoto, PhotoDto>();
+            CreateMap<BusinessPhoto, PhotoDto>()
+                .ForMember(dest => dest.Base64Data, opt => opt.MapFrom(src => FormatImageData(src)));
+
+            CreateMap<EmployeePhoto, PhotoDto>()
+                .ForMember(dest => dest.Base64Data, opt => opt.MapFrom(src => FormatImageData(src)));
+
+            CreateMap<ServicePhoto, PhotoDto>()
+                .ForMember(dest => dest.Base64Data, opt => opt.MapFrom(src => FormatImageData(src)));
+
+            CreateMap<AppointmentPhoto, PhotoDto>()
+                .ForMember(dest => dest.Base64Data, opt => opt.MapFrom(src => FormatImageData(src)));
 
             // Document mappings
             CreateMap<EmployeeDocument, DocumentDto>();
+        }
+
+        private static string FormatImageData(Photo? photo)
+        {
+            if (photo == null)
+            {
+                return string.Empty;
+            }
+
+            var base64 = photo.Base64Data?.Trim();
+
+            if (string.IsNullOrWhiteSpace(base64))
+            {
+                return string.Empty;
+            }
+
+            if (base64.StartsWith("data:image", StringComparison.OrdinalIgnoreCase))
+            {
+                return base64;
+            }
+
+            var contentType = string.IsNullOrWhiteSpace(photo.ContentType)
+                ? "image/jpeg"
+                : photo.ContentType;
+
+            return $"data:{contentType};base64,{base64}";
         }
     }
 }

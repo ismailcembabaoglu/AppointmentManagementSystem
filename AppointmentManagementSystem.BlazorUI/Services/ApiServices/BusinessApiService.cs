@@ -12,12 +12,14 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<List<BusinessDto>>> GetAllBusinessesAsync(
-            int? categoryId = null, 
+        public async Task<ApiResponse<PaginatedResult<BusinessDto>>> GetAllBusinessesAsync(
+            int? categoryId = null,
             string? searchTerm = null,
             string? city = null,
             string? district = null,
-            double? minRating = null)
+            double? minRating = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             try
             {
@@ -33,15 +35,17 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     queryParams.Add($"district={Uri.EscapeDataString(district)}");
                 if (minRating.HasValue)
                     queryParams.Add($"minRating={minRating.Value}");
+                queryParams.Add($"pageNumber={pageNumber}");
+                queryParams.Add($"pageSize={pageSize}");
 
                 var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
                 var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/businesses{queryString}");
                 var response = await _httpClient.SendAsync(request);
-                return await HandleApiResponse<List<BusinessDto>>(response);
+                return await HandleApiResponse<PaginatedResult<BusinessDto>>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<BusinessDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<PaginatedResult<BusinessDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
