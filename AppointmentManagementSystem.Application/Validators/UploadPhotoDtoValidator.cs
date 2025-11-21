@@ -27,13 +27,22 @@ namespace AppointmentManagementSystem.Application.Validators
 
             try
             {
-                Convert.FromBase64String(base64);
+                var normalized = NormalizeBase64(base64);
+                Convert.FromBase64String(normalized);
                 return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        private static string NormalizeBase64(string base64)
+        {
+            var markerIndex = base64.IndexOf("base64,", StringComparison.OrdinalIgnoreCase);
+            return markerIndex >= 0
+                ? base64[(markerIndex + "base64,".Length)..]
+                : base64;
         }
 
         private bool BeValidImageType(string contentType)

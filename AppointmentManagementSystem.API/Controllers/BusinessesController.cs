@@ -20,11 +20,13 @@ namespace AppointmentManagementSystem.API.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll(
-            [FromQuery] int? categoryId = null, 
+            [FromQuery] int? categoryId = null,
             [FromQuery] string? search = null,
             [FromQuery] string? city = null,
             [FromQuery] string? district = null,
-            [FromQuery] double? minRating = null)
+            [FromQuery] double? minRating = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             var query = new GetAllBusinessesQuery
             {
@@ -32,7 +34,9 @@ namespace AppointmentManagementSystem.API.Controllers
                 SearchTerm = search,
                 City = city,
                 District = district,
-                MinRating = minRating
+                MinRating = minRating,
+                PageNumber = pageNumber,
+                PageSize = pageSize
             };
             var result = await _mediator.Send(query);
             return OkResponse(result, "İşletmeler başarıyla getirildi.");

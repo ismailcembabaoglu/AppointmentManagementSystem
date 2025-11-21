@@ -13,17 +13,20 @@ namespace AppointmentManagementSystem.Application.Features.Photos.Handlers
         private readonly IServiceRepository _serviceRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IImageOptimizationService _imageOptimizationService;
 
         public UploadServicePhotoCommandHandler(
             IServicePhotoRepository photoRepository,
             IServiceRepository serviceRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            IImageOptimizationService imageOptimizationService)
         {
             _photoRepository = photoRepository;
             _serviceRepository = serviceRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _imageOptimizationService = imageOptimizationService;
         }
 
         public async Task<PhotoDto> Handle(UploadServicePhotoCommand request, CancellationToken cancellationToken)
@@ -35,24 +38,22 @@ namespace AppointmentManagementSystem.Application.Features.Photos.Handlers
             if (string.IsNullOrEmpty(request.PhotoDto.Base64Data))
                 throw new Exception("Base64 data is required.");
 
-            var base64Length = request.PhotoDto.Base64Data.Length;
-            var fileSize = (long)(base64Length * 0.75);
+            var optimized = _imageOptimizationService.OptimizeImage(request.PhotoDto.Base64Data, request.PhotoDto.ContentType);
 
-            if (fileSize > 10 * 1024 * 1024)
+            if (optimized.FileSize > 10 * 1024 * 1024)
                 throw new Exception("File size exceeds 10MB limit.");
 
             var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
-            if (!string.IsNullOrEmpty(request.PhotoDto.ContentType) &&
-                !allowedTypes.Contains(request.PhotoDto.ContentType.ToLower()))
+            if (!allowedTypes.Contains(optimized.ContentType.ToLower()))
                 throw new Exception("Invalid file type. Only JPEG, PNG, and WebP are allowed.");
 
             var photo = new ServicePhoto
             {
                 ServiceId = request.ServiceId,
                 FileName = request.PhotoDto.FileName,
-                ContentType = request.PhotoDto.ContentType,
-                FileSize = fileSize,
-                Base64Data = request.PhotoDto.Base64Data,
+                ContentType = optimized.ContentType,
+                FileSize = optimized.FileSize,
+                Base64Data = optimized.Base64Data,
                 FilePath = null
             };
 
