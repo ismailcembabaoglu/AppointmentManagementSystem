@@ -136,7 +136,11 @@
         isLoading = true;
         StateHasChanged();
 
-        var response = await BusinessApiService.GetAllBusinessesAsync(categoryId, searchTerm, currentPage, pageSize);
+        var response = await BusinessApiService.GetAllBusinessesAsync(
+            categoryId,
+            searchTerm,
+            pageNumber: currentPage,
+            pageSize: pageSize);
         if (response.Success)
         {
             businesses = response.Data ?? new List<BusinessDto>();
