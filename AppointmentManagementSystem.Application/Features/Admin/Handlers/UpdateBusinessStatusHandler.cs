@@ -7,10 +7,14 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
     public class UpdateBusinessStatusHandler : IRequestHandler<UpdateBusinessStatusCommand, bool>
     {
         private readonly IBusinessRepository _businessRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UpdateBusinessStatusHandler(IBusinessRepository businessRepository)
+        public UpdateBusinessStatusHandler(
+            IBusinessRepository businessRepository,
+            IUnitOfWork unitOfWork)
         {
             _businessRepository = businessRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> Handle(UpdateBusinessStatusCommand request, CancellationToken cancellationToken)
@@ -21,8 +25,9 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
 
             business.IsActive = request.IsActive;
             business.UpdatedAt = DateTime.UtcNow;
-            
+
             await _businessRepository.UpdateAsync(business);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
     }
