@@ -1285,7 +1285,7 @@
                 // Customer: Get confirmed appointments
                 var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
                 
-                if (response.Success && response.Data?.Items != null)
+                if (response.Success && response.Data.Items != null)
                 {
                     // Sadece confirmed olanları al ve maksimum 50 tane ile sınırla
                     notificationAppointments = response.Data.Items
