@@ -42,31 +42,62 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                var content = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-                    return result ?? new ApiResponse<T> { Success = false, Message = "Bilinmeyen hata" };
-                }
-                else
-                {
-                    // Hata durumunda detaylı bilgi ver
-                    string errorMessage;
-                    try
+                    // Öncelikle ApiResponse<T> olarak çözümlemeyi dene
+                    var apiResponse = !string.IsNullOrWhiteSpace(content)
+                        ? JsonSerializer.Deserialize<ApiResponse<T>>(content, options)
+                        : null;
+
+                    if (apiResponse != null)
                     {
-                        var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-                        errorMessage = errorResult?.Message ?? $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
-                    }
-                    catch
-                    {
-                        errorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                        apiResponse.Success |= response.IsSuccessStatusCode;
+                        return apiResponse;
                     }
 
+                    // Gelen veri ApiResponse değilse doğrudan T tipine deserialize et
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        var rawData = JsonSerializer.Deserialize<T>(content, options);
+                        return new ApiResponse<T>
+                        {
+                            Success = true,
+                            Data = rawData
+                        };
+                    }
+
+                    // İçerik boş ama istek başarılı; sadece başarı bilgisini dön
                     return new ApiResponse<T>
                     {
-                        Success = false,
-                        Message = errorMessage
+                        Success = true
                     };
                 }
+
+                // Hata durumunda detaylı bilgi ver
+                string errorMessage;
+                try
+                {
+                    var errorResult = !string.IsNullOrWhiteSpace(content)
+                        ? JsonSerializer.Deserialize<ApiResponse<T>>(content, options)
+                        : null;
+                    errorMessage = errorResult?.Message ?? $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                }
+                catch
+                {
+                    errorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                }
+
+                return new ApiResponse<T>
+                {
+                    Success = false,
+                    Message = errorMessage
+                };
             }
             catch (Exception ex)
             {
