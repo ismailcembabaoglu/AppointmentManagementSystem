@@ -50,10 +50,21 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Öncelikle ApiResponse<T> olarak çözümlemeyi dene
-                    var apiResponse = !string.IsNullOrWhiteSpace(content)
-                        ? JsonSerializer.Deserialize<ApiResponse<T>>(content, options)
-                        : null;
+                    ApiResponse<T>? apiResponse = null;
+
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        try
+                        {
+                            // Öncelikle ApiResponse<T> olarak çözümlemeyi dene
+                            apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, options);
+                        }
+                        catch (JsonException)
+                        {
+                            // İçerik doğrudan T tipi olabilir; bu durumda ham veriye geçilecek
+                            apiResponse = null;
+                        }
+                    }
 
                     if (apiResponse != null)
                     {
