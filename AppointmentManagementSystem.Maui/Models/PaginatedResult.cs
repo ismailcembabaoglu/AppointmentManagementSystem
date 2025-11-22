@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AppointmentManagementSystem.Application.Shared
+namespace AppointmentManagementSystem.Maui.Models
 {
     public class PaginatedResult<T>
     {
