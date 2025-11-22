@@ -1,6 +1,9 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
 
 namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
@@ -12,23 +15,41 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
         }
 
-        public async Task<ApiResponse<List<AppointmentDto>>> GetAllAppointmentsAsync(int? customerId = null, int? businessId = null)
+        public async Task<ApiResponse<PaginatedResult<AppointmentDto>>> GetAllAppointmentsAsync(
+            int? customerId = null,
+            int? businessId = null,
+            string? status = null,
+            string? sortBy = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             try
             {
-                var queryString = "";
+                var queryParams = new List<string>();
+
                 if (customerId.HasValue)
-                    queryString += $"?customerId={customerId.Value}";
+                    queryParams.Add($"customerId={customerId.Value}");
                 if (businessId.HasValue)
-                    queryString += string.IsNullOrEmpty(queryString) ? $"?businessId={businessId.Value}" : $"&businessId={businessId.Value}";
+                    queryParams.Add($"businessId={businessId.Value}");
+                if (!string.IsNullOrWhiteSpace(status))
+                    queryParams.Add($"status={Uri.EscapeDataString(status)}");
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                    queryParams.Add($"sortBy={Uri.EscapeDataString(sortBy)}");
+
+                queryParams.Add($"pageNumber={pageNumber}");
+                queryParams.Add($"pageSize={pageSize}");
+
+                var queryString = queryParams.Any()
+                    ? "?" + string.Join("&", queryParams)
+                    : string.Empty;
 
                 var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/appointments{queryString}");
                 var response = await _httpClient.SendAsync(request);
-                return await HandleApiResponse<List<AppointmentDto>>(response);
+                return await HandleApiResponse<PaginatedResult<AppointmentDto>>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<AppointmentDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<PaginatedResult<AppointmentDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
         public async Task<ApiResponse<List<string>>> GetAppointmentPhotosAsync(int appointmentId)

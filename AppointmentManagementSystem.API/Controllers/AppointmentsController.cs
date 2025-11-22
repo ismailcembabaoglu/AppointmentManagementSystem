@@ -22,12 +22,22 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetAll([FromQuery] int? customerId = null, [FromQuery] int? businessId = null)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int? customerId = null,
+            [FromQuery] int? businessId = null,
+            [FromQuery] string? status = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             var query = new GetAllAppointmentsQuery
             {
                 CustomerId = customerId,
-                BusinessId = businessId
+                BusinessId = businessId,
+                Status = status,
+                SortBy = sortBy,
+                PageNumber = pageNumber,
+                PageSize = pageSize
             };
             var result = await _mediator.Send(query);
             return OkResponse(result, "Randevular başarıyla getirildi.");
