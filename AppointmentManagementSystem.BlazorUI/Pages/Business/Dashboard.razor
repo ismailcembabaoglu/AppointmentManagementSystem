@@ -496,7 +496,7 @@ else
                 var response = await AppointmentService.GetAllAppointmentsAsync(null, business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    appointments = response.Data;
+                    appointments = response.Data.Items;
                 }
             }
         }
