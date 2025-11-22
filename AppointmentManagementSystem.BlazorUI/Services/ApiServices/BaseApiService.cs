@@ -1,5 +1,6 @@
 ﻿using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -69,6 +70,17 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     if (apiResponse != null)
                     {
                         apiResponse.Success |= response.IsSuccessStatusCode;
+
+                        if (IsDefault(apiResponse.Data) && !string.IsNullOrWhiteSpace(content))
+                        {
+                            var fallbackData = TryDeserializePayload<T>(content, options);
+                            if (!IsDefault(fallbackData))
+                            {
+                                apiResponse.Data = fallbackData;
+                                apiResponse.Success = true;
+                            }
+                        }
+
                         return apiResponse;
                     }
 
@@ -125,6 +137,11 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             }
         }
 
+        private static bool IsDefault<T>(T? value)
+        {
+            return EqualityComparer<T>.Default.Equals(value!, default!);
+        }
+
         private static T? TryDeserializePayload<T>(string content, JsonSerializerOptions options)
         {
             try
@@ -140,7 +157,7 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                     using var document = JsonDocument.Parse(content);
                     var root = document.RootElement;
 
-                    foreach (var propertyName in new[] { "data", "result", "items" })
+                    foreach (var propertyName in new[] { "data", "result", "items", "value", "records" })
                     {
                         if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(propertyName, out var property))
                         {
