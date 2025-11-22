@@ -72,14 +72,23 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                         return apiResponse;
                     }
 
-                    // Gelen veri ApiResponse değilse doğrudan T tipine deserialize et
+                    // Gelen veri ApiResponse değilse ya da wrapper farklıysa ham veriyi çözümle
                     if (!string.IsNullOrWhiteSpace(content))
                     {
-                        var rawData = JsonSerializer.Deserialize<T>(content, options);
+                        var rawData = TryDeserializePayload<T>(content, options);
+                        if (rawData is not null)
+                        {
+                            return new ApiResponse<T>
+                            {
+                                Success = true,
+                                Data = rawData
+                            };
+                        }
+
+                        // Deseriliaze edilemeyen ama boş olmayan içerik için yine de başarı döndür
                         return new ApiResponse<T>
                         {
-                            Success = true,
-                            Data = rawData
+                            Success = true
                         };
                     }
 
@@ -114,6 +123,38 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             {
                 return new ApiResponse<T> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+        }
+
+        private static T? TryDeserializePayload<T>(string content, JsonSerializerOptions options)
+        {
+            try
+            {
+                // İlk deneme: direkt T tipine çözümle
+                return JsonSerializer.Deserialize<T>(content, options);
+            }
+            catch (JsonException)
+            {
+                // İkinci deneme: json içindeki data/result/items gibi alanlardan T'yi çıkar
+                try
+                {
+                    using var document = JsonDocument.Parse(content);
+                    var root = document.RootElement;
+
+                    foreach (var propertyName in new[] { "data", "result", "items" })
+                    {
+                        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(propertyName, out var property))
+                        {
+                            return property.Deserialize<T>(options);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Yoksay: tüm fallback'ler başarısızsa null döndür
+                }
+            }
+
+            return default;
         }
     }
 }
