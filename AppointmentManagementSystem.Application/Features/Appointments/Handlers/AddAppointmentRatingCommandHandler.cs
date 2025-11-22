@@ -25,6 +25,7 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
         public async Task<AppointmentDto?> Handle(AddAppointmentRatingCommand request, CancellationToken cancellationToken)
         {
             await _appointmentRepository.AddRatingAsync(request.Id, request.Rating, request.Review);
+            await _unitOfWork.SaveChangesAsync();
 
             var appointment = await _appointmentRepository.GetByIdWithDetailsAsync(request.Id);
             return appointment != null ? _mapper.Map<AppointmentDto>(appointment) : null;

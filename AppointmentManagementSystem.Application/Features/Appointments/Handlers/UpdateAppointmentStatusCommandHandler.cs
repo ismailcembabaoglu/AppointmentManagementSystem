@@ -25,6 +25,7 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
         public async Task<AppointmentDto?> Handle(UpdateAppointmentStatusCommand request, CancellationToken cancellationToken)
         {
             await _appointmentRepository.UpdateStatusAsync(request.Id, request.Status);
+            await _unitOfWork.SaveChangesAsync();
 
             var appointment = await _appointmentRepository.GetByIdWithDetailsAsync(request.Id);
             return appointment != null ? _mapper.Map<AppointmentDto>(appointment) : null;
