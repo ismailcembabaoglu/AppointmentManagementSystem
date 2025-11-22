@@ -190,7 +190,7 @@
         var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId:userId);
         if (response.Success)
         {
-            appointments = response.Data ?? new List<AppointmentDto>();
+            appointments = response.Data?.Items ?? new List<AppointmentDto>();
             
             totalAppointments = appointments.Count;
             upcomingAppointments = appointments.Count(a => a.Status == "Pending" || a.Status == "Confirmed");

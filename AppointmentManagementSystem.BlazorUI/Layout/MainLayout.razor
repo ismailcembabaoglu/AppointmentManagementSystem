@@ -1266,7 +1266,7 @@
                 if (response.Success && response.Data != null)
                 {
                     // Sadece pending olanları al ve maksimum 50 tane ile sınırla
-                    notificationAppointments = response.Data
+                    notificationAppointments = response.Data.Items
                         .Where(a => a.Status == "Pending")
                         .OrderByDescending(a => a.AppointmentDate)
                         .Take(50)
@@ -1285,10 +1285,10 @@
                 // Customer: Get confirmed appointments
                 var response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
                 
-                if (response.Success && response.Data != null)
+                if (response.Success && response.Data?.Items != null)
                 {
                     // Sadece confirmed olanları al ve maksimum 50 tane ile sınırla
-                    notificationAppointments = response.Data
+                    notificationAppointments = response.Data.Items
                         .Where(a => a.Status == "Confirmed")
                         .OrderByDescending(a => a.AppointmentDate)
                         .Take(50)
