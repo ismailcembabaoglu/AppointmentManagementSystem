@@ -1,34 +1,53 @@
-﻿using AppointmentManagementSystem.Application.DTOs;
+using AppointmentManagementSystem.Application.DTOs;
 using AppointmentManagementSystem.Maui.Models;
-using Blazored.LocalStorage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
 
 namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
     public class AppointmentApiService : BaseApiService, IAppointmentApiService
     {
-        public AppointmentApiService(HttpClient httpClient, ILocalStorageService localStorage)
-            : base(httpClient, localStorage)
+        public AppointmentApiService(HttpClient httpClient) : base(httpClient)
         {
         }
 
-        public async Task<ApiResponse<List<AppointmentDto>>> GetAllAppointmentsAsync(int? customerId = null, int? businessId = null)
+        public async Task<ApiResponse<PaginatedResult<AppointmentDto>>> GetAllAppointmentsAsync(
+            int? customerId = null,
+            int? businessId = null,
+            string? status = null,
+            string? sortBy = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             try
             {
-                var queryString = "";
-                if (customerId.HasValue)
-                    queryString += $"?customerId={customerId.Value}";
-                if (businessId.HasValue)
-                    queryString += string.IsNullOrEmpty(queryString) ? $"?businessId={businessId.Value}" : $"&businessId={businessId.Value}";
+                var queryParams = new List<string>();
 
-                await AddAuthorizationHeader();
-                var response = await _httpClient.GetAsync($"api/appointments{queryString}");
-                return await HandleApiResponse<List<AppointmentDto>>(response);
+                if (customerId.HasValue)
+                    queryParams.Add($"customerId={customerId.Value}");
+                if (businessId.HasValue)
+                    queryParams.Add($"businessId={businessId.Value}");
+                if (!string.IsNullOrWhiteSpace(status))
+                    queryParams.Add($"status={Uri.EscapeDataString(status)}");
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                    queryParams.Add($"sortBy={Uri.EscapeDataString(sortBy)}");
+
+                queryParams.Add($"pageNumber={pageNumber}");
+                queryParams.Add($"pageSize={pageSize}");
+
+                var queryString = queryParams.Any()
+                    ? "?" + string.Join("&", queryParams)
+                    : string.Empty;
+
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/appointments{queryString}");
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<PaginatedResult<AppointmentDto>>(response);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<AppointmentDto>> { Success = false, Message = $"Hata: {ex.Message}" };
+                return new ApiResponse<PaginatedResult<AppointmentDto>> { Success = false, Message = $"Hata: {ex.Message}" };
             }
         }
 
@@ -36,8 +55,8 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.GetAsync($"api/appointments/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Get, $"api/appointments/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<AppointmentDto?>(response);
             }
             catch (Exception ex)
@@ -50,8 +69,9 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PostAsJsonAsync("api/appointments", createAppointmentDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Post, "api/appointments");
+                request.Content = JsonContent.Create(createAppointmentDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<AppointmentDto>(response);
             }
             catch (Exception ex)
@@ -64,9 +84,10 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
                 var updateStatusDto = new { Status = status };
-                var response = await _httpClient.PutAsJsonAsync($"api/appointments/{id}/status", updateStatusDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/appointments/{id}/status");
+                request.Content = JsonContent.Create(updateStatusDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<AppointmentDto?>(response);
             }
             catch (Exception ex)
@@ -79,8 +100,9 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PutAsJsonAsync($"api/appointments/{id}/rating", ratingDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Put, $"api/appointments/{id}/rating");
+                request.Content = JsonContent.Create(ratingDto);
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<AppointmentDto?>(response);
             }
             catch (Exception ex)
@@ -93,8 +115,8 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.DeleteAsync($"api/appointments/{id}");
+                var request = await CreateRequestWithAuth(HttpMethod.Delete, $"api/appointments/{id}");
+                var response = await _httpClient.SendAsync(request);
                 return await HandleApiResponse<bool>(response);
             }
             catch (Exception ex)

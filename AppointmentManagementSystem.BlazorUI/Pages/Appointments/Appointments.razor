@@ -74,7 +74,7 @@
                     </div>
 
                     <RadzenButton Text="Filtrele" Icon="filter_list" ButtonStyle="ButtonStyle.Primary" Click="@ApplyFilters" />
-                    <RadzenButton Text="Yenile" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@LoadAppointments" />
+                    <RadzenButton Text="Yenile" Icon="refresh" ButtonStyle="ButtonStyle.Light" Click="@ReloadAppointments" />
                 </RadzenStack>
             </RadzenCard>
 
@@ -217,23 +217,34 @@
                     }
                 </RadzenStack>
 
+                <div class="d-flex justify-content-center">
+                    <RadzenPager Count="totalCount"
+                                 PageSize="pageSize"
+                                 @bind-PageIndex="pagerIndex"
+                                 PageChanged="OnPageChanged"
+                                 ShowPagingSummary="false"
+                                 ShowPageSizeDropDown="false"
+                                 ShowFirstLastButtons="false"
+                                 ShowInfo="false" />
+                </div>
+
                 <!-- Stats Summary -->
                 <RadzenCard Style="background: var(--rz-base-200);">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround" Wrap="FlexWrap.Wrap" Gap="16px">
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="4px">
-                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: var(--rz-primary);">@appointments.Count</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: var(--rz-primary);">@totalCount</RadzenText>
                             <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">Toplam</RadzenText>
                         </RadzenStack>
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="4px">
-                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #ffc107;">@appointments.Count(a => a.Status == "Pending")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #ffc107;">@GetStatusCount("Pending")</RadzenText>
                             <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">Bekliyor</RadzenText>
                         </RadzenStack>
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="4px">
-                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #2ecc71;">@appointments.Count(a => a.Status == "Confirmed")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #2ecc71;">@GetStatusCount("Confirmed")</RadzenText>
                             <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">Onaylı</RadzenText>
                         </RadzenStack>
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="4px">
-                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #3498db;">@appointments.Count(a => a.Status == "Completed")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 600; color: #3498db;">@GetStatusCount("Completed")</RadzenText>
                             <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">Tamamlandı</RadzenText>
                         </RadzenStack>
                     </RadzenStack>
@@ -264,6 +275,7 @@
 @code {
     private List<AppointmentDto> appointments = new();
     private List<AppointmentDto> filteredAppointments = new();
+    private Dictionary<string, int> statusCounts = new();
     private bool isLoading = true;
     private int currentUserId = 0;
     private int? currentBusinessId = null;
@@ -273,8 +285,16 @@
     private int? selectedBusinessId = null;
     private string sortBy = "Date";
 
-    // Business options for customer filter
-    private List<BusinessOption> businessOptions = new();
+    private int currentPage = 1;
+    private int pagerIndex = 0;
+    private int pageSize = 6;
+    private int totalCount = 0;
+
+    private HashSet<int> knownBusinessIds = new();
+    private List<BusinessOption> businessOptions = new()
+    {
+        new BusinessOption { Text = "Tüm İşletmeler", Value = null }
+    };
 
     private List<StatusOption> statusOptions = new()
     {
@@ -295,13 +315,7 @@
     protected override async Task OnInitializedAsync()
     {
         await GetCurrentUserInfo();
-        await LoadAppointments();
-        
-        // Load businesses for customer filter
-        if (userRole == "Customer")
-        {
-            await LoadBusinessOptions();
-        }
+        await LoadAppointments(resetFilters: true);
     }
 
     private async Task GetCurrentUserInfo()
@@ -311,7 +325,6 @@
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            // Get user ID
             var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
                            ?? user.FindFirst("sub")
                            ?? user.FindFirst("userId")
@@ -322,14 +335,12 @@
                 currentUserId = parsedId;
             }
 
-            // Get role
             var roleClaim = user.FindFirst(System.Security.Claims.ClaimTypes.Role);
             if (roleClaim != null)
             {
                 userRole = roleClaim.Value;
             }
 
-            // If business, get business ID from token
             if (userRole == "Business")
             {
                 var businessIdClaim = user.FindFirst("businessId");
@@ -341,91 +352,61 @@
         }
     }
 
-    private async Task LoadBusinessOptions()
+    private async Task LoadAppointments(bool resetFilters = false)
     {
-        try
+        if (resetFilters)
         {
-            // Müşterinin randevu aldığı işletmeleri bul
-            var uniqueBusinessIds = appointments
-                .Where(a => a.BusinessId > 0)
-                .Select(a => a.BusinessId)
-                .Distinct()
-                .ToList();
+            currentPage = 1;
+            pagerIndex = 0;
 
-            // İşletme bilgilerini al
-            businessOptions = new List<BusinessOption>
+            if (userRole == "Customer")
             {
-                new BusinessOption { Text = "Tüm İşletmeler", Value = null }
-            };
-
-            foreach (var businessId in uniqueBusinessIds)
-            {
-                var businessName = appointments.FirstOrDefault(a => a.BusinessId == businessId)?.BusinessName;
-                if (!string.IsNullOrEmpty(businessName))
+                knownBusinessIds.Clear();
+                businessOptions = new List<BusinessOption>
                 {
-                    businessOptions.Add(new BusinessOption
-                    {
-                        Text = businessName,
-                        Value = businessId
-                    });
-                }
+                    new BusinessOption { Text = "Tüm İşletmeler", Value = null }
+                };
             }
-
-            StateHasChanged();
         }
-        catch (Exception ex)
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"İşletmeler yüklenirken hata oluştu: {ex.Message}");
-        }
-    }
 
-    private void ApplyFilters()
-    {
-        FilterAndSortAppointments();
-    }
-
-    private async Task LoadAppointments()
-    {
         isLoading = true;
         StateHasChanged();
 
         try
         {
-            ApiResponse<List<AppointmentDto>> response;
-
-            if (userRole == "Business" && currentBusinessId.HasValue)
-            {
-                // Business users see only their business appointments
-                response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: currentBusinessId.Value);
-            }
-            else if (userRole == "Customer")
-            {
-                // Customers see only their own appointments
-                response = await AppointmentApiService.GetAllAppointmentsAsync(customerId: currentUserId);
-            }
-            else
-            {
-                // Fallback - get all
-                response = await AppointmentApiService.GetAllAppointmentsAsync();
-            }
+            var response = await AppointmentApiService.GetAllAppointmentsAsync(
+                customerId: userRole == "Customer" ? currentUserId : null,
+                businessId: userRole switch
+                {
+                    "Business" when currentBusinessId.HasValue => currentBusinessId,
+                    "Customer" => selectedBusinessId,
+                    _ => null
+                },
+                status: selectedStatus != "All" ? selectedStatus : null,
+                sortBy: sortBy,
+                pageNumber: currentPage,
+                pageSize: pageSize);
 
             if (response.Success)
             {
-                appointments = response.Data ?? new List<AppointmentDto>();
-                
-                // Load business options for customer
+                appointments = response.Data?.Items ?? new List<AppointmentDto>();
+                filteredAppointments = appointments;
+                totalCount = response.Data?.TotalCount ?? 0;
+                statusCounts = response.Data?.StatusCounts ?? new Dictionary<string, int>();
+                pagerIndex = Math.Max(currentPage - 1, 0);
+
                 if (userRole == "Customer")
                 {
-                    await LoadBusinessOptions();
+                    UpdateBusinessOptions(filteredAppointments);
                 }
-                
-                FilterAndSortAppointments();
             }
             else
             {
                 NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
                 appointments = new List<AppointmentDto>();
                 filteredAppointments = new List<AppointmentDto>();
+                totalCount = 0;
+                statusCounts = new Dictionary<string, int>();
             }
         }
         catch (Exception ex)
@@ -433,6 +414,8 @@
             NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Randevular yüklenirken hata oluştu: {ex.Message}");
             appointments = new List<AppointmentDto>();
             filteredAppointments = new List<AppointmentDto>();
+            totalCount = 0;
+            statusCounts = new Dictionary<string, int>();
         }
         finally
         {
@@ -441,47 +424,37 @@
         }
     }
 
-    private void FilterAndSortAppointments()
+    private void UpdateBusinessOptions(IEnumerable<AppointmentDto> pageAppointments)
     {
-        // Start with all appointments
-        filteredAppointments = new List<AppointmentDto>(appointments);
-
-        // Filter by business (Customer only)
-        if (userRole == "Customer" && selectedBusinessId.HasValue)
+        foreach (var appointment in pageAppointments)
         {
-            filteredAppointments = filteredAppointments.Where(a => a.BusinessId == selectedBusinessId.Value).ToList();
+            if (appointment.BusinessId > 0 && knownBusinessIds.Add(appointment.BusinessId))
+            {
+                if (!string.IsNullOrEmpty(appointment.BusinessName))
+                {
+                    businessOptions.Add(new BusinessOption
+                    {
+                        Text = appointment.BusinessName,
+                        Value = appointment.BusinessId
+                    });
+                }
+            }
         }
-
-        // Filter by status
-        if (selectedStatus != "All")
-        {
-            filteredAppointments = filteredAppointments.Where(a => a.Status == selectedStatus).ToList();
-        }
-
-        // Sort
-        SortAppointments();
     }
 
-    private void SortAppointments()
+    private async Task ApplyFilters()
     {
-        filteredAppointments = sortBy switch
-        {
-            "Date" => filteredAppointments.OrderByDescending(a => a.AppointmentDate).ThenByDescending(a => a.StartTime).ToList(),
-            "DateOld" => filteredAppointments.OrderBy(a => a.AppointmentDate).ThenBy(a => a.StartTime).ToList(),
-            "Status" => filteredAppointments.OrderBy(a => GetStatusOrder(a.Status)).ThenByDescending(a => a.AppointmentDate).ToList(),
-            _ => filteredAppointments.OrderByDescending(a => a.AppointmentDate).ToList()
-        };
-        StateHasChanged();
+        await LoadAppointments(resetFilters: true);
     }
 
-    private int GetStatusOrder(string status) => status switch
+    private Task ReloadAppointments() => LoadAppointments(resetFilters: true);
+
+    private async Task OnPageChanged(PagerEventArgs args)
     {
-        "Pending" => 1,
-        "Confirmed" => 2,
-        "Completed" => 3,
-        "Cancelled" => 4,
-        _ => 5
-    };
+        pagerIndex = args.PageIndex;
+        currentPage = pagerIndex + 1;
+        await LoadAppointments();
+    }
 
     private void ViewDetails(int appointmentId)
     {
@@ -535,7 +508,7 @@
             @<div style="padding: 20px;">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
                     <RadzenRating @bind-Value="@ratingValue" Stars="5" />
-                    <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width: 100%;" />
+                    <RadzenTextArea @bind-Value="@reviewText" Placeholder="Yorumunuzu yazın (opsiyonel)" Rows="4" Style="width:100%;" />
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
                         <RadzenButton Text="İptal" ButtonStyle="ButtonStyle.Light" Click="() => ds.Close(false)" />
                         <RadzenButton Text="Gönder" ButtonStyle="ButtonStyle.Primary" Click="() => ds.Close(true)" />
@@ -564,13 +537,14 @@
             }
         }
 
-        // Reset values
         ratingValue = 0;
         reviewText = "";
     }
 
     private int ratingValue = 0;
     private string reviewText = "";
+
+    private int GetStatusCount(string status) => statusCounts.TryGetValue(status, out var count) ? count : 0;
 
     private string GetStatusColor(string status) => status switch
     {
