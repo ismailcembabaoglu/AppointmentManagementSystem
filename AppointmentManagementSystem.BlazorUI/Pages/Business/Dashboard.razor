@@ -405,7 +405,7 @@ else
                 if (businessesResponse.Success && businessesResponse.Data != null)
                 {
                     // For now, get the first business (later we'll filter by user)
-                    business = businessesResponse.Data.FirstOrDefault();
+                    business = businessesResponse.Data.Items.FirstOrDefault();
 
                     if (business != null)
                     {
