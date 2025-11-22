@@ -179,7 +179,7 @@
         if (confirmed == true)
         {
             var success = await AdminApiService.UpdateBusinessStatusAsync(business.Id, newStatus);
-            if (success.Data)
+            if (success.Success)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "İşletme durumu güncellendi.");
                 await LoadBusinessesAsync();
