@@ -218,8 +218,7 @@
                 </RadzenStack>
 
                 <div class="d-flex justify-content-center">
-                    <RadzenPager @ref="pager"
-                                 Count="totalCount"
+                    <RadzenPager Count="totalCount"
                                  PageSize="pageSize"
                                  @bind-PageIndex="pagerIndex"
                                  PageChanged="OnPageChanged"
@@ -353,8 +352,6 @@
         }
     }
 
-    private RadzenPager? pager;
-
     private async Task LoadAppointments(bool resetFilters = false, bool allowPageCorrection = true)
     {
         if (resetFilters)
@@ -412,11 +409,6 @@
                 }
 
                 pagerIndex = Math.Max(currentPage - 1, 0);
-
-                if (pager != null)
-                {
-                    await InvokeAsync(() => pager.GoToPage(pagerIndex));
-                }
 
                 if (userRole == "Customer")
                 {
