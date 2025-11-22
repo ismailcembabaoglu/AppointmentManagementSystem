@@ -1,5 +1,7 @@
-﻿using AppointmentManagementSystem.BlazorUI.Models;
+using AppointmentManagementSystem.BlazorUI.Models;
 using Blazored.LocalStorage;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -42,36 +44,145 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
+                var content = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-                    return result ?? new ApiResponse<T> { Success = false, Message = "Bilinmeyen hata" };
-                }
-                else
-                {
-                    // Hata durumunda detaylı bilgi ver
-                    string errorMessage;
-                    try
+                    ApiResponse<T>? apiResponse = null;
+
+                    if (!string.IsNullOrWhiteSpace(content))
                     {
-                        var errorResult = await response.Content.ReadFromJsonAsync<ApiResponse<T>>();
-                        errorMessage = errorResult?.Message ?? $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
-                    }
-                    catch
-                    {
-                        errorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                        try
+                        {
+                            // Öncelikle ApiResponse<T> olarak çözümlemeyi dene
+                            apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, options);
+                        }
+                        catch (JsonException)
+                        {
+                            // İçerik doğrudan T tipi olabilir; bu durumda ham veriye geçilecek
+                            apiResponse = null;
+                        }
                     }
 
+                    if (apiResponse != null)
+                    {
+                        apiResponse.Success |= response.IsSuccessStatusCode;
+
+                        if (IsDefault(apiResponse.Data) && !string.IsNullOrWhiteSpace(content))
+                        {
+                            var fallbackData = TryDeserializePayload<T>(content, options);
+                            if (!IsDefault(fallbackData))
+                            {
+                                apiResponse.Data = fallbackData;
+                                apiResponse.Success = true;
+                            }
+                        }
+
+                        return apiResponse;
+                    }
+
+                    // Gelen veri ApiResponse değilse ya da wrapper farklıysa ham veriyi çözümle
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        var rawData = TryDeserializePayload<T>(content, options);
+                        if (rawData is not null)
+                        {
+                            return new ApiResponse<T>
+                            {
+                                Success = true,
+                                Data = rawData
+                            };
+                        }
+
+                        // Deseriliaze edilemeyen ama boş olmayan içerik için yine de başarı döndür
+                        return new ApiResponse<T>
+                        {
+                            Success = true
+                        };
+                    }
+
+                    // İçerik boş ama istek başarılı; sadece başarı bilgisini dön
                     return new ApiResponse<T>
                     {
-                        Success = false,
-                        Message = errorMessage
+                        Success = true
                     };
                 }
+
+                // Hata durumunda detaylı bilgi ver
+                string errorMessage;
+                try
+                {
+                    var errorResult = !string.IsNullOrWhiteSpace(content)
+                        ? JsonSerializer.Deserialize<ApiResponse<T>>(content, options)
+                        : null;
+                    errorMessage = errorResult?.Message ?? $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                }
+                catch
+                {
+                    errorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
+                }
+
+                return new ApiResponse<T>
+                {
+                    Success = false,
+                    Message = errorMessage
+                };
             }
             catch (Exception ex)
             {
                 return new ApiResponse<T> { Success = false, Message = $"Hata: {ex.Message}" };
             }
+        }
+
+        private static bool IsDefault<T>(T? value)
+        {
+            return EqualityComparer<T>.Default.Equals(value!, default!);
+        }
+
+        private static T? TryDeserializePayload<T>(string content, JsonSerializerOptions options)
+        {
+            try
+            {
+                // İlk deneme: direkt T tipine çözümle
+                return JsonSerializer.Deserialize<T>(content, options);
+            }
+            catch (JsonException)
+            {
+                // İkinci deneme: json içindeki data/result/items gibi alanlardan T'yi çıkar
+                try
+                {
+                    using var document = JsonDocument.Parse(content);
+                    var root = document.RootElement;
+
+                    foreach (var propertyName in new[] { "data", "result", "items", "value", "records", "payload", "response", "content", "resultData" })
+                    {
+                        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(propertyName, out var property))
+                        {
+                            return property.Deserialize<T>(options);
+                        }
+                    }
+
+                    // Eğer bilinen alanlar yoksa ve tek bir kompleks alan varsa onu kullan
+                    if (root.ValueKind == JsonValueKind.Object && root.EnumerateObject().Count() == 1)
+                    {
+                        var singleProperty = root.EnumerateObject().First();
+                        if (singleProperty.Value.ValueKind is JsonValueKind.Object or JsonValueKind.Array)
+                        {
+                            return singleProperty.Value.Deserialize<T>(options);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Yoksay: tüm fallback'ler başarısızsa null döndür
+                }
+            }
+
+            return default;
         }
     }
 }
