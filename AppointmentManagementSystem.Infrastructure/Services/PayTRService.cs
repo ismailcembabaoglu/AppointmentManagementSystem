@@ -1,6 +1,7 @@
 using AppointmentManagementSystem.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -42,6 +43,17 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     userIp = "127.0.0.1";
                 }
 
+                var sanitizedEmail = string.IsNullOrWhiteSpace(customerEmail)
+                    ? "musteri@aptivaplan.local"
+                    : customerEmail.Trim();
+                var userName = sanitizedEmail.Contains('@')
+                    ? sanitizedEmail.Split('@', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Kart Kullanıcısı"
+                    : sanitizedEmail;
+                if (string.IsNullOrWhiteSpace(userName))
+                {
+                    userName = "Kart Kullanıcısı";
+                }
+
                 // user_basket oluştur - PayTR zorunlu alan
                 var userBasket = new[]
                 {
@@ -74,8 +86,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "debug_on", "1" },
                     { "no_installment", noInstallment },
                     { "max_installment", maxInstallment },
-                    { "user_name", customerEmail }, // Placeholder
-                    { "user_address", "Türkiye" }, // Placeholder
+                    { "user_name", userName },
+                    { "user_address", "Türkiye İstanbul" },
                     { "user_phone", "5555555555" }, // Placeholder
                     // Callback URL'leri - Frontend sayfalarına yönlendir
                     // PayTR otomatik olarak bu URL'lere query string parametreleri ekler:
