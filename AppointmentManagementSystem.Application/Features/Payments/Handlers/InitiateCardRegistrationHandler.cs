@@ -87,7 +87,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 slug = "business";
             }
 
-            return $"{slug}{businessId}@aptivaplan.local";
+            return $"{slug}{businessId}@aptivaplan.com";
         }
     }
 }

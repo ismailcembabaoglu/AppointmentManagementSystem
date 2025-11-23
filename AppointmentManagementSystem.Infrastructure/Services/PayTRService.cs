@@ -44,7 +44,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 }
 
                 var sanitizedEmail = string.IsNullOrWhiteSpace(customerEmail)
-                    ? "musteri@aptivaplan.local"
+                    ? "musteri@aptivaplan.com"
                     : customerEmail.Trim();
                 var userName = sanitizedEmail.Contains('@')
                     ? sanitizedEmail.Split('@', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Kart Kullanıcısı"
@@ -65,12 +65,13 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var paymentAmount = ((int)(amount * 100)).ToString();
                 var noInstallment = "0";
                 var maxInstallment = "0";
+                var non3d = "1"; // Kart doğrulama ve güncelleme için 3D'siz token talebi
                 var currency = "TRY";
                 var testMode = _isTestMode ? "1" : "0";
                 var scenario = isCardUpdate ? "Card Update" : "Subscription";
 
                 // Token oluştur
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{customerEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}";
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{sanitizedEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}{non3d}";
                 var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
 
                 // PayTR API'ye POST isteği gönder
@@ -79,7 +80,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "merchant_id", _merchantId },
                     { "user_ip", userIp },
                     { "merchant_oid", merchantOid },
-                    { "email", customerEmail },
+                    { "email", sanitizedEmail },
                     { "payment_amount", paymentAmount },
                     { "paytr_token", token },
                     { "user_basket", userBasketBase64 },
@@ -96,7 +97,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "merchant_fail_url", _configuration["PayTR:FailUrl"] ?? "https://aptivaplan.com.tr/payment/failed" },
                     { "timeout_limit", "30" },
                     { "currency", currency },
-                    { "test_mode", testMode }
+                    { "test_mode", testMode },
+                    { "non_3d", non3d }
                 };
 
                 // Debug logging
