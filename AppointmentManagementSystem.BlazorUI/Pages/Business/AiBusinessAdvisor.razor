@@ -1,0 +1,258 @@
+@page "/business/ai-coach"
+@using System.Text.RegularExpressions
+@using System.Linq
+@using AppointmentManagementSystem.Application.DTOs.Ai
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Authorization
+@inject IAiAssistantApiService AiAssistantApiService
+@inject NotificationService NotificationService
+@inject Microsoft.JSInterop.IJSRuntime JS
+@attribute [Authorize(Roles = "Business")]
+
+<PageTitle>İşletme AI Koçu</PageTitle>
+
+<RadzenCard Style="max-width: 1200px; margin: 0 auto; padding: 24px; box-shadow: var(--rz-shadow-3); border: 1px solid #e5e7eb;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="6px">
+            <RadzenText TextStyle="TextStyle.DisplayH6" Style="margin: 0; font-weight: 700;">İşletme Yapay Zeka Koçu</RadzenText>
+            <RadzenText Style="color: var(--rz-text-secondary-color);">Performansını analiz edip aksiyon planları ve raporlar oluştur.</RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                <RadzenBadge Icon="insights" Style="background: #eef2ff; color: #4338ca;">Gerçek zamanlı analiz</RadzenBadge>
+                <RadzenBadge Icon="table_view" Style="background: #ecfeff; color: #0ea5e9;">Excel rapor</RadzenBadge>
+                <RadzenBadge Icon="tips_and_updates" Style="background: #fef3c7; color: #d97706;">Aksiyon önerileri</RadzenBadge>
+            </RadzenStack>
+        </RadzenStack>
+
+        <RadzenRow>
+            <RadzenColumn Size="12" SizeMD="5">
+                <RadzenCard Style="height: 100%; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); border: 1px solid #e5e7eb;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="chat" Style="color: #4338ca;" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">Sorunuz</RadzenText>
+                        </RadzenStack>
+
+                        <RadzenTextArea @bind-Value="request.Message"
+                                         Placeholder="Örn: Bu ay en çok hangi hizmet kazandırdı? Bekleyen randevuları nasıl azaltabilirim?"
+                                         Style="width: 100%; min-height: 200px;"
+                                         Counter="true"
+                                         MaxLength="600"
+                                         ShowClear="true" />
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                            <RadzenButton Icon="smart_toy"
+                                          Disabled="isLoading"
+                                          Click="SendRequest"
+                                          ButtonStyle="ButtonStyle.Primary">
+                                @(isLoading ? "Analiz ediliyor..." : "Yanıt al")
+                            </RadzenButton>
+                            <RadzenButton Icon="download"
+                                          Disabled="isDownloading || response?.Analytics == null"
+                                          ButtonStyle="ButtonStyle.Light"
+                                          Click="DownloadReport">
+                                @(isDownloading ? "Rapor hazırlanıyor..." : "Excel rapor indir")
+                            </RadzenButton>
+                        </RadzenStack>
+                        <RadzenText Style="color: var(--rz-text-secondary-color); font-size: 13px;">
+                            * AI yanıtı işletme randevuları, hizmetler ve yorumlardan oluşturulur. Excel raporu son 30 randevu ve hizmet performanslarını içerir.
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="7">
+                <RadzenCard Style="height: 100%; min-height: 520px; background: linear-gradient(160deg, #ffffff 0%, #f8fafc 80%, #eef2ff 100%); border: 1px solid #e5e7eb;">
+                    @if (isLoading)
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center" Style="padding: 40px;">
+                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" ShowValue="false" />
+                            <RadzenText>Gemini yanıtı hazırlanıyor...</RadzenText>
+                        </RadzenStack>
+                    }
+                    else if (response != null)
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            @if (response.Analytics != null)
+                            {
+                                <RadzenRow Gap="12px">
+                                    <RadzenColumn Size="12" SizeSM="6">
+                                        <RadzenCard Style="background: linear-gradient(135deg, #667eea15 0%, #667eea30 100%); border-left: 4px solid #4338ca;">
+                                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                                                <RadzenText TextStyle="TextStyle.Overline" Style="color: #4338ca;">Toplam Randevu</RadzenText>
+                                                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">@response.Analytics.Stats.TotalAppointments</RadzenText>
+                                                <RadzenText Style="color: var(--rz-text-secondary-color);">Tamamlanan: @response.Analytics.Stats.CompletedAppointments</RadzenText>
+                                            </RadzenStack>
+                                        </RadzenCard>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeSM="6">
+                                        <RadzenCard Style="background: linear-gradient(135deg, #22c55e15 0%, #22c55e35 100%); border-left: 4px solid #16a34a;">
+                                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                                                <RadzenText TextStyle="TextStyle.Overline" Style="color: #166534;">Gelir (tamamlanan)</RadzenText>
+                                                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">@response.Analytics.Stats.TotalRevenue.ToString("C")</RadzenText>
+                                                <RadzenText Style="color: var(--rz-text-secondary-color);">Ortalama puan: @(response.Analytics.Stats.AverageRating?.ToString("0.0") ?? "-")</RadzenText>
+                                            </RadzenStack>
+                                        </RadzenCard>
+                                    </RadzenColumn>
+                                </RadzenRow>
+                            }
+
+                            <div class="ai-chat-card">
+                                <div class="ai-avatar">
+                                    <RadzenIcon Icon="smart_toy" Style="color: white;" />
+                                </div>
+                                <div class="ai-bubble">
+                                    <RadzenText Style="color: #0b1324;">@((MarkupString)FormatReply(response.Reply))</RadzenText>
+                                </div>
+                            </div>
+
+                            @if (response.Analytics?.Services?.Any() == true)
+                            {
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">Hızlı performans özeti</RadzenText>
+                                    <RadzenRow Gap="12px">
+                                        @foreach (var service in response.Analytics.Services.Take(4))
+                                        {
+                                            <RadzenColumn Size="12" SizeMD="6">
+                                                <RadzenCard Style="height: 100%; border: 1px solid #e5e7eb; box-shadow: var(--rz-shadow-1);">
+                                                    <RadzenStack Orientation="Orientation.Vertical" Gap="6px">
+                                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin: 0; font-weight: 600;">@service.Name</RadzenText>
+                                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                                            <RadzenBadge Style="background: #ecfeff; color: #0ea5e9;">@service.CompletedCount tamamlanan</RadzenBadge>
+                                                            <RadzenBadge Style="background: #fef3c7; color: #b45309;">Gelir: @service.Revenue.ToString("C")</RadzenBadge>
+                                                        </RadzenStack>
+                                                        <RadzenText Style="color: var(--rz-text-secondary-color); font-size: 13px;">Ortalama puan: @(service.AverageRating?.ToString("0.0") ?? "-")</RadzenText>
+                                                    </RadzenStack>
+                                                </RadzenCard>
+                                            </RadzenColumn>
+                                        }
+                                    </RadzenRow>
+                                </RadzenStack>
+                            }
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px" AlignItems="AlignItems.Center" Style="padding: 40px;">
+                            <RadzenIcon Icon="analytics" Style="font-size: 42px; color: var(--rz-primary-color);" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">AI ile rapor almak için sorunuzu yazın</RadzenText>
+                            <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center;">
+                                Örneğin: "Son 30 gündeki iptal oranım nedir? En iyi performans gösteren hizmet hangisi?"
+                            </RadzenText>
+                        </RadzenStack>
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private AiBusinessInsightRequestDto request = new();
+    private AiBusinessInsightResponseDto? response;
+    private bool isLoading;
+    private bool isDownloading;
+
+    private async Task SendRequest()
+    {
+        if (string.IsNullOrWhiteSpace(request.Message))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Mesaj gerekli", "Lütfen işletmeyle ilgili sorunuzu yazın.");
+            return;
+        }
+
+        isLoading = true;
+        response = null;
+        var apiResponse = await AiAssistantApiService.GetBusinessInsightsAsync(request);
+        isLoading = false;
+
+        if (apiResponse.Success && apiResponse.Data != null)
+        {
+            response = apiResponse.Data;
+            NotificationService.Notify(NotificationSeverity.Success, "Yanıt hazır", "Gemini koçundan gelen önerileri inceleyebilirsiniz.");
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", apiResponse.Message ?? "Bir hata oluştu.");
+        }
+    }
+
+    private async Task DownloadReport()
+    {
+        isDownloading = true;
+        var apiResponse = await AiAssistantApiService.DownloadBusinessReportAsync();
+        isDownloading = false;
+
+        if (apiResponse.Success && apiResponse.Data != null && !string.IsNullOrWhiteSpace(apiResponse.Data.Base64Data))
+        {
+            await JS.InvokeVoidAsync("downloadFileFromBase64", apiResponse.Data.FileName, apiResponse.Data.ContentType, apiResponse.Data.Base64Data);
+            NotificationService.Notify(NotificationSeverity.Success, "Rapor indirildi", "Excel dosyanız hazır.");
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", apiResponse.Message ?? "Rapor indirilemedi.");
+        }
+    }
+
+    private MarkupString FormatReply(string? reply)
+    {
+        if (string.IsNullOrWhiteSpace(reply))
+        {
+            return new MarkupString(string.Empty);
+        }
+
+        var withLinks = Regex.Replace(reply, @"(https?://[^\s]+)", match =>
+        {
+            var url = match.Groups[1].Value.TrimEnd('.');
+            return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"ai-link\">{url}</a>";
+        }, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+        var normalized = withLinks.Replace("\r\n", "\n");
+        normalized = Regex.Replace(normalized, "\n{2,}", "<br /><br />");
+        normalized = Regex.Replace(normalized, "\n", "<br />");
+
+        return new MarkupString(normalized);
+    }
+}
+
+<style>
+    .ai-chat-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 16px;
+        display: flex;
+        gap: 12px;
+        box-shadow: var(--rz-shadow-2);
+    }
+
+    .ai-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(160deg, #4338ca, #312e81);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--rz-shadow-1);
+    }
+
+    .ai-bubble {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .ai-link {
+        color: #2563eb;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+
+    .ai-link:hover {
+        color: #1d4ed8;
+    }
+</style>

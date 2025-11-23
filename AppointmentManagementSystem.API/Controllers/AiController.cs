@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AppointmentManagementSystem.Application.DTOs.Ai;
 using AppointmentManagementSystem.Application.Features.Ai.Queries;
 using MediatR;
@@ -38,6 +39,45 @@ namespace AppointmentManagementSystem.API.Controllers
 
             var result = await _mediator.Send(query);
             return OkResponse(result, "Yapay zeka önerileri hazır.");
+        }
+
+        [HttpPost("business/insights")]
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> GetBusinessInsights([FromBody] AiBusinessInsightRequestDto requestDto)
+        {
+            var businessIdClaim = User.Claims.FirstOrDefault(c => c.Type == "businessId");
+            if (businessIdClaim == null || !int.TryParse(businessIdClaim.Value, out var businessId))
+            {
+                return ErrorResponse<AiBusinessInsightResponseDto>("İşletme bilgisi bulunamadı.");
+            }
+
+            var query = new GetBusinessInsightQuery
+            {
+                BusinessId = businessId,
+                Message = requestDto.Message
+            };
+
+            var result = await _mediator.Send(query);
+            return OkResponse(result, "İşletme analizi hazır.");
+        }
+
+        [HttpGet("business/report")]
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> DownloadBusinessReport()
+        {
+            var businessIdClaim = User.Claims.FirstOrDefault(c => c.Type == "businessId");
+            if (businessIdClaim == null || !int.TryParse(businessIdClaim.Value, out var businessId))
+            {
+                return ErrorResponse<AiBusinessReportFileDto>("İşletme bilgisi bulunamadı.");
+            }
+
+            var result = await _mediator.Send(new GetBusinessReportFileQuery { BusinessId = businessId });
+            if (result == null)
+            {
+                return ErrorResponse<AiBusinessReportFileDto>("Rapor oluşturulamadı.");
+            }
+
+            return OkResponse(result, "Rapor hazır.");
         }
     }
 }

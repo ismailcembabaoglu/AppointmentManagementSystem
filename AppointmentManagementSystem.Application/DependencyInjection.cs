@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using AppointmentManagementSystem.Application.Services;
 
 namespace AppointmentManagementSystem.Application
 {
@@ -15,6 +16,8 @@ namespace AppointmentManagementSystem.Application
 
             // Add validation pipeline behavior
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+            services.AddScoped<IBusinessAnalyticsBuilder, BusinessAnalyticsBuilder>();
 
             return services;
         }
