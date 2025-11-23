@@ -173,7 +173,7 @@
         var result = await CategoryApiService.GetAllCategoriesAsync();
         if (result.Success && result.Data != null)
         {
-            categories = result.Data.OrderBy(c => c.Name).ToList();
+            categories = result.Data.Items.OrderBy(c => c.Name).ToList();
         }
     }
 
