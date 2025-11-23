@@ -31,10 +31,11 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var safeAmount = request.Amount < 1m ? 1m : request.Amount;
                 var safeIp = string.IsNullOrWhiteSpace(request.UserIp) ? "127.0.0.1" : request.UserIp;
 
-                // Generate merchant_oid: REG{BusinessId}_{Guid}
-                var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
+                // Generate merchant_oid without special characters (PayTR requires alphanumeric)
+                // Format example: REG6A1B2C3D or CARD6A1B2C3D
+                var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
                 var prefix = request.IsCardUpdate ? "CARD" : "REG";
-                var merchantOid = $"{prefix}{request.BusinessId}_{guidPart}";
+                var merchantOid = $"{prefix}{request.BusinessId}{guidPart}";
 
                 var result = await _paytrService.InitiateCardRegistrationAsync(
                     safeEmail,

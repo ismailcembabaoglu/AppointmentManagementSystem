@@ -108,10 +108,10 @@
                     // Manuel olarak webhook tetikle
                     Console.WriteLine($"🔧 PayTR test mode detected - triggering manual webhook...");
                     
-                    // Generate test merchant_oid from businessId
-                    // Format: REG{businessId}_{guid} - underscore separator for parsing
-                    var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
-                    merchantOid = $"REG{businessId}_{guidPart}";
+                    // Generate test merchant_oid from businessId without special characters
+                    // Format: REG{businessId}{guid}
+                    var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+                    merchantOid = $"REG{businessId}{guidPart}";
                     Console.WriteLine($"Generated MerchantOid: {merchantOid}");
                     
                     // Manuel webhook data oluştur
