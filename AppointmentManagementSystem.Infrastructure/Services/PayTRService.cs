@@ -90,6 +90,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_name", userName },
                     { "user_address", "Türkiye İstanbul" },
                     { "user_phone", "5555555555" }, // Placeholder
+                    // PayTR'in server-to-server bildirimlerinin yönleneceği URL
+                    { "callback_url", _configuration["PayTR:CallbackUrl"] ?? "https://aptivaplan.com.tr/api/payments/webhook" },
                     // Callback URL'leri - Frontend sayfalarına yönlendir
                     // PayTR otomatik olarak bu URL'lere query string parametreleri ekler:
                     // ?merchant_oid=xxx&status=xxx&total_amount=xxx&hash=xxx&utoken=xxx&ctoken=xxx&card_type=xxx&masked_pan=xxx&payment_id=xxx
