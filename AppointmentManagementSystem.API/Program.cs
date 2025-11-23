@@ -2,6 +2,7 @@ using AppointmentManagementSystem.API.Hubs;
 using AppointmentManagementSystem.API.Middleware;
 using AppointmentManagementSystem.API.Services;
 using AppointmentManagementSystem.Application;
+using AppointmentManagementSystem.Domain.Interfaces;
 using AppointmentManagementSystem.Infrastructure;
 using AppointmentManagementSystem.Infrastructure.Data;
 using AppointmentManagementSystem.Infrastructure.Services;
@@ -69,6 +70,10 @@ builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("De
 
 // Application
 builder.Services.AddApplication();
+
+// Gemini AI
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemini"));
+builder.Services.AddHttpClient<IGeminiClient, GeminiClient>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

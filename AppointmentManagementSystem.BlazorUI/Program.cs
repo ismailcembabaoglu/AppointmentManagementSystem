@@ -42,6 +42,7 @@ builder.Services.AddScoped<IPhotoApiService, PhotoApiService>();
 builder.Services.AddScoped<IDocumentApiService, DocumentApiService>();
 builder.Services.AddScoped<IPaymentApiService, PaymentApiService>();
 builder.Services.AddScoped<IAdminApiService, AdminApiService>();
+builder.Services.AddScoped<IAiAssistantApiService, AiAssistantApiService>();
 
 // SignalR Notification Service (Scoped olarak değiştirdik)
 builder.Services.AddScoped<SignalRNotificationService>();

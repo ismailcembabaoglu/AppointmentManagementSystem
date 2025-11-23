@@ -1,0 +1,209 @@
+@page "/customer/ai-advisor"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.Application.DTOs.Ai
+@using AppointmentManagementSystem.BlazorUI.Services
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using System.Linq
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Customer")]
+@inject IAiAssistantApiService AiAssistantApiService
+@inject ICategoryApiService CategoryApiService
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Gemini İşletme Asistanı</PageTitle>
+
+<RadzenCard Style="max-width: 1200px; margin: 0 auto; padding: 24px; box-shadow: var(--rz-shadow-2);">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+            <RadzenText TextStyle="TextStyle.DisplayH6" Style="margin: 0; font-weight: 700;">Gemini destekli işletme rehberi</RadzenText>
+            <RadzenText Style="color: var(--rz-text-secondary-color);">
+                Bulunduğunuz il/ilçe ve kategoriye göre en iyi işletmeleri yapay zeka ile önerelim.
+            </RadzenText>
+        </RadzenStack>
+
+        <RadzenRow Gap="24px">
+            <RadzenColumn Size="12" SizeMD="5">
+                <RadzenCard Style="height: 100%; background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); border: 1px solid #e5e7eb;">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">Filtreler</RadzenText>
+
+                        <RadzenDropDown @bind-Value="requestModel.City"
+                                        Data="cityOptions"
+                                        Placeholder="Şehir seçin"
+                                        Style="width: 100%;"
+                                        Change="OnCityChanged" />
+
+                        <RadzenDropDown @bind-Value="requestModel.District"
+                                        Data="districtOptions"
+                                        Placeholder="İlçe seçin"
+                                        Disabled="string.IsNullOrEmpty(requestModel.City)"
+                                        Style="width: 100%;" />
+
+                        <RadzenDropDown @bind-Value="requestModel.CategoryId"
+                                        Data="categories"
+                                        TextProperty="Name"
+                                        ValueProperty="Id"
+                                        Placeholder="Kategori seçin"
+                                        Style="width: 100%;" />
+
+                        <RadzenNumeric @bind-Value="requestModel.MaxResults"
+                                       Min="1"
+                                       Max="5"
+                                       Style="width: 100%;"
+                                       ShowUpDown="true"
+                                       Placeholder="Öneri sayısı" />
+
+                        <RadzenTextArea @bind-Value="requestModel.Message"
+                                         Placeholder="Örn: Kadıköy'de hafta sonu açık en iyi kadın kuaförü"
+                                         Style="width: 100%; min-height: 140px;" />
+
+                        <RadzenButton Icon="smart_toy"
+                                      Disabled="isLoading"
+                                      Click="SendRequest"
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Style="width: 100%;">
+                            <ChildContent>
+                                @(isLoading ? "Öneriler hazırlanıyor..." : "Önerileri Getir")
+                            </ChildContent>
+                        </RadzenButton>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="7">
+                <RadzenCard Style="height: 100%; min-height: 420px; background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); border: 1px solid #e5e7eb;">
+                    @if (isLoading)
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="16px" AlignItems="AlignItems.Center" Style="padding: 40px;">
+                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" ShowValue="false" />
+                            <RadzenText>Gemini önerileri hazırlanıyor...</RadzenText>
+                        </RadzenStack>
+                    }
+                    else if (response != null)
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">Yapay Zeka Yanıtı</RadzenText>
+                            <RadzenCard Style="background: #0f172a; color: white;">
+                                <RadzenText Style="white-space: pre-line; color: white;">@response.Reply</RadzenText>
+                            </RadzenCard>
+
+                            @if (response.Recommendations.Any())
+                            {
+                                <RadzenText TextStyle="TextStyle.H6" Style="margin-top: 12px;">Öne çıkan işletmeler</RadzenText>
+                                <RadzenRow Gap="16px">
+                                    @foreach (var business in response.Recommendations)
+                                    {
+                                        <RadzenColumn Size="12" SizeMD="6">
+                                            <RadzenCard Style="height: 100%; border: 1px solid #e5e7eb; box-shadow: var(--rz-shadow-1);">
+                                                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                                        <RadzenIcon Icon="store" Style="color: var(--rz-primary-color);" />
+                                                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">@business.Name</RadzenText>
+                                                    </RadzenStack>
+                                                    <RadzenText Style="color: var(--rz-text-secondary-color);">@business.Category</RadzenText>
+                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                                        <RadzenIcon Icon="star" Style="color: #f59e0b;" />
+                                                        <RadzenText>@business.AverageRating.ToString("0.0")</RadzenText>
+                                                        <RadzenText Style="color: var(--rz-text-secondary-color);">(@business.TotalRatings değerlendirme)</RadzenText>
+                                                    </RadzenStack>
+                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center">
+                                                        <RadzenIcon Icon="location_on" Style="color: #ef4444;" />
+                                                        <RadzenText>@($"{business.City} / {business.District}")</RadzenText>
+                                                    </RadzenStack>
+                                                    @if (business.HighlightedReviews.Any())
+                                                    {
+                                                        <RadzenStack Orientation="Orientation.Vertical" Gap="6px">
+                                                            <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">Öne çıkan yorumlar</RadzenText>
+                                                            @foreach (var review in business.HighlightedReviews)
+                                                            {
+                                                                <RadzenAlert Style="margin: 0;">@review</RadzenAlert>
+                                                            }
+                                                        </RadzenStack>
+                                                    }
+                                                    <RadzenButton Icon="open_in_new"
+                                                                  ButtonStyle="ButtonStyle.Secondary"
+                                                                  Click="@(() => Navigation.NavigateTo($"/business/{business.BusinessId}"))">
+                                                        İşletme sayfasına git
+                                                    </RadzenButton>
+                                                </RadzenStack>
+                                            </RadzenCard>
+                                        </RadzenColumn>
+                                    }
+                                </RadzenRow>
+                            }
+                            else
+                            {
+                                <RadzenAlert Severity="AlertSeverity.Warning">Yapay zeka sonuç döndürmedi.</RadzenAlert>
+                            }
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="12px" AlignItems="AlignItems.Center" Style="padding: 40px;">
+                            <RadzenIcon Icon="lightbulb" Style="font-size: 42px; color: var(--rz-primary-color);" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0;">Öneri almak için filtreleri doldurun</RadzenText>
+                            <RadzenText Style="color: var(--rz-text-secondary-color); text-align: center;">
+                                Örneğin: "Ankara Çankaya'da çocuk dostu diş kliniği arıyorum"
+                            </RadzenText>
+                        </RadzenStack>
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<CategoryDto> categories = new();
+    private AiRecommendationRequestDto requestModel = new() { MaxResults = 3 };
+    private AiRecommendationResponseDto? response;
+    private bool isLoading;
+
+    private IEnumerable<string> cityOptions => TurkishCityService.GetAllCities();
+    private List<string> districtOptions => TurkishCityService.GetDistrictsByCity(requestModel.City ?? string.Empty);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        var result = await CategoryApiService.GetAllCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            categories = result.Data.OrderBy(c => c.Name).ToList();
+        }
+    }
+
+    private void OnCityChanged(object? value)
+    {
+        requestModel.District = null;
+    }
+
+    private async Task SendRequest()
+    {
+        if (string.IsNullOrWhiteSpace(requestModel.Message))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Mesaj gerekli", "Lütfen talebinizi yazın.");
+            return;
+        }
+
+        isLoading = true;
+        response = null;
+
+        var apiResponse = await AiAssistantApiService.GetRecommendationsAsync(requestModel);
+        isLoading = false;
+
+        if (apiResponse.Success && apiResponse.Data != null)
+        {
+            response = apiResponse.Data;
+            NotificationService.Notify(NotificationSeverity.Success, "Öneriler hazır", "Gemini'den gelen önerileri inceleyebilirsiniz.");
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", apiResponse.Message ?? "Bir hata oluştu.");
+        }
+    }
+}
