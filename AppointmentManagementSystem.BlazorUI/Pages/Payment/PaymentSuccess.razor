@@ -96,104 +96,10 @@
             if (string.IsNullOrEmpty(merchantOid))
             {
                 Console.WriteLine($"⚠️ No parameters in URL, checking localStorage...");
-                var cardUpdateBusinessId = await LocalStorage.GetItemAsync<int?>("cardUpdateBusinessId");
-                var cardUpdateEmail = await LocalStorage.GetItemAsStringAsync("cardUpdateEmail");
-                var businessId = await LocalStorage.GetItemAsync<int?>("registrationBusinessId");
-                var email = await LocalStorage.GetItemAsStringAsync("registrationEmail");
 
-                if (cardUpdateBusinessId.HasValue)
+                var manualTriggered = await TryManualWebhookFromLocalStorage();
+                if (manualTriggered)
                 {
-                    Console.WriteLine($"✅ Card update detected in localStorage: {cardUpdateBusinessId}");
-
-                    var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
-                    merchantOid = $"CARD{cardUpdateBusinessId}{guidPart}";
-                    Console.WriteLine($"Generated CARD MerchantOid: {merchantOid}");
-
-                    var formData = new Dictionary<string, string>
-                    {
-                        { "merchant_oid", merchantOid },
-                        { "status", "success" },
-                        { "total_amount", "100" }, // 1 TL doğrulama
-                        { "hash", "test_hash_for_card_update" },
-                        { "utoken", $"CARD_UTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
-                        { "ctoken", $"CARD_CTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
-                        { "card_type", "Visa" },
-                        { "masked_pan", "****1111" },
-                        { "payment_id", $"CARD_PAY_{DateTime.Now.Ticks}" },
-                        { "failed_reason_msg", "" }
-                    };
-
-                    Console.WriteLine($"📤 Sending manual CARD webhook to API...");
-                    var content = new FormUrlEncodedContent(formData);
-                    var response = await HttpClient.PostAsync("api/payments/webhook", content);
-
-                    Console.WriteLine($"Webhook response status: {response.StatusCode}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine("✅ Manual card update webhook successful!");
-                        await LocalStorage.RemoveItemAsync("cardUpdateBusinessId");
-                        await LocalStorage.RemoveItemAsync("cardUpdateEmail");
-                    }
-                    else
-                    {
-                        var errorText = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"❌ Manual card update webhook error: {errorText}");
-                    }
-
-                    isProcessing = false;
-                    StateHasChanged();
-                    return;
-                }
-
-                if (businessId.HasValue)
-                {
-                    Console.WriteLine($"✅ Found BusinessId in localStorage: {businessId}");
-                    Console.WriteLine($"✅ Found Email in localStorage: {email}");
-                    
-                    // PayTr test mode'unda callback parametreleri gelmiyor
-                    // Manuel olarak webhook tetikle
-                    Console.WriteLine($"🔧 PayTR test mode detected - triggering manual webhook...");
-                    
-                    // Generate test merchant_oid from businessId without special characters
-                    // Format: REG{businessId}{guid}
-                    var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
-                    merchantOid = $"REG{businessId}{guidPart}";
-                    Console.WriteLine($"Generated MerchantOid: {merchantOid}");
-                    
-                    // Manuel webhook data oluştur
-                    var formData = new Dictionary<string, string>
-                    {
-                        { "merchant_oid", merchantOid },
-                        { "status", "success" },
-                        { "total_amount", "70000" }, // 700 TL
-                        { "hash", "test_hash_for_development" },
-                        { "utoken", $"TEST_UTOKEN_{businessId}_{DateTime.Now.Ticks}" },
-                        { "ctoken", $"TEST_CTOKEN_{businessId}_{DateTime.Now.Ticks}" },
-                        { "card_type", "Visa" },
-                        { "masked_pan", "****1234" },
-                        { "payment_id", $"TEST_PAY_{DateTime.Now.Ticks}" },
-                        { "failed_reason_msg", "" }
-                    };
-
-                    Console.WriteLine($"📤 Sending manual webhook to API...");
-                    var content = new FormUrlEncodedContent(formData);
-                    var response = await HttpClient.PostAsync("api/payments/webhook", content);
-                    
-                    Console.WriteLine($"Webhook response status: {response.StatusCode}");
-                    
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine("✅ Manual webhook successful - Business activated!");
-                        await LocalStorage.RemoveItemAsync("registrationBusinessId");
-                        await LocalStorage.RemoveItemAsync("registrationEmail");
-                    }
-                    else
-                    {
-                        var errorText = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"❌ Manual webhook error: {errorText}");
-                    }
-                    
                     isProcessing = false;
                     StateHasChanged();
                     return;
@@ -241,6 +147,15 @@
                     var errorText = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"❌ Webhook error: {errorText}");
                     Console.WriteLine($"Response content: {errorText}");
+
+                    // PayTR bazen parametreleri eksik gönderebilir, localStorage üzerinden manuel tetikle
+                    var manualTriggered = await TryManualWebhookFromLocalStorage();
+                    if (manualTriggered)
+                    {
+                        isProcessing = false;
+                        StateHasChanged();
+                        return;
+                    }
                 }
             }
             else
@@ -248,6 +163,14 @@
                 Console.WriteLine($"⚠️ Webhook not sent - MerchantOid: {merchantOid}, Status: {status}");
                 Console.WriteLine($"💡 PayTR should automatically add these parameters to the success URL.");
                 Console.WriteLine($"💡 Make sure merchant_ok_url is correctly configured in PayTR dashboard.");
+
+                var manualTriggered = await TryManualWebhookFromLocalStorage();
+                if (manualTriggered)
+                {
+                    isProcessing = false;
+                    StateHasChanged();
+                    return;
+                }
             }
         }
         catch (Exception ex)
@@ -265,5 +188,109 @@
     private void NavigateToLogin()
     {
         NavigationManager.NavigateTo("/login");
+    }
+
+    private async Task<bool> TryManualWebhookFromLocalStorage()
+    {
+        var cardUpdateBusinessId = await LocalStorage.GetItemAsync<int?>("cardUpdateBusinessId");
+        var cardUpdateEmail = await LocalStorage.GetItemAsStringAsync("cardUpdateEmail");
+        var businessId = await LocalStorage.GetItemAsync<int?>("registrationBusinessId");
+        var email = await LocalStorage.GetItemAsStringAsync("registrationEmail");
+
+        if (cardUpdateBusinessId.HasValue)
+        {
+            Console.WriteLine($"✅ Card update detected in localStorage: {cardUpdateBusinessId}");
+
+            var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+            var merchantOid = $"CARD{cardUpdateBusinessId}{guidPart}";
+            Console.WriteLine($"Generated CARD MerchantOid: {merchantOid}");
+
+            var formData = new Dictionary<string, string>
+            {
+                { "merchant_oid", merchantOid },
+                { "status", "success" },
+                { "total_amount", "100" }, // 1 TL doğrulama
+                { "hash", "test_hash_for_card_update" },
+                { "utoken", $"CARD_UTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
+                { "ctoken", $"CARD_CTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
+                { "card_type", "Visa" },
+                { "masked_pan", "****1111" },
+                { "payment_id", $"CARD_PAY_{DateTime.Now.Ticks}" },
+                { "failed_reason_msg", "" }
+            };
+
+            Console.WriteLine($"📤 Sending manual CARD webhook to API...");
+            var content = new FormUrlEncodedContent(formData);
+            var response = await HttpClient.PostAsync("api/payments/webhook", content);
+
+            Console.WriteLine($"Webhook response status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("✅ Manual card update webhook successful!");
+                await LocalStorage.RemoveItemAsync("cardUpdateBusinessId");
+                await LocalStorage.RemoveItemAsync("cardUpdateEmail");
+            }
+            else
+            {
+                var errorText = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Manual card update webhook error: {errorText}");
+            }
+
+            return true;
+        }
+
+        if (businessId.HasValue)
+        {
+            Console.WriteLine($"✅ Found BusinessId in localStorage: {businessId}");
+            Console.WriteLine($"✅ Found Email in localStorage: {email}");
+
+            // PayTr test mode'unda callback parametreleri gelmiyor
+            // Manuel olarak webhook tetikle
+            Console.WriteLine($"🔧 PayTR test mode detected - triggering manual webhook...");
+
+            // Generate test merchant_oid from businessId without special characters
+            // Format: REG{businessId}{guid}
+            var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+            var merchantOid = $"REG{businessId}{guidPart}";
+            Console.WriteLine($"Generated MerchantOid: {merchantOid}");
+
+            // Manuel webhook data oluştur
+            var formData = new Dictionary<string, string>
+            {
+                { "merchant_oid", merchantOid },
+                { "status", "success" },
+                { "total_amount", "70000" }, // 700 TL
+                { "hash", "test_hash_for_development" },
+                { "utoken", $"TEST_UTOKEN_{businessId}_{DateTime.Now.Ticks}" },
+                { "ctoken", $"TEST_CTOKEN_{businessId}_{DateTime.Now.Ticks}" },
+                { "card_type", "Visa" },
+                { "masked_pan", "****1234" },
+                { "payment_id", $"TEST_PAY_{DateTime.Now.Ticks}" },
+                { "failed_reason_msg", "" }
+            };
+
+            Console.WriteLine($"📤 Sending manual webhook to API...");
+            var content = new FormUrlEncodedContent(formData);
+            var response = await HttpClient.PostAsync("api/payments/webhook", content);
+
+            Console.WriteLine($"Webhook response status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("✅ Manual webhook successful - Business activated!");
+                await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                await LocalStorage.RemoveItemAsync("registrationEmail");
+            }
+            else
+            {
+                var errorText = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Manual webhook error: {errorText}");
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
