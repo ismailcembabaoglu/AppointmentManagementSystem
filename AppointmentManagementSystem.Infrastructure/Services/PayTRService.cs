@@ -32,7 +32,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             _isTestMode = _configuration.GetValue<bool>("PayTR:TestMode", true);
         }
 
-        public async Task<PayTRCardRegistrationResult> InitiateCardRegistrationAsync(string customerEmail, string userIp, string merchantOid)
+        public async Task<PayTRCardRegistrationResult> InitiateCardRegistrationAsync(string customerEmail, string userIp, string merchantOid, decimal amount, string description, bool isCardUpdate)
         {
             try
             {
@@ -45,16 +45,17 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 // user_basket oluştur - PayTR zorunlu alan
                 var userBasket = new[]
                 {
-                    new object[] { "Aylık Abonelik Ücreti", "700.00", 1 }
+                    new object[] { description, amount.ToString("F2"), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
                 var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                var paymentAmount = "70000"; // 700 TL * 100 = 70000 kuruş
+                var paymentAmount = ((int)(amount * 100)).ToString();
                 var noInstallment = "0";
                 var maxInstallment = "0";
                 var currency = "TRY";
                 var testMode = _isTestMode ? "1" : "0";
+                var scenario = isCardUpdate ? "Card Update" : "Subscription";
 
                 // Token oluştur
                 var hashStr = $"{_merchantId}{userIp}{merchantOid}{customerEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}";
@@ -87,7 +88,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 };
 
                 // Debug logging
-                _logger.LogInformation($"PayTR Request - MerchantId: {_merchantId}, UserIp: {userIp}, MerchantOid: {merchantOid}");
+                _logger.LogInformation($"PayTR Request - MerchantId: {_merchantId}, UserIp: {userIp}, MerchantOid: {merchantOid}, Scenario: {scenario}");
                 _logger.LogInformation($"PayTR Request - Email: {customerEmail}, Amount: {paymentAmount}, Basket: {userBasketBase64}");
                 _logger.LogInformation($"PayTR Request - Token: {token.Substring(0, 20)}...");
 

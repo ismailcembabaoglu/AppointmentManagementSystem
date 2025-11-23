@@ -2,7 +2,7 @@ namespace AppointmentManagementSystem.Domain.Interfaces
 {
     public interface IPayTRService
     {
-        Task<PayTRCardRegistrationResult> InitiateCardRegistrationAsync(string customerEmail, string userIp, string merchantOid);
+        Task<PayTRCardRegistrationResult> InitiateCardRegistrationAsync(string customerEmail, string userIp, string merchantOid, decimal amount, string description, bool isCardUpdate);
         Task<PayTRPaymentResult> ChargeRecurringPaymentAsync(string customerEmail, string utoken, string ctoken, string merchantOid, decimal amount, string userIp);
         Task<PayTRStatusResult> QueryPaymentStatusAsync(string merchantOid);
         string ValidateWebhookSignature(string merchantOid, string status, string totalAmount, string merchantSalt);

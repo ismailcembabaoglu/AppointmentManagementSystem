@@ -1,0 +1,244 @@
+@page "/business/kart-yonetimi"
+@using AppointmentManagementSystem.Application.DTOs
+@using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Business")]
+@inject IPaymentApiService PaymentApiService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Kart Yönetimi</PageTitle>
+
+@if (isLoading)
+{
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="16px" Style="padding: 48px 0;">
+        <RadzenProgressBarCircular ShowValue="false" ProgressBarStyle="ProgressBarStyle.Primary" />
+        <RadzenText TextStyle="TextStyle.H6">Kart bilgileri yükleniyor...</RadzenText>
+    </RadzenStack>
+}
+else if (!string.IsNullOrEmpty(loadError))
+{
+    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+            <RadzenText TextStyle="TextStyle.H6">Kart bilgileri alınamadı</RadzenText>
+            <RadzenText>@loadError</RadzenText>
+        </RadzenStack>
+    </RadzenAlert>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
+        <RadzenCard Style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%); color: white; padding: 24px; border: none; box-shadow: 0 12px 30px rgba(17, 24, 39, 0.25);">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px" Wrap="FlexWrap.Wrap">
+                    <RadzenIcon Icon="credit_card" Style="font-size: 36px; color: #a78bfa;" />
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; font-weight: 700;">Kart &amp; Abonelik</RadzenText>
+                    <RadzenBadge Text="@(subscription?.SubscriptionStatus ?? "Bilinmiyor")" BadgeStyle="@GetSubscriptionBadgeStyle(subscription?.SubscriptionStatus)" />
+                </RadzenStack>
+                <RadzenText Style="color: rgba(255,255,255,0.85); margin: 0;">
+                    Yeni kartınızı ekleyerek abonelik ödemelerinizi güvenli şekilde güncelleyebilir, 1 TL'lik doğrulama işlemi ile kartı doğrulayabilirsiniz.
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+
+        <RadzenRow Gap="16px">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard Style="border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                            <RadzenIcon Icon="lock" Style="color: var(--rz-primary-color);" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Mevcut Kart Bilgisi</RadzenText>
+                        </RadzenStack>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="4px">
+                            <RadzenText TextStyle="TextStyle.Body1" Style="margin: 0; color: var(--rz-text-color);">
+                                Kart: @(subscription?.MaskedCardNumber ?? "Kayıtlı kart bulunmuyor")
+                            </RadzenText>
+                            <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                Marka: @(subscription?.CardBrand ?? "-")
+                            </RadzenText>
+                        </RadzenStack>
+                        <RadzenDivider Style="margin: 8px 0;" />
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" Wrap="FlexWrap.Wrap">
+                            <RadzenBadge Text="@($"Tutar: {(subscription?.MonthlyAmount ?? 0):0.00} TL")" BadgeStyle="BadgeStyle.Info" />
+                            <RadzenBadge Text="@($"Son Tahsilat: {subscription?.LastBillingDate?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-"}")" BadgeStyle="BadgeStyle.Light" />
+                            <RadzenBadge Text="@($"Sonraki Tahsilat: {subscription?.NextBillingDate?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-"}")" BadgeStyle="BadgeStyle.Light" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard Style="border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                            <RadzenIcon Icon="phone_iphone" Style="color: var(--rz-success-color);" />
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Mobil Uyumlu Adımlar</RadzenText>
+                        </RadzenStack>
+                        <RadzenList Style="margin: 0;">
+                            <Items>
+                                <RadzenListItem>1 TL doğrulama işlemi için yeni kart bilgilerinizi girin.</RadzenListItem>
+                                <RadzenListItem>Doğrulama tamamlanınca abonelik kartınız güncellenir.</RadzenListItem>
+                                <RadzenListItem>Ödeme ekranı mobil uyumludur; ekranı kaydırarak tamamlayın.</RadzenListItem>
+                            </Items>
+                        </RadzenList>
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
+                            <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">Yeni kart için 1 TL doğrulama ücreti alınacaktır.</RadzenText>
+                            <RadzenButton Text="Yeni Kart Ekle (1 TL)" Icon="credit_card" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" Disabled="@isStarting" Click="StartCardUpdate" Style="min-width: 220px;" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+
+        @if (isIframeVisible && !string.IsNullOrEmpty(iframeUrl))
+        {
+            <RadzenCard Style="border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                        <RadzenIcon Icon="shield" Style="color: var(--rz-primary-color);" />
+                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Güvenli Ödeme Ekranı</RadzenText>
+                    </RadzenStack>
+                    <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">Aşağıdaki form PayTR tarafından sağlanır ve mobil uyumludur.</RadzenText>
+                    <div style="width: 100%; height: 640px; max-height: 80vh; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);">
+                        <iframe src="@iframeUrl" style="border: none; width: 100%; height: 100%;" title="Kart Doğrulama"></iframe>
+                    </div>
+                </RadzenStack>
+            </RadzenCard>
+        }
+    </RadzenStack>
+}
+
+@code {
+    private SubscriptionDto? subscription;
+    private int businessId;
+    private string? userEmail;
+    private bool isLoading = true;
+    private bool isStarting;
+    private bool isIframeVisible;
+    private string? iframeUrl;
+    private string? loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSubscriptionAsync();
+    }
+
+    private async Task LoadSubscriptionAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+
+            var businessIdClaim = user.FindFirst("BusinessId") ?? user.FindFirst("businessId");
+            userEmail = user.FindFirst("email")?.Value ?? user.Identity?.Name;
+
+            if (businessIdClaim == null || !int.TryParse(businessIdClaim.Value, out businessId))
+            {
+                loadError = "İşletme bilgisi okunamadı.";
+                return;
+            }
+
+            var subscriptionResponse = await PaymentApiService.GetSubscriptionAsync(businessId);
+            if (subscriptionResponse.Success)
+            {
+                subscription = subscriptionResponse.Data;
+            }
+            else
+            {
+                loadError = subscriptionResponse.Message ?? "Abonelik bilgisi alınamadı.";
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Kart bilgileri alınırken hata oluştu: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task StartCardUpdate()
+    {
+        if (businessId == 0 || string.IsNullOrEmpty(userEmail))
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Warning,
+                Summary = "Eksik Bilgi",
+                Detail = "İşletme veya kullanıcı bilgisi eksik görünüyor."
+            });
+            return;
+        }
+
+        try
+        {
+            isStarting = true;
+            var initiateRequest = new InitiateCardRegistrationDto
+            {
+                Email = userEmail!,
+                BusinessId = businessId,
+                BusinessName = subscription?.BusinessName ?? "İşletme",
+                Amount = 1m,
+                Description = "Kart Doğrulama Ücreti",
+                IsCardUpdate = true
+            };
+
+            var result = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
+            if (result.Success && result.Data?.Success == true && !string.IsNullOrEmpty(result.Data.IFrameUrl))
+            {
+                iframeUrl = result.Data.IFrameUrl;
+                isIframeVisible = true;
+                NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Kart doğrulama hazır",
+                    Detail = "Yeni kartınızı eklemek için formu doldurun."
+                });
+            }
+            else
+            {
+                var message = result.Message ?? result.Data?.ErrorMessage ?? "Kart doğrulama başlatılamadı.";
+                NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Hata",
+                    Detail = message
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Hata",
+                Detail = $"Kart doğrulama başlatılırken sorun oluştu: {ex.Message}"
+            });
+        }
+        finally
+        {
+            isStarting = false;
+        }
+    }
+
+    private BadgeStyle GetSubscriptionBadgeStyle(string? status)
+    {
+        return status?.ToLower() switch
+        {
+            "active" => BadgeStyle.Success,
+            "suspended" => BadgeStyle.Warning,
+            "expired" => BadgeStyle.Danger,
+            _ => BadgeStyle.Light
+        };
+    }
+}

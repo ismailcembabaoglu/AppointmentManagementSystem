@@ -24,12 +24,16 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             {
                 // Generate merchant_oid: REG{BusinessId}_{Guid}
                 var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
-                var merchantOid = $"REG{request.BusinessId}{guidPart}";
+                var prefix = request.IsCardUpdate ? "CARD" : "REG";
+                var merchantOid = $"{prefix}{request.BusinessId}_{guidPart}";
 
                 var result = await _paytrService.InitiateCardRegistrationAsync(
                     request.Email,
                     request.UserIp,
-                    merchantOid
+                    merchantOid,
+                    request.Amount,
+                    request.Description,
+                    request.IsCardUpdate
                 );
 
                 if (result.Success)
