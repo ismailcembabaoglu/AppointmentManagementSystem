@@ -22,7 +22,7 @@
             <RadzenText Style="color: var(--rz-text-secondary-color);">
                 Bulunduğunuz il/ilçe ve kategoriye göre en iyi işletmeleri yapay zeka ile önerelim.
             </RadzenText>
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="true">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
                 <RadzenBadge Icon="lightbulb" Style="background: #eef2ff; color: #4338ca;">Akıllı rehber</RadzenBadge>
                 <RadzenBadge Icon="verified" Style="background: #ecfeff; color: #0ea5e9;">Güncel yorumlar</RadzenBadge>
                 <RadzenBadge Icon="bolt" Style="background: #fef3c7; color: #d97706;">Hızlı aksiyon</RadzenBadge>
@@ -96,7 +96,7 @@
                     else if (response != null)
                     {
                         <RadzenStack Orientation="Orientation.Vertical" Gap="16px">
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center" Wrap="true">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
                                 <RadzenBadge Style="background: #ecfeff; color: #0284c7;" Icon="sell">@requestModel.City</RadzenBadge>
                                 @if (!string.IsNullOrEmpty(requestModel.District))
                                 {
