@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Shared;
 using AppointmentManagementSystem.Domain.Entities;
@@ -83,8 +85,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     _logger.LogWarning("⚠️ Continuing despite invalid signature (test mode)");
                 }
 
-                // Check if this is initial registration (REG prefix) or recurring payment
-                if (request.MerchantOid.StartsWith("REG") && request.Status == "success")
+                // Check if this is initial registration (REG prefix), card update (CARD prefix) or recurring payment
+                if (request.MerchantOid.StartsWith("CARD") && request.Status == "success")
+                {
+                    _logger.LogInformation("✅ Processing card update callback");
+                    return await HandleCardUpdateCallback(request, cancellationToken);
+                }
+                else if (request.MerchantOid.StartsWith("REG") && request.Status == "success")
                 {
                     _logger.LogInformation("✅ Processing initial registration callback");
                     // This is initial registration + first payment callback
@@ -114,8 +121,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         private async Task<Result<bool>> HandleInitialRegistrationCallback(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("=== HandleInitialRegistrationCallback Started ===");
-            
-            // Extract BusinessId from MerchantOid 
+
+            // Extract BusinessId from MerchantOid
             // Format: REG{BusinessId}_{Guid} or REG{BusinessId}{Guid}
             var merchantOid = request.MerchantOid;
             var regPrefix = "REG";
@@ -246,6 +253,119 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             _logger.LogInformation("All changes saved to database!");
 
             _logger.LogInformation($"✅ Initial registration completed for Business {businessId}. Payment: 700 TL, Next billing: {subscription.NextBillingDate}");
+            return Result<bool>.SuccessResult(true);
+        }
+
+        private async Task<Result<bool>> HandleCardUpdateCallback(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("=== HandleCardUpdateCallback Started ===");
+
+            var merchantOid = request.MerchantOid;
+            const string prefix = "CARD";
+
+            if (!merchantOid.StartsWith(prefix))
+            {
+                _logger.LogWarning($"Invalid CARD MerchantOid format: {merchantOid}");
+                return Result<bool>.FailureResult("Invalid MerchantOid format");
+            }
+
+            var afterPrefix = merchantOid.Substring(prefix.Length);
+            string businessIdStr;
+
+            if (afterPrefix.Contains("_"))
+            {
+                var parts = afterPrefix.Split('_');
+                businessIdStr = parts[0];
+            }
+            else
+            {
+                businessIdStr = new string(afterPrefix.TakeWhile(char.IsDigit).ToArray());
+            }
+
+            if (!int.TryParse(businessIdStr, out var businessId))
+            {
+                _logger.LogWarning($"Could not parse BusinessId from CARD MerchantOid: {merchantOid}");
+                return Result<bool>.FailureResult("Invalid MerchantOid format");
+            }
+
+            var business = await _businessRepository.GetByIdAsync(businessId);
+            if (business == null)
+            {
+                _logger.LogWarning($"Business not found for card update: {businessId}");
+                return Result<bool>.FailureResult("Business not found");
+            }
+
+            var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+
+            if (subscription == null)
+            {
+                _logger.LogWarning($"Subscription not found for Business {businessId}, creating a placeholder to store new card info.");
+                subscription = new BusinessSubscription
+                {
+                    BusinessId = businessId,
+                    PayTRUserToken = request.Utoken,
+                    PayTRCardToken = request.Ctoken,
+                    CardBrand = request.CardType,
+                    CardType = request.CardType,
+                    MaskedCardNumber = request.MaskedPan,
+                    CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
+                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
+                        : null,
+                    MonthlyAmount = 700.00m,
+                    Status = SubscriptionStatus.Active,
+                    SubscriptionStatus = SubscriptionStatus.Active,
+                    StartDate = DateTime.UtcNow,
+                    SubscriptionStartDate = DateTime.UtcNow,
+                    IsActive = true,
+                    AutoRenewal = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _subscriptionRepository.AddAsync(subscription);
+            }
+            else
+            {
+                subscription.PayTRUserToken = request.Utoken;
+                subscription.PayTRCardToken = request.Ctoken;
+                subscription.CardBrand = request.CardType;
+                subscription.CardType = request.CardType;
+                subscription.MaskedCardNumber = request.MaskedPan;
+                subscription.CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
+                    ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
+                    : subscription.CardLastFourDigits;
+                subscription.UpdatedAt = DateTime.UtcNow;
+
+                await _subscriptionRepository.UpdateAsync(subscription);
+            }
+
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount)
+                ? parsedAmount / 100
+                : 0m;
+
+            var payment = new Payment
+            {
+                BusinessId = businessId,
+                MerchantOid = request.MerchantOid,
+                Amount = amount,
+                Currency = "TRY",
+                Status = PaymentStatus.Success,
+                PaymentDate = DateTime.UtcNow,
+                CardType = request.CardType,
+                MaskedCardNumber = request.MaskedPan,
+                PaymentType = "CardUpdate",
+                PayTRTransactionId = request.PaymentId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _paymentRepository.AddAsync(payment);
+
+            business.IsActive = true;
+            business.UpdatedAt = DateTime.UtcNow;
+            await _businessRepository.UpdateAsync(business);
+
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation($"✅ Card update completed for Business {businessId}. Amount: {amount} TL");
+
             return Result<bool>.SuccessResult(true);
         }
 

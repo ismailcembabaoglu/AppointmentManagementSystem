@@ -29,6 +29,9 @@
                 @business.Description
             </RadzenText>
         }
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+            <RadzenButton Text="Kart Yönetimi" Icon="credit_card" ButtonStyle="ButtonStyle.Light" Click="@(() => Navigation.NavigateTo("/business/kart-yonetimi"))" />
+        </RadzenStack>
     </RadzenStack>
 </RadzenCard>
 

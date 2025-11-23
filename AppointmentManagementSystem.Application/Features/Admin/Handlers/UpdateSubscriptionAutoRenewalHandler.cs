@@ -7,10 +7,14 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
     public class UpdateSubscriptionAutoRenewalHandler : IRequestHandler<UpdateSubscriptionAutoRenewalCommand, bool>
     {
         private readonly IBusinessSubscriptionRepository _subscriptionRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UpdateSubscriptionAutoRenewalHandler(IBusinessSubscriptionRepository subscriptionRepository)
+        public UpdateSubscriptionAutoRenewalHandler(
+            IBusinessSubscriptionRepository subscriptionRepository,
+            IUnitOfWork unitOfWork)
         {
             _subscriptionRepository = subscriptionRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> Handle(UpdateSubscriptionAutoRenewalCommand request, CancellationToken cancellationToken)
@@ -21,8 +25,9 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
 
             subscription.AutoRenewal = request.AutoRenewal;
             subscription.UpdatedAt = DateTime.UtcNow;
-            
+
             await _subscriptionRepository.UpdateAsync(subscription);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
     }
