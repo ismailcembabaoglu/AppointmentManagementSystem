@@ -66,5 +66,24 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 };
             }
         }
+
+        public async Task<ApiResponse<bool>> CompleteCardRegistrationAsync(CompleteCardRegistrationDto requestDto)
+        {
+            try
+            {
+                var request = await CreateRequestWithAuth(HttpMethod.Post, "api/payments/complete-card-registration");
+                request.Content = JsonContent.Create(requestDto);
+                var response = await _httpClient.SendAsync(request);
+                return await HandleApiResponse<bool>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Kart kaydı tamamlanamadı: {ex.Message}"
+                };
+            }
+        }
     }
 }

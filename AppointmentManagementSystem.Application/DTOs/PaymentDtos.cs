@@ -32,6 +32,19 @@ namespace AppointmentManagementSystem.Application.DTOs
         public string? FailedReasonMsg { get; set; }
     }
 
+    public class CompleteCardRegistrationDto
+    {
+        public int BusinessId { get; set; }
+        public string MerchantOid { get; set; } = string.Empty;
+        public string? Utoken { get; set; }
+        public string? Ctoken { get; set; }
+        public string? CardType { get; set; }
+        public string? MaskedPan { get; set; }
+        public string? PaymentId { get; set; }
+        public string? TotalAmount { get; set; }
+        public bool IsCardUpdate { get; set; }
+    }
+
     public class SubscriptionDto
     {
         public int Id { get; set; }

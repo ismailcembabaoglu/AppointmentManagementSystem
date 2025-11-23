@@ -61,9 +61,9 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> PaymentWebhook([FromForm] string merchant_oid, [FromForm] string status, 
-            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken, 
-            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan, 
+        public async Task<IActionResult> PaymentWebhook([FromForm] string merchant_oid, [FromForm] string status,
+            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
+            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
             [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
         {
             var command = new ProcessPaymentWebhookCommand
@@ -84,8 +84,20 @@ namespace AppointmentManagementSystem.API.Controllers
             
             if (result.Success)
                 return Ok("OK");
-            
+
             return BadRequest(result.Message);
+        }
+
+        [HttpPost("complete-card-registration")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CompleteCardRegistration([FromBody] CompleteCardRegistrationCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.Success)
+                return Ok(result);
+
+            return BadRequest(result);
         }
     }
 }
