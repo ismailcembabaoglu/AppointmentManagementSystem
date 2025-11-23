@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize(Roles = "Business")]
 @inject IPaymentApiService PaymentApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
@@ -196,6 +197,9 @@ else
             var result = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
             if (result.Success && result.Data?.Success == true && !string.IsNullOrEmpty(result.Data.IFrameUrl))
             {
+                await LocalStorage.SetItemAsync("cardUpdateBusinessId", businessId);
+                await LocalStorage.SetItemAsync("cardUpdateEmail", userEmail);
+
                 iframeUrl = result.Data.IFrameUrl;
                 isIframeVisible = true;
                 NotificationService.Notify(new NotificationMessage

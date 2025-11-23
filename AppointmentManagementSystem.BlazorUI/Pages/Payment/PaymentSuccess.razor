@@ -96,9 +96,56 @@
             if (string.IsNullOrEmpty(merchantOid))
             {
                 Console.WriteLine($"⚠️ No parameters in URL, checking localStorage...");
+                var cardUpdateBusinessId = await LocalStorage.GetItemAsync<int?>("cardUpdateBusinessId");
+                var cardUpdateEmail = await LocalStorage.GetItemAsStringAsync("cardUpdateEmail");
                 var businessId = await LocalStorage.GetItemAsync<int?>("registrationBusinessId");
                 var email = await LocalStorage.GetItemAsStringAsync("registrationEmail");
-                
+
+                if (cardUpdateBusinessId.HasValue)
+                {
+                    Console.WriteLine($"✅ Card update detected in localStorage: {cardUpdateBusinessId}");
+
+                    var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+                    merchantOid = $"CARD{cardUpdateBusinessId}{guidPart}";
+                    Console.WriteLine($"Generated CARD MerchantOid: {merchantOid}");
+
+                    var formData = new Dictionary<string, string>
+                    {
+                        { "merchant_oid", merchantOid },
+                        { "status", "success" },
+                        { "total_amount", "100" }, // 1 TL doğrulama
+                        { "hash", "test_hash_for_card_update" },
+                        { "utoken", $"CARD_UTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
+                        { "ctoken", $"CARD_CTOKEN_{cardUpdateBusinessId}_{DateTime.Now.Ticks}" },
+                        { "card_type", "Visa" },
+                        { "masked_pan", "****1111" },
+                        { "payment_id", $"CARD_PAY_{DateTime.Now.Ticks}" },
+                        { "failed_reason_msg", "" }
+                    };
+
+                    Console.WriteLine($"📤 Sending manual CARD webhook to API...");
+                    var content = new FormUrlEncodedContent(formData);
+                    var response = await HttpClient.PostAsync("api/payments/webhook", content);
+
+                    Console.WriteLine($"Webhook response status: {response.StatusCode}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("✅ Manual card update webhook successful!");
+                        await LocalStorage.RemoveItemAsync("cardUpdateBusinessId");
+                        await LocalStorage.RemoveItemAsync("cardUpdateEmail");
+                    }
+                    else
+                    {
+                        var errorText = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"❌ Manual card update webhook error: {errorText}");
+                    }
+
+                    isProcessing = false;
+                    StateHasChanged();
+                    return;
+                }
+
                 if (businessId.HasValue)
                 {
                     Console.WriteLine($"✅ Found BusinessId in localStorage: {businessId}");
@@ -186,6 +233,8 @@
                     Console.WriteLine("✅ Webhook successful - Business activated!");
                     // Başarılı - business aktifleştirildi ve abonelik oluşturuldu
                     await LocalStorage.RemoveItemAsync("registrationBusinessId");
+                    await LocalStorage.RemoveItemAsync("cardUpdateBusinessId");
+                    await LocalStorage.RemoveItemAsync("cardUpdateEmail");
                 }
                 else
                 {
