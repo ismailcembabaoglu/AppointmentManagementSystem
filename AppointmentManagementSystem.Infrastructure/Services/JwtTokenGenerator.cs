@@ -35,6 +35,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             if (user.Role == "Business" && user.OwnedBusinessId.HasValue)
             {
                 claims.Add(new Claim("businessId", user.OwnedBusinessId.Value.ToString()));
+                claims.Add(new Claim("email", user.Email.ToString()));
             }
 
             var signingKey = new SymmetricSecurityKey(key);

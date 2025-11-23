@@ -242,7 +242,7 @@
         {
             Console.WriteLine($"✅ Card update detected in localStorage: {cardUpdateBusinessId}");
 
-            var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+            var guidPart = "A"+Guid.NewGuid().ToString("N").Substring(0, 7).ToUpperInvariant();
             var merchantOid = $"CARD{cardUpdateBusinessId}{guidPart}";
             Console.WriteLine($"Generated CARD MerchantOid: {merchantOid}");
 
@@ -292,7 +292,7 @@
 
             // Generate test merchant_oid from businessId without special characters
             // Format: REG{businessId}{guid}
-            var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+            var guidPart = "A"+Guid.NewGuid().ToString("N").Substring(0, 7).ToUpperInvariant();
             var merchantOid = $"REG{businessId}{guidPart}";
             Console.WriteLine($"Generated MerchantOid: {merchantOid}");
 

@@ -76,7 +76,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                     ExpiresAt = DateTime.UtcNow.AddHours(24)
                 };
 
-                await _unitOfWork.SaveChangesAsync();
+                //await _unitOfWork.SaveChangesAsync();
 
                 return BaseResponse<AuthResponseDto>.SuccessResponse(authResponse, "Giriş başarılı.");
             }

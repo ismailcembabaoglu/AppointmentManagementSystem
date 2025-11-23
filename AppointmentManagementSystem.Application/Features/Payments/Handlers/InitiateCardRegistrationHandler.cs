@@ -33,7 +33,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
                 // Generate merchant_oid without special characters (PayTR requires alphanumeric)
                 // Format example: REG6A1B2C3D or CARD6A1B2C3D
-                var guidPart = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+                var guidPart = "A"+Guid.NewGuid().ToString("N").Substring(0, 7).ToUpperInvariant();
                 var prefix = request.IsCardUpdate ? "CARD" : "REG";
                 var merchantOid = $"{prefix}{request.BusinessId}{guidPart}";
 

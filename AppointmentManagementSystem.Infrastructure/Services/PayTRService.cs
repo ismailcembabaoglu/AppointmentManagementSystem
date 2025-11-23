@@ -71,7 +71,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var scenario = isCardUpdate ? "Card Update" : "Subscription";
 
                 // Token oluştur
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{sanitizedEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}{non3d}";
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{sanitizedEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}{_merchantSalt}";
                 var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
 
                 // PayTR API'ye POST isteği gönder
@@ -269,7 +269,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         private string GeneratePayTRToken(string hashString, string merchantSalt, string merchantKey)
         {
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(merchantKey));
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString + merchantSalt));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString));
             return Convert.ToBase64String(hash);
         }
 
