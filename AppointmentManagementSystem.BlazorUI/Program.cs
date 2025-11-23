@@ -22,14 +22,14 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
 builder.Services.AddBlazoredLocalStorage();
 
 // HttpClient yapılandırması - Basit ve çalışır
-//builder.Services.AddScoped(sp => new HttpClient
-//{
-//    BaseAddress = new Uri("https://hub.aptivaplan.com.tr/"),
-//});
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:5089/"),
+    BaseAddress = new Uri("https://hub.aptivaplan.com.tr/"),
 });
+//builder.Services.AddScoped(sp => new HttpClient
+//{
+//    BaseAddress = new Uri("https://localhost:5089/"),
+//});
 
 // API Services
 builder.Services.AddScoped<IApiService, ApiService>();
