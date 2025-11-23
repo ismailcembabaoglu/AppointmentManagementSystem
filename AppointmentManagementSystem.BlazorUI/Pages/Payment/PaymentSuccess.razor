@@ -176,7 +176,7 @@
         var completeRequest = new CompleteCardRegistrationDto
         {
             BusinessId = businessId.Value,
-            MerchantOid = merchantOid ?? $"CARD{businessId.Value}{Guid.NewGuid():N}",
+            MerchantOid = merchantOid ?? $"CARD{businessId.Value}A{Guid.NewGuid():N}",
             Utoken = utoken,
             Ctoken = ctoken,
             CardType = cardType,
