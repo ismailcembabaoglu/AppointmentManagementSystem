@@ -63,40 +63,60 @@ namespace AppointmentManagementSystem.API.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("webhook"), HttpPost("webhook"), HttpOptions("webhook"), HttpHead("webhook")]
+        [HttpPost("webhook")]
         [AllowAnonymous]
         public async Task<IActionResult> PaymentWebhook()
         {
-            string? ReadValue(string key) =>
-                Request.HasFormContentType && Request.Form.ContainsKey(key)
-                    ? Request.Form[key].ToString()
-                    : Request.Query.ContainsKey(key)
-                        ? Request.Query[key].ToString()
-                        : null;
-
-            var command = new ProcessPaymentWebhookCommand
+            try
             {
-                MerchantOid = ReadValue("merchant_oid") ?? string.Empty,
-                Status = ReadValue("status") ?? string.Empty,
-                TotalAmount = ReadValue("total_amount") ?? string.Empty,
-                Hash = ReadValue("hash") ?? string.Empty,
-                Utoken = ReadValue("utoken"),
-                Ctoken = ReadValue("ctoken"),
-                CardType = ReadValue("card_type"),
-                MaskedPan = ReadValue("masked_pan"),
-                PaymentId = ReadValue("payment_id"),
-                FailedReasonMsg = ReadValue("failed_reason_msg")
-            };
+                _logger.LogInformation("=== PayTR Webhook Received ===");
+                _logger.LogInformation($"Content-Type: {Request.ContentType}");
+                _logger.LogInformation($"Method: {Request.Method}");
 
-            var result = await _mediator.Send(command);
+                string? ReadValue(string key) =>
+                    Request.HasFormContentType && Request.Form.ContainsKey(key)
+                        ? Request.Form[key].ToString()
+                        : Request.Query.ContainsKey(key)
+                            ? Request.Query[key].ToString()
+                            : null;
 
-            if (result.Success)
-            {
-                // PayTR beklediği için net bir "OK" text sonucu döndürüyoruz
+                var command = new ProcessPaymentWebhookCommand
+                {
+                    MerchantOid = ReadValue("merchant_oid") ?? string.Empty,
+                    Status = ReadValue("status") ?? string.Empty,
+                    TotalAmount = ReadValue("total_amount") ?? string.Empty,
+                    Hash = ReadValue("hash") ?? string.Empty,
+                    Utoken = ReadValue("utoken"),
+                    Ctoken = ReadValue("ctoken"),
+                    CardType = ReadValue("card_type"),
+                    MaskedPan = ReadValue("masked_pan"),
+                    PaymentId = ReadValue("payment_id"),
+                    FailedReasonMsg = ReadValue("failed_reason_msg")
+                };
+
+                _logger.LogInformation($"MerchantOid: {command.MerchantOid}");
+                _logger.LogInformation($"Status: {command.Status}");
+                _logger.LogInformation($"TotalAmount: {command.TotalAmount}");
+
+                var result = await _mediator.Send(command);
+
+                // PayTR'ye her durumda "OK" döndürmeliyiz
+                // Aksi takdirde PayTR webhook'u başarısız sayar ve tekrar dener
+                // Hata durumlarını logluyoruz ama "OK" dönüyoruz
+                if (!result.Success)
+                {
+                    _logger.LogWarning($"Webhook processing failed: {result.Message}");
+                }
+
+                _logger.LogInformation("Webhook response: OK");
                 return Content("OK");
             }
-
-            return BadRequest(result.Message);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical error in webhook endpoint");
+                // PayTR'ye yine de "OK" döndür ki tekrar denemesin
+                return Content("OK");
+            }
         }
 
         [HttpGet("success-redirect"), HttpPost("success-redirect")]
