@@ -70,9 +70,13 @@ IIS'te publish edilen klasöre kopyalanmalı
 ### Webhook URL Ayarlama
 ```
 1. PayTR Merchant Panel → Ayarlar
-2. Bildirim URL'si: https://aptivaplan.com.tr/api/payments/webhook
+2. Bildirim URL'si: https://hub.sellerdoping.com.tr/api/payments/webhook
 3. Kaydet
 ```
+
+**ÖNEMLİ:** 
+- Frontend: `https://aptivaplan.com.tr` (Kullanıcı arayüzü)
+- Backend API: `https://hub.sellerdoping.com.tr/api` (PayTR webhook'u buraya gelmeli)
 
 ### Test Etme
 PayTR'de test ödeme yapın ve aşağıdaki logları kontrol edin:
