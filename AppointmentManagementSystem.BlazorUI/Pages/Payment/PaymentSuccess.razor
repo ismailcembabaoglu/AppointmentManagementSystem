@@ -96,32 +96,18 @@
             Console.WriteLine($"CardType: {cardType}");
             Console.WriteLine($"MaskedPan: {maskedPan}");
 
-            var completionHandled = await TryCompleteCardRegistrationAsync(
-                merchantOid,
-                status,
-                totalAmount,
-                utoken,
-                ctoken,
-                cardType,
-                maskedPan,
-                paymentId);
-
-            if (completionHandled)
-            {
-                isProcessing = false;
-                StateHasChanged();
-                return;
-            }
-
-            Console.WriteLine($"⚠️ Webhook not sent - falling back to manual trigger");
-
-            var manualTriggered = await TryManualWebhookFromLocalStorage();
-            if (manualTriggered)
-            {
-                isProcessing = false;
-                StateHasChanged();
-                return;
-            }
+            // PayTR webhook'u otomatik olarak backend'e gelecek
+            // Burada sadece görüntüleme yapıyoruz
+            Console.WriteLine($"✅ Payment success page loaded");
+            Console.WriteLine($"MerchantOid: {merchantOid}");
+            Console.WriteLine($"Status: {status}");
+            Console.WriteLine($"PayTR webhook will be processed automatically by backend");
+            
+            // LocalStorage'ı temizle
+            await LocalStorage.RemoveItemAsync("registrationBusinessId");
+            await LocalStorage.RemoveItemAsync("registrationEmail");
+            await LocalStorage.RemoveItemAsync("cardUpdateBusinessId");
+            await LocalStorage.RemoveItemAsync("cardUpdateEmail");
         }
         catch (Exception ex)
         {
