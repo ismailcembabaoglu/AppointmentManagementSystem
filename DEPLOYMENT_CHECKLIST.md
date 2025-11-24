@@ -57,7 +57,7 @@ $body = @{
     total_amount = "100"
     hash = "test"
 }
-Invoke-WebRequest -Uri "https://aptivaplan.com.tr/api/payments/webhook" -Method POST -Body $body
+Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/payments/webhook" -Method POST -Body $body
 ```
 
 **Beklenen Sonuç:** HTTP 200, Body: "OK"
