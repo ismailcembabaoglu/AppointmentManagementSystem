@@ -155,6 +155,14 @@ Başarılı webhook sonrası PayTR panelinde:
    - IIS için POST metoduna izin verildi
    - AspNetCore modülü yapılandırıldı
 
+5. **AppointmentManagementSystem.API/appsettings.json**
+   - CallbackUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/webhook`
+   - OkRedirectUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/success-redirect`
+   - FailRedirectUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/fail-redirect`
+
+6. **AppointmentManagementSystem.Infrastructure/Services/PayTRService.cs**
+   - Fallback URL'ler hub.sellerdoping.com.tr'ye güncellendi
+
 ## 🎯 Başarı Kriterleri
 
 - [ ] PayTR test ödemesi yapılabildi
