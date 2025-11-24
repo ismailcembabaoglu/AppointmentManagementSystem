@@ -38,9 +38,13 @@ dotnet publish -c Release -o ../publish
 
 ### 4. PayTR Merchant Panel Ayarları
 
-- [ ] Bildirim URL: `https://aptivaplan.com.tr/api/payments/webhook`
+- [ ] Bildirim URL: `https://hub.sellerdoping.com.tr/api/payments/webhook`
 - [ ] Test ödeme yap
 - [ ] PayTR panelinde "Bildirim Durumu: Başarılı" görünüyor mu?
+
+**ÖNEMLİ NOT:**
+- Frontend: `https://aptivaplan.com.tr` (Blazor UI)
+- Backend API: `https://hub.sellerdoping.com.tr/api` (PayTR webhook buraya gelmeli!)
 
 ### 5. Test Senaryoları
 
