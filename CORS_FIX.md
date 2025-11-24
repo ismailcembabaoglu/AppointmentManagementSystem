@@ -93,22 +93,14 @@ ASP.NET Core uygulamalarında CORS middleware (Program.cs) üzerinden yönetilir
 - Spesifik origin kontrolü sadece Program.cs'de yapılıyor
 
 ### 2. IIS URL Rewrite Modülü
-IIS'te URL Rewrite modülü yüklüyse ve CORS headers ile çakışıyorsa, aşağıdaki kuralı ekleyin:
+**GEREKLİ DEĞİL!** CORS tamamen ASP.NET Core middleware'de yönetiliyor.
 
-```xml
-<system.webServer>
-  <rewrite>
-    <outboundRules>
-      <clear />
-      <!-- CORS Headers -->
-      <rule name="Add CORS headers" preCondition="PreCompressedOnly">
-        <match serverVariable="RESPONSE_Access_Control_Allow_Origin" pattern=".*" />
-        <action type="Rewrite" value="https://aptivaplan.com.tr" />
-      </rule>
-    </outboundRules>
-  </rewrite>
-</system.webServer>
-```
+IIS URL Rewrite ile CORS ayarlamak **ÖNERİLMEZ** çünkü:
+- ASP.NET Core'un kendi CORS middleware'i ile çakışır
+- Wildcard + Credentials problemi yaratır
+- Daha az esnek ve güvenli
+
+**Mevcut Çözüm:** Program.cs'deki CORS policy yeterli ✅
 
 ## 🐛 Sorun Giderme
 
