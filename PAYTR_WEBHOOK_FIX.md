@@ -81,11 +81,16 @@ IIS'te publish edilen klasöre kopyalanmalı
 ### Test Etme
 PayTR'de test ödeme yapın ve aşağıdaki logları kontrol edin:
 
-**IIS Logs:** `C:\inetpub\logs\LogFiles\W3SVC1\`
+**IIS Logs (hub.sellerdoping.com.tr):** `C:\inetpub\logs\LogFiles\W3SVC1\`
 ```
 Başarılı webhook:
 POST /api/payments/webhook - 200 0 0
 ```
+
+**URL Yapısı:**
+- Frontend: https://aptivaplan.com.tr
+- Backend: https://hub.sellerdoping.com.tr/api
+- Webhook: https://hub.sellerdoping.com.tr/api/payments/webhook
 
 **Application Logs:** Backend loglarında göreceksiniz:
 ```
