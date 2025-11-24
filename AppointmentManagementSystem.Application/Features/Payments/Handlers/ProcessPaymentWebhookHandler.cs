@@ -74,10 +74,10 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     merchantSalt
                 );
 
-                _logger.LogInformation($"Expected Hash: {expectedHash}");
+                _logger.LogInformation($"Expected Hash (Base64): {expectedHash}");
                 _logger.LogInformation($"Received Hash: {request.Hash}");
 
-                if (expectedHash != request.Hash.ToLower())
+                if (!string.Equals(expectedHash, request.Hash, StringComparison.Ordinal))
                 {
                     _logger.LogWarning($"Invalid webhook signature for MerchantOid: {request.MerchantOid}");
                     // Test modunda hash kontrolünü atlayalım (localhost'tan geldiği için)

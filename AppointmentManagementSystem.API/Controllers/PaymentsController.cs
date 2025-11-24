@@ -63,7 +63,7 @@ namespace AppointmentManagementSystem.API.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("webhook"), HttpPost("webhook")]
+        [HttpGet("webhook"), HttpPost("webhook"), HttpOptions("webhook"), HttpHead("webhook")]
         [AllowAnonymous]
         public async Task<IActionResult> PaymentWebhook()
         {

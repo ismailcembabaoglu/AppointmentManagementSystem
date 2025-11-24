@@ -285,10 +285,13 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
         public string ValidateWebhookSignature(string merchantOid, string status, string totalAmount, string merchantSalt)
         {
-            var hashString = $"{merchantOid}{merchantSalt}{status}{totalAmount}";
-            using var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(hashString));
-            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            // PayTR dokümantasyonu: merchant_oid + merchant_salt + status + total_amount değerleri
+            // HMAC-SHA256 ile merchant_key kullanılarak hash'lenip Base64 olarak gönderilir.
+            var hashString = string.Concat(merchantOid, merchantSalt, status, totalAmount);
+
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
+            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString));
+            return Convert.ToBase64String(hashBytes);
         }
     }
 }
