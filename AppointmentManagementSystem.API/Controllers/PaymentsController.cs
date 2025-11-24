@@ -92,57 +92,53 @@ namespace AppointmentManagementSystem.API.Controllers
             return BadRequest(result.Message);
         }
 
-        [HttpPost("success-redirect")]
+        [HttpGet("success-redirect"), HttpPost("success-redirect")]
         [AllowAnonymous]
-        public IActionResult SuccessRedirect([FromForm] string merchant_oid, [FromForm] string status,
-            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
-            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
-            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
+        public IActionResult SuccessRedirect(string? merchant_oid, string? status, string? total_amount,
+            string? hash, string? utoken, string? ctoken, string? card_type, string? masked_pan,
+            string? payment_id, string? failed_reason_msg)
         {
-            var successUrl = _configuration["PayTR:SuccessUrl"] ?? "/payment/success";
-
-            var queryParams = new Dictionary<string, string?>
-            {
-                { "merchant_oid", merchant_oid },
-                { "status", status },
-                { "total_amount", total_amount },
-                { "hash", hash },
-                { "utoken", utoken },
-                { "ctoken", ctoken },
-                { "card_type", card_type },
-                { "masked_pan", masked_pan },
-                { "payment_id", payment_id },
-                { "failed_reason_msg", failed_reason_msg }
-            };
-
-            var redirectUrl = QueryHelpers.AddQueryString(successUrl, queryParams!);
-            return Redirect(redirectUrl);
+            return BuildRedirect(_configuration["PayTR:SuccessUrl"] ?? "/payment/success",
+                merchant_oid, status, total_amount, hash, utoken, ctoken, card_type, masked_pan, payment_id,
+                failed_reason_msg);
         }
 
-        [HttpPost("fail-redirect")]
+        [HttpGet("fail-redirect"), HttpPost("fail-redirect")]
         [AllowAnonymous]
-        public IActionResult FailRedirect([FromForm] string merchant_oid, [FromForm] string status,
-            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
-            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
-            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
+        public IActionResult FailRedirect(string? merchant_oid, string? status, string? total_amount,
+            string? hash, string? utoken, string? ctoken, string? card_type, string? masked_pan,
+            string? payment_id, string? failed_reason_msg)
         {
-            var failUrl = _configuration["PayTR:FailUrl"] ?? "/payment/failed";
+            return BuildRedirect(_configuration["PayTR:FailUrl"] ?? "/payment/failed",
+                merchant_oid, status, total_amount, hash, utoken, ctoken, card_type, masked_pan, payment_id,
+                failed_reason_msg);
+        }
+
+        private IActionResult BuildRedirect(string destinationUrl, string? merchantOid, string? status,
+            string? totalAmount, string? hash, string? utoken, string? ctoken, string? cardType,
+            string? maskedPan, string? paymentId, string? failedReasonMsg)
+        {
+            // Prefer form values if present (PayTR sends POST) but fall back to query string for GET requests.
+            string? ReadValue(string key, string? provided) =>
+                Request.HasFormContentType && Request.Form.ContainsKey(key)
+                    ? Request.Form[key].ToString()
+                    : provided;
 
             var queryParams = new Dictionary<string, string?>
             {
-                { "merchant_oid", merchant_oid },
-                { "status", status },
-                { "total_amount", total_amount },
-                { "hash", hash },
-                { "utoken", utoken },
-                { "ctoken", ctoken },
-                { "card_type", card_type },
-                { "masked_pan", masked_pan },
-                { "payment_id", payment_id },
-                { "failed_reason_msg", failed_reason_msg }
+                { "merchant_oid", ReadValue("merchant_oid", merchantOid) },
+                { "status", ReadValue("status", status) },
+                { "total_amount", ReadValue("total_amount", totalAmount) },
+                { "hash", ReadValue("hash", hash) },
+                { "utoken", ReadValue("utoken", utoken) },
+                { "ctoken", ReadValue("ctoken", ctoken) },
+                { "card_type", ReadValue("card_type", cardType) },
+                { "masked_pan", ReadValue("masked_pan", maskedPan) },
+                { "payment_id", ReadValue("payment_id", paymentId) },
+                { "failed_reason_msg", ReadValue("failed_reason_msg", failedReasonMsg) }
             };
 
-            var redirectUrl = QueryHelpers.AddQueryString(failUrl, queryParams!);
+            var redirectUrl = QueryHelpers.AddQueryString(destinationUrl, queryParams!);
             return Redirect(redirectUrl);
         }
 
