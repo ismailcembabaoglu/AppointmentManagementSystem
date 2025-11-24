@@ -63,31 +63,38 @@ namespace AppointmentManagementSystem.API.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("webhook")]
+        [HttpGet("webhook"), HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> PaymentWebhook([FromForm] string merchant_oid, [FromForm] string status,
-            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
-            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
-            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
+        public async Task<IActionResult> PaymentWebhook()
         {
+            string? ReadValue(string key) =>
+                Request.HasFormContentType && Request.Form.ContainsKey(key)
+                    ? Request.Form[key].ToString()
+                    : Request.Query.ContainsKey(key)
+                        ? Request.Query[key].ToString()
+                        : null;
+
             var command = new ProcessPaymentWebhookCommand
             {
-                MerchantOid = merchant_oid ?? "",
-                Status = status ?? "",
-                TotalAmount = total_amount ?? "",
-                Hash = hash ?? "",
-                Utoken = utoken,
-                Ctoken = ctoken,
-                CardType = card_type,
-                MaskedPan = masked_pan,
-                PaymentId = payment_id,
-                FailedReasonMsg = failed_reason_msg
+                MerchantOid = ReadValue("merchant_oid") ?? string.Empty,
+                Status = ReadValue("status") ?? string.Empty,
+                TotalAmount = ReadValue("total_amount") ?? string.Empty,
+                Hash = ReadValue("hash") ?? string.Empty,
+                Utoken = ReadValue("utoken"),
+                Ctoken = ReadValue("ctoken"),
+                CardType = ReadValue("card_type"),
+                MaskedPan = ReadValue("masked_pan"),
+                PaymentId = ReadValue("payment_id"),
+                FailedReasonMsg = ReadValue("failed_reason_msg")
             };
 
             var result = await _mediator.Send(command);
-            
+
             if (result.Success)
-                return Ok("OK");
+            {
+                // PayTR beklediği için net bir "OK" text sonucu döndürüyoruz
+                return Content("OK");
+            }
 
             return BadRequest(result.Message);
         }
