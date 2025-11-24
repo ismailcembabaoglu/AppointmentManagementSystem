@@ -14,11 +14,13 @@ namespace AppointmentManagementSystem.API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<PaymentsController> _logger;
 
-        public PaymentsController(IMediator mediator, IConfiguration configuration)
+        public PaymentsController(IMediator mediator, IConfiguration configuration, ILogger<PaymentsController> logger)
         {
             _mediator = mediator;
             _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpPost("initiate-card-registration")]
