@@ -99,6 +99,11 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"MerchantOid: {command.MerchantOid}");
                 _logger.LogInformation($"Status: {command.Status}");
                 _logger.LogInformation($"TotalAmount: {command.TotalAmount}");
+                _logger.LogInformation($"Utoken: {command.Utoken ?? "NULL"}");
+                _logger.LogInformation($"Ctoken: {command.Ctoken ?? "NULL"}");
+                _logger.LogInformation($"CardType: {command.CardType ?? "NULL"}");
+                _logger.LogInformation($"MaskedPan: {command.MaskedPan ?? "NULL"}");
+                _logger.LogInformation($"PaymentId: {command.PaymentId ?? "NULL"}");
 
                 var result = await _mediator.Send(command);
 
