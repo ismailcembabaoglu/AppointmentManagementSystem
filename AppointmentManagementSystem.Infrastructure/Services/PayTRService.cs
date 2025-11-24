@@ -106,7 +106,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "timeout_limit", "30" },
                     { "currency", currency },
                     { "test_mode", testMode },
-                    { "non_3d", non3d }
+                    { "non_3d", non3d },
+                    { "store_card", "1" }, // Kart bilgilerini kaydet (utoken, ctoken için gerekli)
+                    { "cc_owner", userName } // Kart sahibi adı
                 };
 
                 // Debug logging
