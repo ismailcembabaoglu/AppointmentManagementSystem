@@ -76,10 +76,10 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // PayTR API'ye POST isteği gönder
                 var okRedirectUrl = _configuration["PayTR:OkRedirectUrl"]
-                    ?? "https://hub.sellerdoping.com.tr/api/payments/success-redirect";
+                    ?? "https://hub.aptivaplan.com.tr/api/payments/success-redirect";
 
                 var failRedirectUrl = _configuration["PayTR:FailRedirectUrl"]
-                    ?? "https://hub.sellerdoping.com.tr/api/payments/fail-redirect";
+                    ?? "https://hub.aptivaplan.com.tr/api/payments/fail-redirect";
 
                 var formData = new Dictionary<string, string>
                 {
