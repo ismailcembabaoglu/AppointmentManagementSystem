@@ -77,20 +77,20 @@ Access-Control-Allow-Credentials: true
 
 ## 🔧 IIS Deployment Sonrası Kontrol
 
-### 1. web.config CORS Ayarları (Opsiyonel)
-Eğer IIS'te hala CORS sorunu yaşıyorsanız, `/app/AppointmentManagementSystem.API/web.config` dosyasındaki CORS headers'ı kontrol edin:
+### 1. web.config CORS Ayarları
+**ÖNEMLİ:** web.config'de CORS headers OLMAMASINI sağladık!
+
+ASP.NET Core uygulamalarında CORS middleware (Program.cs) üzerinden yönetilir. web.config'deki CORS headers ile çakışma olmaması için **kaldırıldı**.
 
 ```xml
-<httpProtocol>
-  <customHeaders>
-    <add name="Access-Control-Allow-Origin" value="*" />
-    <add name="Access-Control-Allow-Methods" value="GET, POST, PUT, DELETE, OPTIONS" />
-    <add name="Access-Control-Allow-Headers" value="Content-Type, Authorization" />
-  </customHeaders>
-</httpProtocol>
+<!-- CORS headers KALDIRILDI -->
+<!-- Program.cs'deki CORS policy kullanılıyor -->
 ```
 
-**NOT:** Production'da `Access-Control-Allow-Origin: *` yerine spesifik domain kullanılmalı. Ancak Program.cs'de zaten spesifik origin'ler tanımlı olduğu için bu wildcard override edilecektir.
+**Neden?**
+- web.config'de wildcard (`*`) ile Program.cs'de `.AllowCredentials()` çakışır
+- ASP.NET Core middleware daha esnek ve güvenli
+- Spesifik origin kontrolü sadece Program.cs'de yapılıyor
 
 ### 2. IIS URL Rewrite Modülü
 IIS'te URL Rewrite modülü yüklüyse ve CORS headers ile çakışıyorsa, aşağıdaki kuralı ekleyin:
