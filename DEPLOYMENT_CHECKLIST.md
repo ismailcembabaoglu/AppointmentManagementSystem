@@ -38,13 +38,13 @@ dotnet publish -c Release -o ../publish
 
 ### 4. PayTR Merchant Panel Ayarları
 
-- [ ] Bildirim URL: `https://hub.sellerdoping.com.tr/api/payments/webhook`
+- [ ] Bildirim URL: `https://hub.aptivaplan.com.tr/api/payments/webhook`
 - [ ] Test ödeme yap
 - [ ] PayTR panelinde "Bildirim Durumu: Başarılı" görünüyor mu?
 
 **ÖNEMLİ NOT:**
 - Frontend: `https://aptivaplan.com.tr` (Blazor UI)
-- Backend API: `https://hub.sellerdoping.com.tr/api` (PayTR webhook buraya gelmeli!)
+- Backend API: `https://hub.aptivaplan.com.tr/api` (PayTR webhook buraya gelmeli!)
 
 ### 5. Test Senaryoları
 
@@ -57,7 +57,7 @@ $body = @{
     total_amount = "100"
     hash = "test"
 }
-Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/payments/webhook" -Method POST -Body $body
+Invoke-WebRequest -Uri "https://hub.aptivaplan.com.tr/api/payments/webhook" -Method POST -Body $body
 ```
 
 **Beklenen Sonuç:** HTTP 200, Body: "OK"
@@ -156,12 +156,12 @@ Başarılı webhook sonrası PayTR panelinde:
    - AspNetCore modülü yapılandırıldı
 
 5. **AppointmentManagementSystem.API/appsettings.json**
-   - CallbackUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/webhook`
-   - OkRedirectUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/success-redirect`
-   - FailRedirectUrl güncellendi: `https://hub.sellerdoping.com.tr/api/payments/fail-redirect`
+   - CallbackUrl güncellendi: `https://hub.aptivaplan.com.tr/api/payments/webhook`
+   - OkRedirectUrl güncellendi: `https://hub.aptivaplan.com.tr/api/payments/success-redirect`
+   - FailRedirectUrl güncellendi: `https://hub.aptivaplan.com.tr/api/payments/fail-redirect`
 
 6. **AppointmentManagementSystem.Infrastructure/Services/PayTRService.cs**
-   - Fallback URL'ler hub.sellerdoping.com.tr'ye güncellendi
+   - Fallback URL'ler hub.aptivaplan.com.tr'ye güncellendi
 
 ## 🎯 Başarı Kriterleri
 

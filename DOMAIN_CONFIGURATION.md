@@ -8,7 +8,7 @@
 - **Görev:** Kullanıcı arayüzü
 
 ### Backend API
-- **URL:** https://hub.sellerdoping.com.tr/api
+- **URL:** https://hub.aptivaplan.com.tr/api
 - **Teknoloji:** ASP.NET Core Web API
 - **Görev:** API endpoints, PayTR webhook işleme
 
@@ -20,7 +20,7 @@ Kullanıcı (Frontend)
   ↓
 https://aptivaplan.com.tr/register
   ↓
-[Backend API] POST https://hub.sellerdoping.com.tr/api/payments/initiate-card-registration
+[Backend API] POST https://hub.aptivaplan.com.tr/api/payments/initiate-card-registration
   ↓
 PayTR iframe URL alınır
   ↓
@@ -31,7 +31,7 @@ Kullanıcı PayTR iframe'de ödeme yapar
 ```
 PayTR Sunucuları
   ↓
-POST https://hub.sellerdoping.com.tr/api/payments/webhook
+POST https://hub.aptivaplan.com.tr/api/payments/webhook
   ↓
 Backend işler, "OK" döner
   ↓
@@ -42,7 +42,7 @@ PayTR işlemi başarılı sayar
 ```
 PayTR
   ↓
-[Backend] https://hub.sellerdoping.com.tr/api/payments/success-redirect
+[Backend] https://hub.aptivaplan.com.tr/api/payments/success-redirect
   ↓
 302 Redirect
   ↓
@@ -55,9 +55,9 @@ PayTR
 ```json
 {
   "PayTR": {
-    "CallbackUrl": "https://hub.sellerdoping.com.tr/api/payments/webhook",
-    "OkRedirectUrl": "https://hub.sellerdoping.com.tr/api/payments/success-redirect",
-    "FailRedirectUrl": "https://hub.sellerdoping.com.tr/api/payments/fail-redirect",
+    "CallbackUrl": "https://hub.aptivaplan.com.tr/api/payments/webhook",
+    "OkRedirectUrl": "https://hub.aptivaplan.com.tr/api/payments/success-redirect",
+    "FailRedirectUrl": "https://hub.aptivaplan.com.tr/api/payments/fail-redirect",
     "SuccessUrl": "https://aptivaplan.com.tr/payment/success",
     "FailUrl": "https://aptivaplan.com.tr/payment/failed"
   }
@@ -66,7 +66,7 @@ PayTR
 
 ### PayTR Merchant Panel Ayarları
 ```
-Bildirim URL: https://hub.sellerdoping.com.tr/api/payments/webhook
+Bildirim URL: https://hub.aptivaplan.com.tr/api/payments/webhook
 ```
 
 ## 🔒 Güvenlik
@@ -96,10 +96,10 @@ builder.Services.AddCors(options =>
 ### Backend API Test
 ```powershell
 # Webhook endpoint test
-Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/payments/webhook" -Method POST
+Invoke-WebRequest -Uri "https://hub.aptivaplan.com.tr/api/payments/webhook" -Method POST
 
 # Health check (eğer varsa)
-Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/health"
+Invoke-WebRequest -Uri "https://hub.aptivaplan.com.tr/api/health"
 ```
 
 ### Frontend Test
@@ -113,7 +113,7 @@ Invoke-WebRequest -Uri "https://aptivaplan.com.tr/payment/success"
 
 ## 📋 Deployment Checklist
 
-### hub.sellerdoping.com.tr (Backend)
+### hub.aptivaplan.com.tr (Backend)
 - [ ] IIS site binding: Port 443, SSL sertifikası
 - [ ] web.config dosyası mevcut
 - [ ] Application Pool: .NET CLR = No Managed Code
@@ -127,14 +127,14 @@ Invoke-WebRequest -Uri "https://aptivaplan.com.tr/payment/success"
 - [ ] wwwroot dosyaları doğru yerde
 
 ### PayTR Panel
-- [ ] Bildirim URL: https://hub.sellerdoping.com.tr/api/payments/webhook
+- [ ] Bildirim URL: https://hub.aptivaplan.com.tr/api/payments/webhook
 - [ ] Test ödeme başarılı
 - [ ] Bildirim Durumu: Başarılı
 
 ## 🔍 Sorun Giderme
 
 ### Webhook Gelmiyor
-1. **URL kontrol:** hub.sellerdoping.com.tr erişilebilir mi?
+1. **URL kontrol:** hub.aptivaplan.com.tr erişilebilir mi?
 2. **Firewall:** PayTR IP'lerine açık mı?
 3. **SSL:** Sertifika geçerli mi?
 4. **IIS:** POST metodu allowed mı?
@@ -158,7 +158,7 @@ Webhook'da 405 hatası:
 
 1. **İki farklı domain kullanılıyor:**
    - aptivaplan.com.tr: Frontend (Blazor WASM)
-   - hub.sellerdoping.com.tr: Backend (API)
+   - hub.aptivaplan.com.tr: Backend (API)
 
 2. **PayTR webhook'u Backend'e gider:**
    - Server-to-server iletişim

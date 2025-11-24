@@ -70,18 +70,18 @@ IIS'te publish edilen klasöre kopyalanmalı
 ### Webhook URL Ayarlama
 ```
 1. PayTR Merchant Panel → Ayarlar
-2. Bildirim URL'si: https://hub.sellerdoping.com.tr/api/payments/webhook
+2. Bildirim URL'si: https://hub.aptivaplan.com.tr/api/payments/webhook
 3. Kaydet
 ```
 
 **ÖNEMLİ:** 
 - Frontend: `https://aptivaplan.com.tr` (Kullanıcı arayüzü)
-- Backend API: `https://hub.sellerdoping.com.tr/api` (PayTR webhook'u buraya gelmeli)
+- Backend API: `https://hub.aptivaplan.com.tr/api` (PayTR webhook'u buraya gelmeli)
 
 ### Test Etme
 PayTR'de test ödeme yapın ve aşağıdaki logları kontrol edin:
 
-**IIS Logs (hub.sellerdoping.com.tr):** `C:\inetpub\logs\LogFiles\W3SVC1\`
+**IIS Logs (hub.aptivaplan.com.tr):** `C:\inetpub\logs\LogFiles\W3SVC1\`
 ```
 Başarılı webhook:
 POST /api/payments/webhook - 200 0 0
@@ -89,8 +89,8 @@ POST /api/payments/webhook - 200 0 0
 
 **URL Yapısı:**
 - Frontend: https://aptivaplan.com.tr
-- Backend: https://hub.sellerdoping.com.tr/api
-- Webhook: https://hub.sellerdoping.com.tr/api/payments/webhook
+- Backend: https://hub.aptivaplan.com.tr/api
+- Webhook: https://hub.aptivaplan.com.tr/api/payments/webhook
 
 **Application Logs:** Backend loglarında göreceksiniz:
 ```
@@ -177,7 +177,7 @@ $body = @{
     total_amount = "100"
     hash = "CALCULATED_HASH"
 }
-Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/payments/webhook" -Method POST -Body $body
+Invoke-WebRequest -Uri "https://hub.aptivaplan.com.tr/api/payments/webhook" -Method POST -Body $body
 ```
 
 ## 📞 Destek
