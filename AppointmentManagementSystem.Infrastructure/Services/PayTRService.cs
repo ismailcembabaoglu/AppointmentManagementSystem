@@ -75,6 +75,14 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
 
                 // PayTR API'ye POST isteği gönder
+                var okRedirectUrl = _configuration["PayTR:OkRedirectUrl"]
+                    ?? _configuration["PayTR:SuccessUrl"]
+                    ?? "https://aptivaplan.com.tr/payment/success";
+
+                var failRedirectUrl = _configuration["PayTR:FailRedirectUrl"]
+                    ?? _configuration["PayTR:FailUrl"]
+                    ?? "https://aptivaplan.com.tr/payment/failed";
+
                 var formData = new Dictionary<string, string>
                 {
                     { "merchant_id", _merchantId },
@@ -95,8 +103,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     // Callback URL'leri - Frontend sayfalarına yönlendir
                     // PayTR otomatik olarak bu URL'lere query string parametreleri ekler:
                     // ?merchant_oid=xxx&status=xxx&total_amount=xxx&hash=xxx&utoken=xxx&ctoken=xxx&card_type=xxx&masked_pan=xxx&payment_id=xxx
-                    { "merchant_ok_url", _configuration["PayTR:SuccessUrl"] ?? "https://aptivaplan.com.tr/payment/success" },
-                    { "merchant_fail_url", _configuration["PayTR:FailUrl"] ?? "https://aptivaplan.com.tr/payment/failed" },
+                    { "merchant_ok_url", okRedirectUrl },
+                    { "merchant_fail_url", failRedirectUrl },
                     { "timeout_limit", "30" },
                     { "currency", currency },
                     { "test_mode", testMode },

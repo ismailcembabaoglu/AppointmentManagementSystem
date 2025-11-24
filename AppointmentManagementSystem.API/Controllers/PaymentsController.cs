@@ -3,6 +3,8 @@ using AppointmentManagementSystem.Application.Features.Payments.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 
 namespace AppointmentManagementSystem.API.Controllers
 {
@@ -11,10 +13,12 @@ namespace AppointmentManagementSystem.API.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IConfiguration _configuration;
 
-        public PaymentsController(IMediator mediator)
+        public PaymentsController(IMediator mediator, IConfiguration configuration)
         {
             _mediator = mediator;
+            _configuration = configuration;
         }
 
         [HttpPost("initiate-card-registration")]
@@ -86,6 +90,60 @@ namespace AppointmentManagementSystem.API.Controllers
                 return Ok("OK");
 
             return BadRequest(result.Message);
+        }
+
+        [HttpPost("success-redirect")]
+        [AllowAnonymous]
+        public IActionResult SuccessRedirect([FromForm] string merchant_oid, [FromForm] string status,
+            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
+            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
+            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
+        {
+            var successUrl = _configuration["PayTR:SuccessUrl"] ?? "/payment/success";
+
+            var queryParams = new Dictionary<string, string?>
+            {
+                { "merchant_oid", merchant_oid },
+                { "status", status },
+                { "total_amount", total_amount },
+                { "hash", hash },
+                { "utoken", utoken },
+                { "ctoken", ctoken },
+                { "card_type", card_type },
+                { "masked_pan", masked_pan },
+                { "payment_id", payment_id },
+                { "failed_reason_msg", failed_reason_msg }
+            };
+
+            var redirectUrl = QueryHelpers.AddQueryString(successUrl, queryParams!);
+            return Redirect(redirectUrl);
+        }
+
+        [HttpPost("fail-redirect")]
+        [AllowAnonymous]
+        public IActionResult FailRedirect([FromForm] string merchant_oid, [FromForm] string status,
+            [FromForm] string total_amount, [FromForm] string hash, [FromForm] string? utoken,
+            [FromForm] string? ctoken, [FromForm] string? card_type, [FromForm] string? masked_pan,
+            [FromForm] string? payment_id, [FromForm] string? failed_reason_msg)
+        {
+            var failUrl = _configuration["PayTR:FailUrl"] ?? "/payment/failed";
+
+            var queryParams = new Dictionary<string, string?>
+            {
+                { "merchant_oid", merchant_oid },
+                { "status", status },
+                { "total_amount", total_amount },
+                { "hash", hash },
+                { "utoken", utoken },
+                { "ctoken", ctoken },
+                { "card_type", card_type },
+                { "masked_pan", masked_pan },
+                { "payment_id", payment_id },
+                { "failed_reason_msg", failed_reason_msg }
+            };
+
+            var redirectUrl = QueryHelpers.AddQueryString(failUrl, queryParams!);
+            return Redirect(redirectUrl);
         }
 
         [HttpPost("complete-card-registration")]
