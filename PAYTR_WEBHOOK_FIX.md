@@ -177,7 +177,7 @@ $body = @{
     total_amount = "100"
     hash = "CALCULATED_HASH"
 }
-Invoke-WebRequest -Uri "https://aptivaplan.com.tr/api/payments/webhook" -Method POST -Body $body
+Invoke-WebRequest -Uri "https://hub.sellerdoping.com.tr/api/payments/webhook" -Method POST -Body $body
 ```
 
 ## 📞 Destek
