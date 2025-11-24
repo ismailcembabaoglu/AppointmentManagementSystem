@@ -1,0 +1,25 @@
+@page "/api/payments/success-redirect"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Yönlendiriliyor...</PageTitle>
+
+<div style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <div style="margin-top: 12px; color: #666;">Ödeme sonucu doğrulanıyor, lütfen bekleyin...</div>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = uri.Query.TrimStart('?');
+
+        var target = string.IsNullOrWhiteSpace(query)
+            ? "/payment/success"
+            : $"/payment/success?{query}";
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
+    }
+}
