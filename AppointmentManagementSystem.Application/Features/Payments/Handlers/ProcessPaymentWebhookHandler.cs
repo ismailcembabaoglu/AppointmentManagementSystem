@@ -79,10 +79,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
                 if (!string.Equals(expectedHash, request.Hash, StringComparison.Ordinal))
                 {
-                    _logger.LogWarning($"Invalid webhook signature for MerchantOid: {request.MerchantOid}");
-                    // Test modunda hash kontrolünü atlayalım (localhost'tan geldiği için)
-                    // return Result<bool>.FailureResult("Invalid signature");
-                    _logger.LogWarning("⚠️ Continuing despite invalid signature (test mode)");
+                    _logger.LogError($"❌ Invalid webhook signature for MerchantOid: {request.MerchantOid}");
+                    _logger.LogError($"Expected: {expectedHash}");
+                    _logger.LogError($"Received: {request.Hash}");
+                    
+                    // Hash uyuşmazlığında işlemi reddet
+                    // PayTR bu durumda "OK" alsa bile işlemi tamamlamayacaktır
+                    return Result<bool>.FailureResult("Invalid webhook signature - security check failed");
                 }
 
                 // Check if this is initial registration (REG prefix), card update (CARD prefix) or recurring payment
