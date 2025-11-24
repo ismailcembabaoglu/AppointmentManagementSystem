@@ -54,13 +54,15 @@ namespace AppointmentManagementSystem.Application.Features.Ai.Handlers
             builder.AppendLine("Hizmet performansları (ilk 5):");
             foreach (var service in analytics.Services.Take(5))
             {
-                builder.AppendLine($"- {service.Name}: {service.CompletedCount} tamamlanan, gelir {service.Revenue:0.00} TL, ortalama puan {(service.AverageRating.HasValue ? service.AverageRating.Value.ToString("0.0") : "-"})");
+                var ratingText = service.AverageRating.HasValue ? service.AverageRating.Value.ToString("0.0") : "-";
+                builder.AppendLine($"- {service.Name}: {service.CompletedCount} tamamlanan, gelir {service.Revenue:0.00} TL, ortalama puan {ratingText}");
             }
 
             builder.AppendLine("Son 5 yorum:");
             foreach (var review in analytics.RecentReviews.Take(5))
             {
-                builder.AppendLine($"- {review.CustomerName}: {review.Rating}/5 " + (string.IsNullOrWhiteSpace(review.Review) ? string.Empty : review.Review));
+                var reviewText = string.IsNullOrWhiteSpace(review.Review) ? string.Empty : $" {review.Review}";
+                builder.AppendLine($"- {review.CustomerName}: {review.Rating}/5{reviewText}");
             }
 
             builder.AppendLine("Talep edilen konu:");
