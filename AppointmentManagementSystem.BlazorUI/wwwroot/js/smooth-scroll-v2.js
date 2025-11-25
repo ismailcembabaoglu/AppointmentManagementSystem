@@ -33,10 +33,13 @@ window.initSectionObserver = function (dotNetRef, sectionIds) {
         return;
     }
 
+    // Adjust the viewport window so the "active" section is based on the middle
+    // of the screen. This keeps the highlight in sync on smaller (mobile) screens
+    // where sections rarely take up 45%+ of the viewport height.
     const options = {
         root: null,
-        rootMargin: '0px',
-        threshold: 0.45
+        rootMargin: '-30% 0px -45% 0px',
+        threshold: [0.1, 0.25, 0.5]
     };
 
     const observer = new IntersectionObserver((entries) => {
