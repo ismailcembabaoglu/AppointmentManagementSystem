@@ -136,7 +136,7 @@
                     <h6 class="footer-heading">Şirket</h6>
                     <nav class="footer-nav">
                         <a href="/register" class="footer-link">İşletme Kaydı</a>
-                        <span class="footer-link" @onclick="() => OpenInfoPage("about")">Hakkımızda</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("about"))">Hakkımızda</span>
                         <a href="#" class="footer-link">Blog</a>
                         <a href="#" class="footer-link">Kariyer</a>
                     </nav>
@@ -146,11 +146,11 @@
                 <div class="footer-col">
                     <h6 class="footer-heading">Bilgilendirme</h6>
                     <nav class="footer-nav">
-                        <span class="footer-link" @onclick="() => OpenInfoPage("phone")">Telefon</span>
-                        <span class="footer-link" @onclick="() => OpenInfoPage("address")">Adres</span>
-                        <span class="footer-link" @onclick="() => OpenInfoPage("delivery")">Teslimat Koşulları</span>
-                        <span class="footer-link" @onclick="() => OpenInfoPage("sales")">Satış Politikası</span>
-                        <span class="footer-link" @onclick="() => OpenInfoPage("cancellation")">İptal & İade</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("phone"))">Telefon</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("address"))">Adres</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("delivery"))">Teslimat Koşulları</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("sales"))">Satış Politikası</span>
+                        <span class="footer-link" @onclick="@(() => OpenInfoPage("cancellation"))">İptal & İade</span>
                     </nav>
                 </div>
 
@@ -181,9 +181,9 @@
                     © 2025 Aptiva Plan. Tüm hakları saklıdır.
                 </p>
                 <div class="footer-legal-links">
-                    <span class="legal-link" @onclick="() => OpenInfoPage("privacy")">Gizlilik Politikası</span>
-                    <span class="legal-link" @onclick="() => OpenInfoPage("terms")">Kullanım Şartları</span>
-                    <span class="legal-link" @onclick="() => OpenInfoPage("cookies")">Çerez Politikası</span>
+                    <span class="legal-link" @onclick="@(() => OpenInfoPage("privacy"))">Gizlilik Politikası</span>
+                    <span class="legal-link" @onclick="@(() => OpenInfoPage("terms"))">Kullanım Şartları</span>
+                    <span class="legal-link" @onclick="@(() => OpenInfoPage("cookies"))">Çerez Politikası</span>
                 </div>
             </div>
         </div>
