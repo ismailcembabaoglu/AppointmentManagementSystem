@@ -86,7 +86,7 @@
 
     <div class="layout-content">
         <!-- Main Content -->
-        <RadzenBody class="layout-body" Style="padding-top: 70px; min-height: calc(100vh - 70px); position: relative; z-index: 1; overflow-y: auto;">
+        <RadzenBody class="layout-body" Style="padding-top: 70px; min-height: calc(100vh - 70px); position: relative; z-index: 1;">
             @Body
         </RadzenBody>
 
@@ -228,6 +228,8 @@
         overflow-x: hidden;
         width: 100%;
         position: relative;
+        min-height: 100%;
+        overflow-y: auto;
     }
 
     /* Fix for all Radzen components */
@@ -435,6 +437,8 @@
     /* Smooth Scroll */
     html {
         scroll-behavior: smooth;
+        height: 100%;
+        overflow-y: auto;
     }
 
     /* Scroll offset for fixed header */
@@ -449,6 +453,7 @@
         overflow-x: hidden;
         width: 100%;
         max-width: 100vw;
+        min-height: 100%;
     }
 
     /* Prevent horizontal scroll */
@@ -505,12 +510,12 @@
         flex-direction: column;
         flex: 1 0 auto;
         min-height: calc(100vh - 70px);
-        overflow-y: auto;
     }
 
     .layout-body {
         flex: 1 0 auto;
-        overflow-y: auto;
+        min-height: calc(100vh - 70px);
+        overflow: visible;
     }
 
     .landing-footer {
