@@ -136,9 +136,21 @@
                     <h6 class="footer-heading">Şirket</h6>
                     <nav class="footer-nav">
                         <a href="/register" class="footer-link">İşletme Kaydı</a>
-                        <a href="#" class="footer-link">Hakkımızda</a>
+                        <span class="footer-link" @onclick="() => OpenInfoPage("about")">Hakkımızda</span>
                         <a href="#" class="footer-link">Blog</a>
                         <a href="#" class="footer-link">Kariyer</a>
+                    </nav>
+                </div>
+
+                <!-- Information -->
+                <div class="footer-col">
+                    <h6 class="footer-heading">Bilgilendirme</h6>
+                    <nav class="footer-nav">
+                        <span class="footer-link" @onclick="() => OpenInfoPage("phone")">Telefon</span>
+                        <span class="footer-link" @onclick="() => OpenInfoPage("address")">Adres</span>
+                        <span class="footer-link" @onclick="() => OpenInfoPage("delivery")">Teslimat Koşulları</span>
+                        <span class="footer-link" @onclick="() => OpenInfoPage("sales")">Satış Politikası</span>
+                        <span class="footer-link" @onclick="() => OpenInfoPage("cancellation")">İptal & İade</span>
                     </nav>
                 </div>
 
@@ -169,13 +181,33 @@
                     © 2025 Aptiva Plan. Tüm hakları saklıdır.
                 </p>
                 <div class="footer-legal-links">
-                    <a href="#" class="legal-link">Gizlilik Politikası</a>
-                    <a href="#" class="legal-link">Kullanım Şartları</a>
-                    <a href="#" class="legal-link">Çerez Politikası</a>
+                    <span class="legal-link" @onclick="() => OpenInfoPage("privacy")">Gizlilik Politikası</span>
+                    <span class="legal-link" @onclick="() => OpenInfoPage("terms")">Kullanım Şartları</span>
+                    <span class="legal-link" @onclick="() => OpenInfoPage("cookies")">Çerez Politikası</span>
                 </div>
             </div>
         </div>
     </RadzenFooter>
+
+    @if (activeInfoPage is not null)
+    {
+        <div class="info-dialog-overlay" @onclick="CloseInfoPage">
+            <div class="info-dialog" @onclick:stopPropagation>
+                <div class="info-dialog-header">
+                    <h5>@activeInfoPage.Title</h5>
+                    <button class="info-dialog-close" @onclick="CloseInfoPage" aria-label="Kapat">
+                        <RadzenIcon Icon="close" Style="font-size: 18px;" />
+                    </button>
+                </div>
+                <div class="info-dialog-body">
+                    @((MarkupString)activeInfoPage.BodyHtml)
+                </div>
+                <div class="info-dialog-actions">
+                    <RadzenButton Text="Kapat" ButtonStyle="ButtonStyle.Primary" Click="CloseInfoPage" />
+                </div>
+            </div>
+        </div>
+    }
 </RadzenLayout>
 
 <style>
@@ -763,15 +795,193 @@
             margin: 30px 0 20px;
         }
     }
+
+    /* Information dialog */
+    .info-dialog-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        padding: 16px;
+    }
+
+    .info-dialog {
+        background: #fff;
+        color: #1f2937;
+        border-radius: 16px;
+        width: min(760px, 100%);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        padding: 20px 24px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .info-dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .info-dialog-header h5 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .info-dialog-close {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .info-dialog-close:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .info-dialog-body {
+        line-height: 1.7;
+        font-size: 15px;
+        color: #374151;
+        display: grid;
+        gap: 12px;
+    }
+
+    .info-dialog-body h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .info-dialog-body ul {
+        margin: 0 0 0 18px;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+    }
+
+    .info-dialog-body p {
+        margin: 0;
+    }
+
+    .info-dialog-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+    }
 </style>
 
 @code {
     private bool mobileMenuOpen = false;
     private int hoveredSocial = -1;
+    private InfoPage? activeInfoPage;
+
+    private readonly Dictionary<string, InfoPage> infoPages = new()
+    {
+        ["phone"] = new("phone", "Telefon", @"
+            <p>Müşteri deneyimini ön planda tutuyoruz. Telefon hattımızdan haftanın her günü ulaşabilirsiniz.</p>
+            <ul>
+                <li><strong>Çağrı Merkezi:</strong> 0850 123 45 67</li>
+                <li><strong>Hizmet Saatleri:</strong> 09:00 - 22:00 (Hafta içi ve hafta sonu)</li>
+                <li><strong>Destek:</strong> Randevu planlama, üyelik, ödeme ve teknik konularda uzman ekip</li>
+            </ul>
+            <p>Yoğunluk durumunda sizi geri arayabilmemiz için lütfen adınızı ve telefon numaranızı bırakın.</p>"),
+        ["address"] = new("address", "Adres", @"
+            <p>Operasyonlarımızı İstanbul merkezli olarak yürütüyoruz ve çevrim içi kanal üzerinden tüm Türkiye'ye hizmet veriyoruz.</p>
+            <ul>
+                <li><strong>Merkez Ofis:</strong> Tekstilkent Plaza, Esenler / İstanbul</li>
+                <li><strong>Çalışma Saatleri:</strong> 09:00 - 18:00 (Hafta içi)</li>
+                <li><strong>İletişim:</strong> info@aptivaplan.com</li>
+            </ul>
+            <p>Yerinde destek talepleriniz için randevu oluşturarak ziyaret planlayabilirsiniz.</p>"),
+        ["delivery"] = new("delivery", "Teslimat Koşulları", @"
+            <p>Aptiva Plan tamamen dijital bir randevu yönetim hizmetidir. Fiziksel ürün gönderimi yapılmaz.</p>
+            <ul>
+                <li>Kayıt ve ödeme tamamlandıktan sonra hesabınız hemen aktif edilir.</li>
+                <li>Paneller ve müşteri arayüzleri web üzerinden 7/24 erişime açıktır.</li>
+                <li>Eğitim dokümanları ve videolara panel içinde anında erişebilirsiniz.</li>
+                <li>Kurulum veya veri taşıma desteği gerekiyorsa destek ekibimiz planlama sonrası maksimum 1 iş günü içinde başlar.</li>
+            </ul>
+            <p>Herhangi bir gecikme durumunda size e-posta ve telefon ile bilgilendirme yapılır.</p>"),
+        ["sales"] = new("sales", "Satış Politikası", @"
+            <p>Şeffaf ve sürdürülebilir bir fiyatlandırma modeli benimsiyoruz.</p>
+            <ul>
+                <li>Tüm paket fiyatları KDV dahil olarak belirtilir ve ödeme öncesi onayınıza sunulur.</li>
+                <li>Ödemeler güvenli ödeme altyapısı üzerinden alınır; kart bilgileriniz sistemde tutulmaz.</li>
+                <li>Abonelik süreleri (aylık/yıllık) panel üzerinde açıkça gösterilir ve otomatik yenileme tercihleri yönetilebilir.</li>
+                <li>Kampanya ve indirimler yalnızca kampanya süresi boyunca geçerlidir.</li>
+            </ul>
+            <p>Kurumsal teklif talepleriniz için satış ekibimiz ihtiyaçlarınıza özel paket ve ödeme planı oluşturabilir.</p>"),
+        ["cancellation"] = new("cancellation", "İptal ve İade Prosedürü", @"
+            <p>Müşteri memnuniyetini korumak için esnek iptal ve iade süreçleri sunuyoruz.</p>
+            <ul>
+                <li><strong>Deneme Süreci:</strong> Ücretsiz deneme süresi boyunca herhangi bir ücret tahsil edilmez.</li>
+                <li><strong>Aylık Abonelik:</strong> İptal talebi sonrası bir sonraki faturalandırma dönemi başlamadan ücret yansıtılmaz.</li>
+                <li><strong>Yıllık Abonelik:</strong> İlk 14 gün içinde kullanım yapılmadıysa tam iade; sonrasında kalan süre için orantısal iade değerlendirilir.</li>
+                <li><strong>Hizmet Kesintisi:</strong> Plan dışı kesinti yaşanması durumunda etkilenen süre kadar hizmet uzatma veya kredi tanımlanır.</li>
+            </ul>
+            <p>İptal/iade taleplerinizi panelden veya destek hattımızdan iletebilir, süreci adım adım takip edebilirsiniz.</p>"),
+        ["privacy"] = new("privacy", "Gizlilik Politikası", @"
+            <p>Kişisel verilerinizi KVKK ve ilgili mevzuat kapsamında koruyoruz.</p>
+            <ul>
+                <li>Veriler yalnızca hizmetin sunulması, güvenliği ve yasal yükümlülükler için kullanılır.</li>
+                <li>Üçüncü taraflarla veri paylaşımı, açık rızanız veya yasal zorunluluk olmadıkça yapılmaz.</li>
+                <li>Veri güvenliği için şifreleme, erişim kontrolü ve düzenli denetimler uygulanır.</li>
+                <li>Veri sahibi olarak erişim, düzeltme ve silme haklarınıza panel veya destek kanalları üzerinden ulaşabilirsiniz.</li>
+            </ul>"),
+        ["terms"] = new("terms", "Kullanım Şartları", @"
+            <p>Aptiva Plan'ı kullanarak aşağıdaki temel şartları kabul etmiş olursunuz.</p>
+            <ul>
+                <li>Hesap bilgilerinizin güvenliğinden siz sorumlusunuz; yetkisiz paylaşımdan kaçının.</li>
+                <li>Sistem, randevu takibi ve müşteri iletişimi amacıyla kullanılmalıdır.</li>
+                <li>Üçüncü kişilerin haklarını ihlal eden içerikler paylaşılmaz ve tespit halinde hesap kısıtlanabilir.</li>
+                <li>Hizmet güncellemeleri, bakım çalışmaları ve politika değişiklikleri önceden bildirilir.</li>
+            </ul>"),
+        ["cookies"] = new("cookies", "Çerez Politikası", @"
+            <p>Web sitemizde deneyiminizi iyileştirmek için çerezler kullanılır.</p>
+            <ul>
+                <li><strong>Zorunlu Çerezler:</strong> Oturum yönetimi ve güvenlik için gereklidir.</li>
+                <li><strong>Analitik Çerezler:</strong> Kullanıcı davranışını anonim şekilde analiz ederek iyileştirme yapmamıza yardımcı olur.</li>
+                <li><strong>Tercih Çerezleri:</strong> Dil, tema ve konum gibi ayarları hatırlar.</li>
+                <li>Tarayıcı ayarlarından çerez tercihlerinizi değiştirebilir veya silebilirsiniz.</li>
+            </ul>"),
+        ["about"] = new("about", "Hakkımızda", @"
+            <p>Aptiva Plan, randevu yönetimini hızlandırmak ve işletmelerin dijital dönüşümünü desteklemek için geliştirilmiş bir platformdur.</p>
+            <ul>
+                <li><strong>Misyon:</strong> Her ölçekte işletmeye erişilebilir ve güvenilir bir randevu altyapısı sunmak.</li>
+                <li><strong>Vizyon:</strong> Türkiye'deki en güçlü randevu ekosistemini oluşturmak ve global pazara açılmak.</li>
+                <li><strong>Değerler:</strong> Güvenlik, şeffaflık, müşteri odaklılık ve sürekli inovasyon.</li>
+            </ul>
+            <p>Ürünümüzü müşteri geri bildirimleriyle sürekli geliştiriyor, yeni özellikleri düzenli olarak yayına alıyoruz.</p>
+        ")
+    };
 
     private void ToggleMobileMenu()
     {
         mobileMenuOpen = !mobileMenuOpen;
+    }
+
+    private void OpenInfoPage(string key)
+    {
+        if (infoPages.TryGetValue(key, out var page))
+        {
+            activeInfoPage = page;
+        }
+    }
+
+    private void CloseInfoPage()
+    {
+        activeInfoPage = null;
     }
 
     private async Task ScrollToSection(string sectionId)
@@ -847,4 +1057,6 @@
     {
         hoveredSocial = index;
     }
+
+    private record InfoPage(string Key, string Title, string BodyHtml);
 }
