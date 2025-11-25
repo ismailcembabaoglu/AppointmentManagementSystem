@@ -963,6 +963,8 @@
     private InfoPage? activeInfoPage;
     private string activeSection = "#hero";
     private bool observerInitialized;
+    private DateTime? manualSelectionAt;
+    private readonly TimeSpan manualLockDuration = TimeSpan.FromMilliseconds(900);
     private DotNetObjectReference<LandingLayout>? _dotNetRef;
 
     private string GetNavClass(string sectionId) => $"nav-link {(activeSection == sectionId ? "active" : string.Empty)}";
@@ -1075,6 +1077,11 @@
     [JSInvokable]
     public Task UpdateActiveSection(string sectionId)
     {
+        if (IsManualSelectionLocked())
+        {
+            return Task.CompletedTask;
+        }
+
         if (activeSection != sectionId)
         {
             activeSection = sectionId;
@@ -1110,6 +1117,10 @@
                 activeSection = sectionId;
                 StateHasChanged();
             }
+
+            // Temporarily lock observer updates so the clicked section stays active
+            // while the scroll animation completes (avoids flickering to previous section).
+            manualSelectionAt = DateTime.UtcNow;
 
             // Check if we're on home page
             var currentPath = new Uri(Navigation.Uri).AbsolutePath;
@@ -1166,6 +1177,23 @@
                 Console.WriteLine($"❌ All methods failed: {ex2.Message}");
             }
         }
+    }
+
+    private bool IsManualSelectionLocked()
+    {
+        if (manualSelectionAt is null)
+        {
+            return false;
+        }
+
+        var locked = DateTime.UtcNow - manualSelectionAt < manualLockDuration;
+
+        if (!locked)
+        {
+            manualSelectionAt = null;
+        }
+
+        return locked;
     }
 
     private async Task ScrollToTop()
