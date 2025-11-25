@@ -38,17 +38,38 @@ window.initSectionObserver = function (dotNetRef, sectionIds) {
     // where sections rarely take up 45%+ of the viewport height.
     const options = {
         root: null,
-        rootMargin: '-30% 0px -45% 0px',
-        threshold: [0.1, 0.25, 0.5]
+        // Use a tighter viewport window so the active state reflects the section
+        // nearest to the middle of the screen. This reduces cases where the
+        // previous section stays selected while scrolling to the next one.
+        rootMargin: '-25% 0px -50% 0px',
+        threshold: [0, 0.1, 0.25, 0.5]
     };
 
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const sectionId = `#${entry.target.id}`;
-                dotNetRef.invokeMethodAsync('UpdateActiveSection', sectionId);
-            }
-        });
+        const visible = entries.filter(entry => entry.isIntersecting);
+
+        if (!visible.length) {
+            return;
+        }
+
+        const viewportCenter = window.innerHeight / 2;
+
+        const bestEntry = visible.reduce((best, entry) => {
+            const bestRect = best.boundingClientRect;
+            const entryRect = entry.boundingClientRect;
+
+            // Prefer the section with the highest intersection ratio; when ratios
+            // are similar, pick the one whose center is closest to the viewport
+            // center. This keeps the highlight aligned to the most prominent
+            // section during scroll.
+            const bestScore = (best.intersectionRatio * 100) - Math.abs((bestRect.top + bestRect.height / 2) - viewportCenter) / 10;
+            const entryScore = (entry.intersectionRatio * 100) - Math.abs((entryRect.top + entryRect.height / 2) - viewportCenter) / 10;
+
+            return entryScore > bestScore ? entry : best;
+        }, visible[0]);
+
+        const sectionId = `#${bestEntry.target.id}`;
+        dotNetRef.invokeMethodAsync('UpdateActiveSection', sectionId);
     }, options);
 
     sectionIds.forEach(id => {
