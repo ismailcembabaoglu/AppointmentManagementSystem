@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
+@implements IAsyncDisposable
 @using Radzen
+@using Microsoft.JSInterop
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
@@ -21,16 +23,16 @@
             
             <!-- Desktop Navigation -->
             <RadzenStack Orientation="Orientation.Horizontal" Gap="32px" AlignItems="AlignItems.Center" class="desktop-nav">
-                <span @onclick="@(() => ScrollToSection("#hero"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class="nav-link">
+                <span @onclick="@(() => ScrollToSection("#hero"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#hero" ? "active" : string.Empty)}">
                     Ana Sayfa
                 </span>
-                <span @onclick="@(() => ScrollToSection("#features"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class="nav-link">
+                <span @onclick="@(() => ScrollToSection("#features"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#features" ? "active" : string.Empty)}">
                     Özellikler
                 </span>
-                <span @onclick="@(() => ScrollToSection("#how-it-works"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class="nav-link">
+                <span @onclick="@(() => ScrollToSection("#how-it-works"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#how-it-works" ? "active" : string.Empty)}">
                     Nasıl Çalışır
                 </span>
-                <span @onclick="@(() => ScrollToSection("#categories"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class="nav-link">
+                <span @onclick="@(() => ScrollToSection("#categories"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#categories" ? "active" : string.Empty)}">
                     Kategoriler
                 </span>
             </RadzenStack>
@@ -58,16 +60,16 @@
         {
             <div class="mobile-menu">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 24px;">
-                    <div @onclick="@(() => ScrollToSection("#hero"))" class="mobile-nav-link">
+                    <div @onclick="@(() => ScrollToSection("#hero"))" class=@$"mobile-nav-link {(activeSection == "#hero" ? "active" : string.Empty)}">
                         Ana Sayfa
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#features"))" class="mobile-nav-link">
+                    <div @onclick="@(() => ScrollToSection("#features"))" class=@$"mobile-nav-link {(activeSection == "#features" ? "active" : string.Empty)}">
                         Özellikler
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#how-it-works"))" class="mobile-nav-link">
+                    <div @onclick="@(() => ScrollToSection("#how-it-works"))" class=@$"mobile-nav-link {(activeSection == "#how-it-works" ? "active" : string.Empty)}">
                         Nasıl Çalışır
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#categories"))" class="mobile-nav-link">
+                    <div @onclick="@(() => ScrollToSection("#categories"))" class=@$"mobile-nav-link {(activeSection == "#categories" ? "active" : string.Empty)}">
                         Kategoriler
                     </div>
                     <RadzenDivider Style="margin: 8px 0;" />
@@ -282,6 +284,31 @@
         z-index: 10000;
     }
 
+    .auth-buttons .rz-button {
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .auth-buttons .rz-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.18);
+    }
+
+    .auth-buttons .rz-button.rz-primary {
+        background: linear-gradient(120deg, #667eea, #764ba2);
+        border: none;
+    }
+
+    .auth-buttons .rz-button.rz-light {
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        color: var(--rz-text-color);
+        background: white;
+    }
+
     @@media (max-width: 768px) {
         /* Header fixed positioning on mobile */
         .rz-header {
@@ -305,7 +332,8 @@
         }
         
         .logo-text {
-            display: none !important;
+            display: inline-block !important;
+            font-size: 16px;
         }
         
         .mobile-menu-btn {
@@ -396,28 +424,54 @@
         transform: scaleY(1);
     }
 
+    .mobile-nav-link.active {
+        background: linear-gradient(120deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.16));
+        color: var(--rz-primary);
+        font-weight: 700;
+    }
+
+    .mobile-nav-link.active::before {
+        transform: scaleY(1);
+    }
+
     .nav-link {
         position: relative;
-        padding-bottom: 4px;
+        padding: 8px 4px;
+        border-radius: 10px;
+        transition: all 0.25s ease;
     }
 
     .nav-link::after {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
+        bottom: 4px;
+        left: 12px;
         width: 0;
-        height: 2px;
-        background: var(--rz-primary);
-        transition: width 0.3s ease;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 999px;
+        transition: width 0.3s ease, left 0.3s ease;
     }
 
     .nav-link:hover {
         color: var(--rz-primary) !important;
+        transform: translateY(-2px);
     }
 
     .nav-link:hover::after {
-        width: 100%;
+        width: 70%;
+        left: 15%;
+    }
+
+    .nav-link.active {
+        color: var(--rz-primary) !important;
+        background: linear-gradient(120deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.16));
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    .nav-link.active::after {
+        width: 80%;
+        left: 10%;
     }
 
     /* Footer link styles moved to main footer section */
@@ -907,6 +961,9 @@
     private bool mobileMenuOpen = false;
     private int hoveredSocial = -1;
     private InfoPage? activeInfoPage;
+    private string activeSection = "#hero";
+    private bool observerInitialized;
+    private DotNetObjectReference<LandingLayout>? _dotNetRef;
 
     private readonly Dictionary<string, InfoPage> infoPages = new()
     {
@@ -991,6 +1048,37 @@
     private void ToggleMobileMenu()
     {
         mobileMenuOpen = !mobileMenuOpen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !observerInitialized)
+        {
+            observerInitialized = true;
+            _dotNetRef = DotNetObjectReference.Create(this);
+
+            await JSRuntime.InvokeVoidAsync("initSectionObserver", _dotNetRef, new[]
+            {
+                "#hero",
+                "#features",
+                "#how-it-works",
+                "#categories"
+            });
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    [JSInvokable]
+    public Task UpdateActiveSection(string sectionId)
+    {
+        if (activeSection != sectionId)
+        {
+            activeSection = sectionId;
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
     }
 
     private void OpenInfoPage(string key)
@@ -1078,6 +1166,16 @@
     private void HoverSocial(int index)
     {
         hoveredSocial = index;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (observerInitialized)
+        {
+            await JSRuntime.InvokeVoidAsync("disposeSectionObserver");
+        }
+
+        _dotNetRef?.Dispose();
     }
 
     private record InfoPage(string Key, string Title, string BodyHtml);
