@@ -1101,9 +1101,16 @@
     {
         Console.WriteLine($"🎯 C# ScrollToSection called with: {sectionId}");
         Console.WriteLine($"📍 Current URI: {Navigation.Uri}");
-        
+
         try
         {
+            // Optimistically mark the target section as active for immediate visual feedback
+            if (activeSection != sectionId)
+            {
+                activeSection = sectionId;
+                StateHasChanged();
+            }
+
             // Check if we're on home page
             var currentPath = new Uri(Navigation.Uri).AbsolutePath;
             Console.WriteLine($"📍 Current path: {currentPath}");
