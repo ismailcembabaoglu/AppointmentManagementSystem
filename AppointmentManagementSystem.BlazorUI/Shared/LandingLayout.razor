@@ -168,11 +168,11 @@
                             </div>
                             <div class="contact-item">
                                 <RadzenIcon Icon="phone" Style="flex-shrink: 0;" />
-                                <span>0850 123 45 67</span>
+                                <span>0 (543) 255 97 98</span>
                             </div>
                             <div class="contact-item">
                                 <RadzenIcon Icon="location_on" Style="flex-shrink: 0;" />
-                                <span>İstanbul, Türkiye</span>
+                                <span>Mimarsinan Mah. 8504 Sok. Özdemirler Apt. No:168 Osmaniye / Merkez</span>
                             </div>
                         </div>
                     </div>
@@ -975,80 +975,83 @@
     private readonly Dictionary<string, InfoPage> infoPages = new()
     {
         ["phone"] = new("phone", "Telefon", @"
-            <p>Müşteri deneyimini ön planda tutuyoruz. Telefon hattımızdan haftanın her günü ulaşabilirsiniz.</p>
+            <p>Size tek numarayla ulaşıp tüm ihtiyaçlarınızı çözüme kavuşturuyoruz. Aramalarınız kurumsal destek ekibimiz tarafından yanıtlanır.</p>
             <ul>
-                <li><strong>Çağrı Merkezi:</strong> 0850 123 45 67</li>
+                <li><strong>Çağrı Merkezi:</strong> 0 (543) 255 97 98</li>
                 <li><strong>Hizmet Saatleri:</strong> 09:00 - 22:00 (Hafta içi ve hafta sonu)</li>
-                <li><strong>Destek:</strong> Randevu planlama, üyelik, ödeme ve teknik konularda uzman ekip</li>
+                <li><strong>Destek Kapsamı:</strong> Üyelik, ödeme, kurulum ve teknik destek talepleri</li>
             </ul>
-            <p>Yoğunluk durumunda sizi geri arayabilmemiz için lütfen adınızı ve telefon numaranızı bırakın.</p>"),
+            <p>Yoğunluk halinde bilgilerinizi bıraktığınızda aynı gün içinde geri dönüş sağlanır.</p>"),
         ["address"] = new("address", "Adres", @"
-            <p>Operasyonlarımızı İstanbul merkezli olarak yürütüyoruz ve çevrim içi kanal üzerinden tüm Türkiye'ye hizmet veriyoruz.</p>
+            <p>İşlemlerinizi çevrim içi yönetse de, Aptiva Plan kurumsal merkez adresiyle güvence sunar.</p>
             <ul>
-                <li><strong>Merkez Ofis:</strong> Tekstilkent Plaza, Esenler / İstanbul</li>
-                <li><strong>Çalışma Saatleri:</strong> 09:00 - 18:00 (Hafta içi)</li>
-                <li><strong>İletişim:</strong> info@aptivaplan.com</li>
+                <li><strong>Merkez Ofis:</strong> Mimarsinan Mah. 8504 Sok. Özdemirler Apt. No:168 Osmaniye / Merkez</li>
+                <li><strong>Resmi İletişim:</strong> info@aptivaplan.com</li>
+                <li><strong>Görüşme Planlama:</strong> Randevu oluşturarak yüz yüze toplantı talep edebilirsiniz.</li>
             </ul>
-            <p>Yerinde destek talepleriniz için randevu oluşturarak ziyaret planlayabilirsiniz.</p>"),
+            <p>Adres bilgilerimiz faturalama, sözleşme ve yerinde destek planlamalarında referans alınır.</p>"),
         ["delivery"] = new("delivery", "Teslimat Koşulları", @"
-            <p>Aptiva Plan tamamen dijital bir randevu yönetim hizmetidir. Fiziksel ürün gönderimi yapılmaz.</p>
+            <p>Aptiva Plan dijital bir SaaS hizmetidir; fiziksel ürün sevkiyatı yapılmaz.</p>
             <ul>
-                <li>Kayıt ve ödeme tamamlandıktan sonra hesabınız hemen aktif edilir.</li>
-                <li>Paneller ve müşteri arayüzleri web üzerinden 7/24 erişime açıktır.</li>
-                <li>Eğitim dokümanları ve videolara panel içinde anında erişebilirsiniz.</li>
-                <li>Kurulum veya veri taşıma desteği gerekiyorsa destek ekibimiz planlama sonrası maksimum 1 iş günü içinde başlar.</li>
+                <li>Ödeme onayının ardından hesabınız anında aktive edilir ve panel erişimi sağlanır.</li>
+                <li>Eğitim materyalleri, yardım içerikleri ve destek talepleri çevrim içi olarak teslim edilir.</li>
+                <li>Kurulum veya veri taşıma desteği, planlamadan sonra en geç 1 iş günü içinde başlatılır.</li>
+                <li>Hizmet kesintisi ihtimalinde durum bilgilendirmesi e-posta ve telefonla paylaşılır.</li>
             </ul>
-            <p>Herhangi bir gecikme durumunda size e-posta ve telefon ile bilgilendirme yapılır.</p>"),
+            <p>Tüm teslimatlar dijital kanallar üzerinden güvenli şekilde gerçekleştirilir.</p>"),
         ["sales"] = new("sales", "Satış Politikası", @"
-            <p>Şeffaf ve sürdürülebilir bir fiyatlandırma modeli benimsiyoruz.</p>
+            <p>Fiyatlandırma ve sözleşme süreçlerinde şeffaflık önceliğimizdir.</p>
             <ul>
-                <li>Tüm paket fiyatları KDV dahil olarak belirtilir ve ödeme öncesi onayınıza sunulur.</li>
-                <li>Ödemeler güvenli ödeme altyapısı üzerinden alınır; kart bilgileriniz sistemde tutulmaz.</li>
-                <li>Abonelik süreleri (aylık/yıllık) panel üzerinde açıkça gösterilir ve otomatik yenileme tercihleri yönetilebilir.</li>
-                <li>Kampanya ve indirimler yalnızca kampanya süresi boyunca geçerlidir.</li>
+                <li>Plan ücretleri KDV dahil olarak belirtilir; ödeme öncesi özet ekranında onayınızı alırız.</li>
+                <li>Ödemeler güvenli altyapı üzerinden alınır; kart bilgileriniz sistemde tutulmaz.</li>
+                <li>Abonelik süreleri ve yenileme tercihleri panelden yönetilir, değişiklikler anında yansır.</li>
+                <li>Kampanyalar ve indirimler ilgili dönem ve koşullarla sınırlıdır.</li>
             </ul>
-            <p>Kurumsal teklif talepleriniz için satış ekibimiz ihtiyaçlarınıza özel paket ve ödeme planı oluşturabilir.</p>"),
+            <p>Kurumsal teklif ve toplu kullanıcı ihtiyaçları için özel fiyat ve ödeme planı sunulur.</p>"),
         ["cancellation"] = new("cancellation", "İptal ve İade Prosedürü", @"
-            <p>Müşteri memnuniyetini korumak için esnek iptal ve iade süreçleri sunuyoruz.</p>
+            <p>Müşteri memnuniyetini korumak adına net ve izlenebilir iptal süreçleri uygularız.</p>
             <ul>
-                <li><strong>Deneme Süreci:</strong> Ücretsiz deneme süresi boyunca herhangi bir ücret tahsil edilmez.</li>
-                <li><strong>Aylık Abonelik:</strong> İptal talebi sonrası bir sonraki faturalandırma dönemi başlamadan ücret yansıtılmaz.</li>
-                <li><strong>Yıllık Abonelik:</strong> İlk 14 gün içinde kullanım yapılmadıysa tam iade; sonrasında kalan süre için orantısal iade değerlendirilir.</li>
-                <li><strong>Hizmet Kesintisi:</strong> Plan dışı kesinti yaşanması durumunda etkilenen süre kadar hizmet uzatma veya kredi tanımlanır.</li>
+                <li><strong>Deneme Süreci:</strong> Ücretsiz deneme boyunca ücret tahsil edilmez, iptal anında devre dışı bırakılır.</li>
+                <li><strong>Aylık Abonelik:</strong> İptal sonrası bir sonraki faturalandırma dönemi öncesinde ücret yansıtılmaz.</li>
+                <li><strong>Yıllık Abonelik:</strong> İlk 14 gün içinde kullanım yoksa tam iade; sonrasında kalan süreye göre orantısal iade değerlendirilir.</li>
+                <li><strong>Hizmet Kesintisi:</strong> Beklenmedik kesinti durumunda süre uzatma veya hizmet kredisi tanımlanır.</li>
             </ul>
-            <p>İptal/iade taleplerinizi panelden veya destek hattımızdan iletebilir, süreci adım adım takip edebilirsiniz.</p>"),
+            <p>İptal ve iade taleplerinizi panelden veya 0 (543) 255 97 98 numaralı hattan iletebilir, ilerlemeyi kayıt altından takip edebilirsiniz.</p>"),
         ["privacy"] = new("privacy", "Gizlilik Politikası", @"
-            <p>Kişisel verilerinizi KVKK ve ilgili mevzuat kapsamında koruyoruz.</p>
+            <p>Kişisel verilerinizi KVKK, GDPR ve ilgili mevzuata uygun şekilde işler ve saklarız.</p>
             <ul>
-                <li>Veriler yalnızca hizmetin sunulması, güvenliği ve yasal yükümlülükler için kullanılır.</li>
-                <li>Üçüncü taraflarla veri paylaşımı, açık rızanız veya yasal zorunluluk olmadıkça yapılmaz.</li>
-                <li>Veri güvenliği için şifreleme, erişim kontrolü ve düzenli denetimler uygulanır.</li>
-                <li>Veri sahibi olarak erişim, düzeltme ve silme haklarınıza panel veya destek kanalları üzerinden ulaşabilirsiniz.</li>
-            </ul>"),
-        ["terms"] = new("terms", "Kullanım Şartları", @"
-            <p>Aptiva Plan'ı kullanarak aşağıdaki temel şartları kabul etmiş olursunuz.</p>
-            <ul>
-                <li>Hesap bilgilerinizin güvenliğinden siz sorumlusunuz; yetkisiz paylaşımdan kaçının.</li>
-                <li>Sistem, randevu takibi ve müşteri iletişimi amacıyla kullanılmalıdır.</li>
-                <li>Üçüncü kişilerin haklarını ihlal eden içerikler paylaşılmaz ve tespit halinde hesap kısıtlanabilir.</li>
-                <li>Hizmet güncellemeleri, bakım çalışmaları ve politika değişiklikleri önceden bildirilir.</li>
-            </ul>"),
-        ["cookies"] = new("cookies", "Çerez Politikası", @"
-            <p>Web sitemizde deneyiminizi iyileştirmek için çerezler kullanılır.</p>
-            <ul>
-                <li><strong>Zorunlu Çerezler:</strong> Oturum yönetimi ve güvenlik için gereklidir.</li>
-                <li><strong>Analitik Çerezler:</strong> Kullanıcı davranışını anonim şekilde analiz ederek iyileştirme yapmamıza yardımcı olur.</li>
-                <li><strong>Tercih Çerezleri:</strong> Dil, tema ve konum gibi ayarları hatırlar.</li>
-                <li>Tarayıcı ayarlarından çerez tercihlerinizi değiştirebilir veya silebilirsiniz.</li>
-            </ul>"),
-        ["about"] = new("about", "Hakkımızda", @"
-            <p>Aptiva Plan, randevu yönetimini hızlandırmak ve işletmelerin dijital dönüşümünü desteklemek için geliştirilmiş bir platformdur.</p>
-            <ul>
-                <li><strong>Misyon:</strong> Her ölçekte işletmeye erişilebilir ve güvenilir bir randevu altyapısı sunmak.</li>
-                <li><strong>Vizyon:</strong> Türkiye'deki en güçlü randevu ekosistemini oluşturmak ve global pazara açılmak.</li>
-                <li><strong>Değerler:</strong> Güvenlik, şeffaflık, müşteri odaklılık ve sürekli inovasyon.</li>
+                <li>Veriler yalnızca hizmet sunumu, güvenlik ve yasal yükümlülükler amacıyla kullanılır.</li>
+                <li>Üçüncü taraf paylaşımı, açık rızanız veya yasal zorunluluk olmadıkça yapılmaz.</li>
+                <li>Şifreleme, erişim kontrolü ve düzenli güvenlik denetimleriyle veri bütünlüğünü koruruz.</li>
+                <li>Erişim, düzeltme, silme ve aktarım haklarınızı panel veya destek kanalları üzerinden kullanabilirsiniz.</li>
             </ul>
-            <p>Ürünümüzü müşteri geri bildirimleriyle sürekli geliştiriyor, yeni özellikleri düzenli olarak yayına alıyoruz.</p>
+            <p>Güncel politikaya info@aptivaplan.com üzerinden ulaşabilir veya sorularınızı iletebilirsiniz.</p>"),
+        ["terms"] = new("terms", "Kullanım Şartları", @"
+            <p>Aptiva Plan hizmetlerini kullanırken aşağıdaki kuralları kabul etmiş olursunuz.</p>
+            <ul>
+                <li>Hesap güvenliği sizdedir; yetkisiz paylaşımlardan kaçınılmalıdır.</li>
+                <li>Platform, randevu yönetimi ve müşteri iletişimi amaçlarıyla kullanılmalıdır.</li>
+                <li>Üçüncü kişilerin haklarını ihlal eden içerikler paylaşılmaz; tespit halinde gerekli aksiyonlar alınır.</li>
+                <li>Plan değişiklikleri, bakım çalışmaları ve politika güncellemeleri önceden bildirilir.</li>
+            </ul>
+            <p>Detaylı kullanım şartları talep edildiğinde PDF olarak paylaşılır.</p>"),
+        ["cookies"] = new("cookies", "Çerez Politikası", @"
+            <p>Deneyiminizi iyileştirmek ve güvenliği sağlamak için çerezler kullanırız.</p>
+            <ul>
+                <li><strong>Zorunlu Çerezler:</strong> Oturum yönetimi ve kimlik doğrulama için gereklidir.</li>
+                <li><strong>Analitik Çerezler:</strong> Anonim verilerle performans ve kullanıcı deneyimi iyileştirilir.</li>
+                <li><strong>Tercih Çerezleri:</strong> Dil, tema ve yerel ayarlarınızı hatırlar.</li>
+                <li>Tarayıcı ayarlarından çerez tercihlerinizi dilediğiniz zaman güncelleyebilirsiniz.</li>
+            </ul>
+            <p>Çerezlere ilişkin sorularınız için info@aptivaplan.com adresinden bize ulaşabilirsiniz.</p>"),
+        ["about"] = new("about", "Hakkımızda", @"
+            <p>Aptiva Plan, işletmelerin randevu süreçlerini uçtan uca dijitalleştiren kurumsal bir SaaS platformudur.</p>
+            <ul>
+                <li><strong>Misyon:</strong> Her ölçekten işletmeye güvenilir, erişilebilir ve modern bir randevu altyapısı sunmak.</li>
+                <li><strong>Vizyon:</strong> Türkiye'nin lider randevu ekosistemini kurmak ve globalde sürdürülebilir büyümek.</li>
+                <li><strong>Değerler:</strong> Güvenlik, şeffaflık, müşteri odağı ve sürekli inovasyon.</li>
+            </ul>
+            <p>Platformumuzu müşteri geri bildirimleriyle sürekli geliştiriyor, yeni özellikleri çevik yöntemlerle yayına alıyoruz.</p>
         ")
     };
 
