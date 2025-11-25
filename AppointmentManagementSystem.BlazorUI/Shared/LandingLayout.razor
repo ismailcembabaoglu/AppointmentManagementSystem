@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @using Radzen
 @using Microsoft.JSInterop
+@using System.Threading
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
@@ -964,7 +965,8 @@
     private string activeSection = "#hero";
     private bool observerInitialized;
     private DateTime? manualSelectionAt;
-    private readonly TimeSpan manualLockDuration = TimeSpan.FromMilliseconds(900);
+    private readonly TimeSpan manualLockDuration = TimeSpan.FromMilliseconds(1600);
+    private CancellationTokenSource? manualLockCts;
     private DotNetObjectReference<LandingLayout>? _dotNetRef;
 
     private string GetNavClass(string sectionId) => $"nav-link {(activeSection == sectionId ? "active" : string.Empty)}";
@@ -1120,7 +1122,7 @@
 
             // Temporarily lock observer updates so the clicked section stays active
             // while the scroll animation completes (avoids flickering to previous section).
-            manualSelectionAt = DateTime.UtcNow;
+            StartManualLock();
 
             // Check if we're on home page
             var currentPath = new Uri(Navigation.Uri).AbsolutePath;
@@ -1186,14 +1188,31 @@
             return false;
         }
 
-        var locked = DateTime.UtcNow - manualSelectionAt < manualLockDuration;
+        return DateTime.UtcNow - manualSelectionAt < manualLockDuration;
+    }
 
-        if (!locked)
+    private void StartManualLock()
+    {
+        manualLockCts?.Cancel();
+        manualLockCts?.Dispose();
+        manualLockCts = new CancellationTokenSource();
+
+        manualSelectionAt = DateTime.UtcNow;
+
+        _ = Task.Run(async () =>
         {
-            manualSelectionAt = null;
-        }
+            try
+            {
+                await Task.Delay(manualLockDuration, manualLockCts.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
 
-        return locked;
+            manualSelectionAt = null;
+            await InvokeAsync(StateHasChanged);
+        });
     }
 
     private async Task ScrollToTop()
@@ -1212,6 +1231,9 @@
         {
             await JSRuntime.InvokeVoidAsync("disposeSectionObserver");
         }
+
+        manualLockCts?.Cancel();
+        manualLockCts?.Dispose();
 
         _dotNetRef?.Dispose();
     }
