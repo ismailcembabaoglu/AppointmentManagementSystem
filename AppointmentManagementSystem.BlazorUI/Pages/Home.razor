@@ -12,44 +12,50 @@
 <div id="hero" class="hero-section">
     <div class="hero-bg-animation"></div>
     <div class="hero-content">
-        <div class="hero-badge">
-            <RadzenIcon Icon="verified" Style="font-size: 16px; margin-right: 8px;" />
-            <span>Türkiye'nin En Güvenilir Randevu Platformu</span>
-        </div>
-        <h1 class="hero-title">
-            Randevularınızı 
-            <span class="gradient-text">Kolayca Yönetin</span>
-        </h1>
-        <p class="hero-subtitle">
-            Modern, hızlı ve kullanıcı dostu randevu yönetim sistemi ile işletmenizi dijitalleştirin. 
-            <span class="highlight-text">7/24 online randevu</span> imkanı sunun!
-        </p>
-        <div class="hero-buttons">
-            <button class="btn-primary-hero" @onclick="@(() => Navigation.NavigateTo("/register"))">
-                <span>Ücretsiz Başla</span>
-                <RadzenIcon Icon="arrow_forward" Style="font-size: 20px; margin-left: 8px;" />
-            </button>
-            <button class="btn-secondary-hero" @onclick="@(() => Navigation.NavigateTo("/categories"))">
-                <RadzenIcon Icon="play_circle" Style="font-size: 20px; margin-right: 8px;" />
-                <span>Demo İzle</span>
-            </button>
-        </div>
-        <div class="hero-stats">
-            <div class="stat-item">
-                <div class="stat-number">10K+</div>
-                <div class="stat-label">Aktif İşletme</div>
+        <div class="hero-glass">
+            <div class="hero-badge">
+                <RadzenIcon Icon="verified" Style="font-size: 16px; margin-right: 8px;" />
+                <span>Türkiye'nin En Güvenilir Randevu Platformu</span>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-                <div class="stat-number">50K+</div>
-                <div class="stat-label">Mutlu Müşteri</div>
+            <h1 class="hero-title">
+                Randevularınızı
+                <span class="gradient-text">Kolayca Yönetin</span>
+            </h1>
+            <p class="hero-subtitle">
+                Modern, hızlı ve kullanıcı dostu randevu yönetim sistemi ile işletmenizi dijitalleştirin.
+                <span class="highlight-text">7/24 online randevu</span> imkanı sunun!
+            </p>
+            <div class="hero-buttons">
+                <button class="btn-primary-hero" @onclick="@(() => Navigation.NavigateTo("/register"))">
+                    <span>Ücretsiz Başla</span>
+                    <RadzenIcon Icon="arrow_forward" Style="font-size: 20px; margin-left: 8px;" />
+                </button>
+                <button class="btn-secondary-hero" @onclick="@(() => Navigation.NavigateTo("/categories"))">
+                    <RadzenIcon Icon="play_circle" Style="font-size: 20px; margin-right: 8px;" />
+                    <span>Demo İzle</span>
+                </button>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-                <div class="stat-number">99.9%</div>
-                <div class="stat-label">Uptime</div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Aktif İşletme</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Mutlu Müşteri</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
             </div>
         </div>
+        <a href="#features" class="scroll-cue">
+            <RadzenIcon Icon="expand_more" Style="font-size: 28px;" />
+            <span>Aşağı Kaydır</span>
+        </a>
     </div>
     <div class="hero-decoration">
         <div class="floating-shape shape-1"></div>
@@ -415,6 +421,27 @@
         align-items: center;
     }
 
+    .hero-glass {
+        width: 100%;
+        padding: 32px 28px 36px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 28px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-glass::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), transparent 35%),
+                    radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 32%);
+        pointer-events: none;
+    }
+
     .hero-badge {
         display: inline-flex;
         align-items: center;
@@ -469,6 +496,30 @@
         justify-content: center;
         flex-wrap: wrap;
         margin-bottom: 60px;
+    }
+
+    .scroll-cue {
+        margin-top: 28px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .scroll-cue:hover {
+        transform: translateY(4px);
+        background: rgba(255,255,255,0.16);
+        border-color: rgba(255,255,255,0.35);
     }
 
     .btn-primary-hero {
@@ -593,8 +644,10 @@
        FEATURES SECTION
        ======================== */
     .features-section {
-        padding: 100px 24px;
-        background: #ffffff;
+        padding: 110px 24px;
+        background: radial-gradient(circle at 20% 20%, #eef2ff 0%, #ffffff 28%),
+                    radial-gradient(circle at 80% 10%, #e0f2fe 0%, #ffffff 25%),
+                    #ffffff;
         position: relative;
         z-index: 1;
     }
@@ -648,35 +701,50 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 32px;
+        position: relative;
+        z-index: 1;
     }
 
     .feature-card {
-        background: white;
+        background: linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.96) 100%);
         border-radius: 24px;
         padding: 40px 32px;
-        border: 1px solid #e2e8f0;
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        border: 1px solid rgba(102, 126, 234, 0.18);
+        transition: all 0.45s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 12px 45px rgba(102, 126, 234, 0.08);
     }
 
     .feature-card::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        inset: -1px;
+        background: linear-gradient(135deg, rgba(102,126,234,0.22), rgba(118,75,162,0.14));
         opacity: 0;
         transition: opacity 0.4s ease;
+        z-index: 0;
+    }
+
+    .feature-card::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: 22px;
+        background: white;
+        z-index: 0;
+    }
+
+    .feature-card > * {
+        position: relative;
+        z-index: 1;
     }
 
     .feature-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        border-color: #667eea;
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 26px 70px rgba(102, 126, 234, 0.18);
+        border-color: rgba(118, 75, 162, 0.35);
     }
 
     .feature-card:hover::before {
@@ -779,10 +847,39 @@
        HOW IT WORKS SECTION
        ======================== */
     .how-it-works-section {
-        padding: 100px 24px;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 110px 24px;
+        background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #0f172a 100%);
         position: relative;
         z-index: 1;
+        overflow: hidden;
+    }
+
+    .how-it-works-section .section-header {
+        color: #e2e8f0;
+    }
+
+    .how-it-works-section .section-title {
+        color: #e2e8f0;
+    }
+
+    .how-it-works-section .section-subtitle {
+        color: rgba(226, 232, 240, 0.8);
+    }
+
+    .how-it-works-section .section-badge {
+        background: rgba(255,255,255,0.12);
+        color: #c7d2fe;
+        box-shadow: none;
+    }
+
+    .how-it-works-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 15% 20%, rgba(79,70,229,0.18), transparent 40%),
+                    radial-gradient(circle at 85% 10%, rgba(236,72,153,0.14), transparent 35%),
+                    radial-gradient(circle at 50% 90%, rgba(14,165,233,0.16), transparent 38%);
+        pointer-events: none;
     }
 
     .steps-container {
@@ -794,18 +891,20 @@
     }
 
     .step-card {
-        background: white;
+        background: radial-gradient(circle at 20% 20%, rgba(102,126,234,0.06), transparent 32%), #ffffff;
         border-radius: 24px;
         padding: 40px;
-        border: 2px solid #e2e8f0;
+        border: 1px solid rgba(255,255,255,0.06);
         position: relative;
         transition: all 0.4s ease;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+        overflow: hidden;
     }
 
     .step-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        border-color: #667eea;
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.18);
+        border-color: rgba(102, 126, 234, 0.5);
     }
 
     .step-number-wrapper {
@@ -1102,6 +1201,11 @@
             overflow-x: hidden;
         }
 
+        .hero-glass {
+            padding: 22px 18px 26px;
+            border-radius: 20px;
+        }
+
         .hero-title {
             font-size: 36px;
             line-height: 1.2;
@@ -1166,6 +1270,11 @@
             justify-content: center;
             padding: 14px 24px;
             font-size: 16px;
+        }
+
+        .scroll-cue {
+            width: 100%;
+            max-width: 200px;
         }
 
         /* Section Containers */
