@@ -23,16 +23,16 @@
             
             <!-- Desktop Navigation -->
             <RadzenStack Orientation="Orientation.Horizontal" Gap="32px" AlignItems="AlignItems.Center" class="desktop-nav">
-                <span @onclick="@(() => ScrollToSection("#hero"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#hero" ? "active" : string.Empty)}">
+                <span @onclick="@(() => ScrollToSection("#hero"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class='@GetNavClass("#hero")'>
                     Ana Sayfa
                 </span>
-                <span @onclick="@(() => ScrollToSection("#features"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#features" ? "active" : string.Empty)}">
+                <span @onclick="@(() => ScrollToSection("#features"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class='@GetNavClass("#features")'>
                     Özellikler
                 </span>
-                <span @onclick="@(() => ScrollToSection("#how-it-works"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#how-it-works" ? "active" : string.Empty)}">
+                <span @onclick="@(() => ScrollToSection("#how-it-works"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class='@GetNavClass("#how-it-works")'>
                     Nasıl Çalışır
                 </span>
-                <span @onclick="@(() => ScrollToSection("#categories"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class=@$"nav-link {(activeSection == "#categories" ? "active" : string.Empty)}">
+                <span @onclick="@(() => ScrollToSection("#categories"))" style="text-decoration: none; color: var(--rz-text-color); font-weight: 500; transition: color 0.3s; cursor: pointer;" class='@GetNavClass("#categories")'>
                     Kategoriler
                 </span>
             </RadzenStack>
@@ -60,16 +60,16 @@
         {
             <div class="mobile-menu">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="16px" Style="padding: 24px;">
-                    <div @onclick="@(() => ScrollToSection("#hero"))" class=@$"mobile-nav-link {(activeSection == "#hero" ? "active" : string.Empty)}">
+                    <div @onclick="@(() => ScrollToSection("#hero"))" class='@GetMobileNavClass("#hero")'>
                         Ana Sayfa
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#features"))" class=@$"mobile-nav-link {(activeSection == "#features" ? "active" : string.Empty)}">
+                    <div @onclick="@(() => ScrollToSection("#features"))" class='@GetMobileNavClass("#features")'>
                         Özellikler
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#how-it-works"))" class=@$"mobile-nav-link {(activeSection == "#how-it-works" ? "active" : string.Empty)}">
+                    <div @onclick="@(() => ScrollToSection("#how-it-works"))" class='@GetMobileNavClass("#how-it-works")'>
                         Nasıl Çalışır
                     </div>
-                    <div @onclick="@(() => ScrollToSection("#categories"))" class=@$"mobile-nav-link {(activeSection == "#categories" ? "active" : string.Empty)}">
+                    <div @onclick="@(() => ScrollToSection("#categories"))" class='@GetMobileNavClass("#categories")'>
                         Kategoriler
                     </div>
                     <RadzenDivider Style="margin: 8px 0;" />
@@ -964,6 +964,9 @@
     private string activeSection = "#hero";
     private bool observerInitialized;
     private DotNetObjectReference<LandingLayout>? _dotNetRef;
+
+    private string GetNavClass(string sectionId) => $"nav-link {(activeSection == sectionId ? "active" : string.Empty)}";
+    private string GetMobileNavClass(string sectionId) => $"mobile-nav-link {(activeSection == sectionId ? "active" : string.Empty)}";
 
     private readonly Dictionary<string, InfoPage> infoPages = new()
     {
