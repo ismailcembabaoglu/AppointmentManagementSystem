@@ -880,6 +880,10 @@
 
                 // Move to payment step
                 currentBusinessStep++;
+                
+                Console.WriteLine($"✅ Moving to payment step. BusinessId: {registeredBusinessId}");
+                Console.WriteLine($"🔵 Direct API Payment Form will be rendered");
+                
                 StateHasChanged();
             }
             else
