@@ -113,6 +113,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "test_mode", testMode },
                     { "non_3d", non3d },
                     { "store_card", "1" }, // Kart bilgilerini kaydet (utoken, ctoken için gerekli)
+                    { "utoken", utoken }, // ZORUNLU: PayTR'ye göndereceğimiz unique user token
                     { "cc_owner", userName } // Kart sahibi adı
                 };
 
