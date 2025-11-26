@@ -90,8 +90,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem (kart saklama için ZORUNLU)
                 
-                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + currency + testmode + non3d + merchantsalt
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}{_merchantSalt}";
+                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + currency + testmode + non3d
+                // NOT: merchantsalt GenerateToken metodunda ekleniyor
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}";
                 var paytrToken = GenerateToken(hashStr);
 
                 _logger.LogInformation($"PayTR Token generated: {paytrToken.Substring(0, 20)}...");
