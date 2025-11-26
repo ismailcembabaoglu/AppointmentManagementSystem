@@ -197,18 +197,31 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             _logger.LogInformation("Checking for existing subscription...");
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
             
+            // Kart bilgilerini al (utoken/ctoken olmasa bile en azından card_type ve masked_pan'i kaydet)
+            var hasCardTokens = !string.IsNullOrEmpty(request.Utoken) && !string.IsNullOrEmpty(request.Ctoken);
+            
+            if (!hasCardTokens)
+            {
+                _logger.LogWarning("⚠️ Card tokens (utoken/ctoken) are NULL. iFrame API does not support card tokenization.");
+                _logger.LogWarning("⚠️ Saving only available card info (card_type and masked_pan) for display purposes.");
+                _logger.LogWarning("⚠️ Recurring payments will NOT work without card tokens!");
+                _logger.LogWarning("⚠️ Consider switching to Direct API for card tokenization: https://dev.paytr.com/direkt-api/kart-saklama-api");
+            }
+            
             if (subscription == null)
             {
                 _logger.LogInformation("Creating new subscription...");
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
-                    PayTRUserToken = request.Utoken,
-                    PayTRCardToken = request.Ctoken,
+                    PayTRUserToken = request.Utoken, // iFrame API'de NULL olacak
+                    PayTRCardToken = request.Ctoken, // iFrame API'de NULL olacak
                     CardBrand = request.CardType,
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
-                    CardLastFourDigits = request.MaskedPan?.Substring(request.MaskedPan.Length - 4),
+                    CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4 
+                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4) 
+                        : null,
                     MonthlyAmount = 700.00m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
@@ -217,32 +230,71 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     LastBillingDate = DateTime.UtcNow, // İlk ödeme yapıldı
                     NextBillingDate = DateTime.UtcNow.AddDays(30), // 30 gün sonra
                     IsActive = true,
-                    AutoRenewal = true,
+                    AutoRenewal = !hasCardTokens ? false : true, // Token yoksa auto-renewal kapat
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
-                _logger.LogInformation($"New subscription created: Utoken={request.Utoken?.Substring(0, 10)}..., NextBilling={subscription.NextBillingDate}");
+                
+                if (hasCardTokens)
+                {
+                    _logger.LogInformation($"✅ New subscription created with card tokens: Utoken={request.Utoken?.Substring(0, 10)}..., NextBilling={subscription.NextBillingDate}");
+                }
+                else
+                {
+                    _logger.LogInformation($"⚠️ New subscription created WITHOUT card tokens. Card info: {request.CardType} {request.MaskedPan}");
+                }
             }
             else
             {
                 _logger.LogInformation("Updating existing subscription...");
-                subscription.PayTRUserToken = request.Utoken;
-                subscription.PayTRCardToken = request.Ctoken;
-                subscription.CardBrand = request.CardType;
-                subscription.CardType = request.CardType;
-                subscription.MaskedCardNumber = request.MaskedPan;
-                subscription.CardLastFourDigits = request.MaskedPan?.Substring(request.MaskedPan.Length - 4);
+                
+                // Sadece dolu olan değerleri güncelle (NULL olanları bozmamak için)
+                if (!string.IsNullOrEmpty(request.Utoken))
+                {
+                    subscription.PayTRUserToken = request.Utoken;
+                }
+                if (!string.IsNullOrEmpty(request.Ctoken))
+                {
+                    subscription.PayTRCardToken = request.Ctoken;
+                }
+                if (!string.IsNullOrEmpty(request.CardType))
+                {
+                    subscription.CardBrand = request.CardType;
+                    subscription.CardType = request.CardType;
+                }
+                if (!string.IsNullOrEmpty(request.MaskedPan))
+                {
+                    subscription.MaskedCardNumber = request.MaskedPan;
+                    subscription.CardLastFourDigits = request.MaskedPan.Length >= 4 
+                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4) 
+                        : subscription.CardLastFourDigits;
+                }
+                
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.LastBillingDate = DateTime.UtcNow;
                 subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
                 subscription.IsActive = true;
-                subscription.AutoRenewal = true;
+                
+                // Token varsa auto-renewal açık olsun, yoksa kapalı kalsın
+                if (hasCardTokens)
+                {
+                    subscription.AutoRenewal = true;
+                }
+                
                 subscription.UpdatedAt = DateTime.UtcNow;
                 
                 await _subscriptionRepository.UpdateAsync(subscription);
-                _logger.LogInformation($"Subscription updated: ID={subscription.Id}");
+                
+                if (hasCardTokens)
+                {
+                    _logger.LogInformation($"✅ Subscription updated with card tokens: ID={subscription.Id}");
+                }
+                else
+                {
+                    _logger.LogInformation($"⚠️ Subscription updated WITHOUT card tokens. Card info: {request.CardType} {request.MaskedPan}");
+                }
             }
 
             // 3. Business'ı aktifleştir
