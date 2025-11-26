@@ -83,15 +83,15 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
 
-                // Token oluştur - PayTR nokta (.) bekliyor, virgül (,) değil!
+                // Token oluştur - PayTR Direct API için
                 var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
                 var paymentType = "card";
-                var installmentCount = "0";
                 var currency = "TL";
                 var testMode = _isTestMode ? "1" : "0";
-                var non3d = "1"; // Non-3D işlem (kart saklama için)
+                var non3d = "1"; // Non-3D işlem (kart saklama için ZORUNLU)
                 
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{installmentCount}{currency}{testMode}{non3d}";
+                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + currency + testmode + non3d + merchantsalt
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}{_merchantSalt}";
                 var paytrToken = GenerateToken(hashStr);
 
                 _logger.LogInformation($"PayTR Token generated: {paytrToken.Substring(0, 20)}...");
