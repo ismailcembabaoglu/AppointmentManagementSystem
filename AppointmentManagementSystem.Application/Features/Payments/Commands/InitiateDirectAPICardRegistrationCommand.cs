@@ -1,3 +1,4 @@
+using AppointmentManagementSystem.Application.Shared;
 using MediatR;
 
 namespace AppointmentManagementSystem.Application.Features.Payments.Commands
