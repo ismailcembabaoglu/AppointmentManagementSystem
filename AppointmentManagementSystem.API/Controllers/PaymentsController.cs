@@ -140,7 +140,7 @@ namespace AppointmentManagementSystem.API.Controllers
                             var reconstructed = await new FormReader(rawBody).ReadFormAsync();
                             if (reconstructed.Count > 0)
                             {
-                                form = reconstructed;
+                                form = new FormCollection(reconstructed);
                                 _logger.LogInformation($"Form reconstructed from raw body; keys: {string.Join(", ", reconstructed.Keys)}");
                             }
                         }
