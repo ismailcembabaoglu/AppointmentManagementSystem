@@ -56,6 +56,30 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // URL'den PayTR parametrelerini al ve logla
+            var uri = new Uri(NavigationManager.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+            var merchantOid = query["merchant_oid"];
+            var status = query["status"];
+            var failedReasonMsg = query["failed_reason_msg"];
+
+            Console.WriteLine($"=== Payment Failed Callback ===");
+            Console.WriteLine($"Full URL: {NavigationManager.Uri}");
+            Console.WriteLine($"MerchantOid: {merchantOid}");
+            Console.WriteLine($"Status: {status}");
+            Console.WriteLine($"FailedReasonMsg: {failedReasonMsg}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing payment failed callback: {ex.Message}");
+        }
+    }
+
     private void RetryPayment()
     {
         NavigationManager.NavigateTo("/register");
