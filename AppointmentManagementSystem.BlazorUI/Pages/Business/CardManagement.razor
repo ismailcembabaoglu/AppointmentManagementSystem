@@ -102,21 +102,6 @@ else
             </RadzenColumn>
         </RadzenRow>
 
-        @if (isIframeVisible && !string.IsNullOrEmpty(iframeUrl))
-        {
-            <RadzenCard Style="border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
-                        <RadzenIcon Icon="shield" Style="color: var(--rz-primary-color);" />
-                        <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Güvenli Ödeme Ekranı</RadzenText>
-                    </RadzenStack>
-                    <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">Aşağıdaki form PayTR tarafından sağlanır ve mobil uyumludur.</RadzenText>
-                    <div style="width: 100%; height: 640px; max-height: 80vh; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);">
-                        <iframe src="@iframeUrl" style="border: none; width: 100%; height: 100%;" title="Kart Doğrulama"></iframe>
-                    </div>
-                </RadzenStack>
-            </RadzenCard>
-        }
     </RadzenStack>
 }
 
