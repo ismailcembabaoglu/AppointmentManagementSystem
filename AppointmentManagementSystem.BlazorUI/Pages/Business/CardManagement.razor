@@ -161,70 +161,45 @@ else
         }
     }
 
-    private async Task StartCardUpdate()
+    private async Task OpenCardUpdateDialog()
     {
         if (businessId == 0 || string.IsNullOrEmpty(userEmail))
         {
-            NotificationService.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Warning,
-                Summary = "Eksik Bilgi",
-                Detail = "İşletme veya kullanıcı bilgisi eksik görünüyor."
-            });
+            NotificationService.Notify(NotificationSeverity.Warning, "Eksik Bilgi", 
+                "İşletme veya kullanıcı bilgisi eksik.");
             return;
         }
 
-        try
+        var parameters = new Dictionary<string, object>
         {
-            isStarting = true;
-            var initiateRequest = new InitiateCardRegistrationDto
-            {
-                Email = userEmail!,
-                BusinessId = businessId,
-                BusinessName = subscription?.BusinessName ?? "İşletme",
-                Amount = 1m,
-                Description = "Kart Doğrulama Ücreti",
-                IsCardUpdate = true
-            };
+            { "BusinessId", businessId },
+            { "Email", userEmail ?? "" },
+            { "BusinessName", subscription?.BusinessName ?? "İşletme" },
+            { "OwnerName", ownerName ?? "" }
+        };
 
-            var result = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
-            if (result.Success && result.Data?.Success == true && !string.IsNullOrEmpty(result.Data.IFrameUrl))
-            {
-                await LocalStorage.SetItemAsync("cardUpdateBusinessId", businessId);
-                await LocalStorage.SetItemAsync("cardUpdateEmail", userEmail);
-
-                iframeUrl = result.Data.IFrameUrl;
-                isIframeVisible = true;
-                NotificationService.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Success,
-                    Summary = "Kart doğrulama hazır",
-                    Detail = "Yeni kartınızı eklemek için formu doldurun."
-                });
-            }
-            else
-            {
-                var message = result.Message ?? result.Data?.ErrorMessage ?? "Kart doğrulama başlatılamadı.";
-                NotificationService.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Error,
-                    Summary = "Hata",
-                    Detail = message
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            NotificationService.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Error,
-                Summary = "Hata",
-                Detail = $"Kart doğrulama başlatılırken sorun oluştu: {ex.Message}"
+        var result = await DialogService.OpenAsync<DirectAPICardUpdateDialog>(
+            "Kart Güncelle",
+            parameters,
+            new DialogOptions 
+            { 
+                Width = "600px",
+                Height = "auto",
+                Resizable = false,
+                Draggable = false,
+                CloseDialogOnEsc = true
             });
-        }
-        finally
+
+        if (result != null && result is bool success && success)
         {
-            isStarting = false;
+            // Reload subscription to show updated card
+            await Task.Delay(2000);
+            isLoading = true;
+            StateHasChanged();
+            await LoadSubscriptionAsync();
+            
+            NotificationService.Notify(NotificationSeverity.Success, "Tamamlandı", 
+                "Kartınız başarıyla güncellendi!");
         }
     }
 
