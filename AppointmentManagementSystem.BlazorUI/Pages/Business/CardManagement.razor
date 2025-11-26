@@ -190,7 +190,7 @@ else
                 CloseDialogOnEsc = true
             });
 
-        if (result != null && result is bool success && success)
+        if (result is bool boolResult && boolResult)
         {
             // Reload subscription to show updated card
             await Task.Delay(2000);
