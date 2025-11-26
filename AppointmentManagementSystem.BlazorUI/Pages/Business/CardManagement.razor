@@ -109,10 +109,8 @@ else
     private SubscriptionDto? subscription;
     private int businessId;
     private string? userEmail;
+    private string? ownerName;
     private bool isLoading = true;
-    private bool isStarting;
-    private bool isIframeVisible;
-    private string? iframeUrl;
     private string? loadError;
 
     protected override async Task OnInitializedAsync()
