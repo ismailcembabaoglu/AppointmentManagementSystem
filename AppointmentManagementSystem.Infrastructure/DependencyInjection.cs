@@ -1,4 +1,5 @@
-﻿using AppointmentManagementSystem.Domain.Interfaces;
+﻿using AppointmentManagementSystem.Application.Interfaces;
+using AppointmentManagementSystem.Domain.Interfaces;
 using AppointmentManagementSystem.Infrastructure.Data;
 using AppointmentManagementSystem.Infrastructure.Repositories;
 using AppointmentManagementSystem.Infrastructure.Services;
