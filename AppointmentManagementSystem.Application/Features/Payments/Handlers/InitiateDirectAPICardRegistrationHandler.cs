@@ -53,7 +53,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 }
 
                 // Merchant OID oluştur (REG prefix ile webhook'ta tanıyabiliriz)
-                var merchantOid = $"REG{request.BusinessId}_{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
+                // PayTR tire (-) kabul etmiyor, sadece harf ve rakam
+                var merchantOid = $"REG{request.BusinessId}{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
 
                 // Direct API ile ödeme başlat
                 var paymentResponse = await _paytrDirectService.InitiateCardRegistrationPayment(
