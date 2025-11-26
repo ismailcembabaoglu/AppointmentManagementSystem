@@ -72,7 +72,7 @@ namespace AppointmentManagementSystem.API.Controllers
 
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> PaymentWebhook()
+        public async Task<IActionResult> PaymentWebhook([FromForm] ProcessPaymentWebhookCommand? posted = null)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"Content-Type: {Request.ContentType}");
                 _logger.LogInformation($"Method: {Request.Method}");
 
-                // Parse payload from form, query, raw url-encoded body or JSON (PayTR posts as form-url-encoded).
+                // Buffer and capture the raw body for diagnostics, then rewind so we can parse it again.
                 Request.EnableBuffering();
                 string rawBody;
                 using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
@@ -94,23 +94,27 @@ namespace AppointmentManagementSystem.API.Controllers
                 IFormCollection? form = null;
                 Dictionary<string, Microsoft.Extensions.Primitives.StringValues>? bodyValues = null;
 
-                if (Request.HasFormContentType)
+                try
                 {
+                    // Read form data even if the content type is not flagged correctly; PayTR posts url-encoded data.
                     form = await Request.ReadFormAsync();
-                    _logger.LogInformation($"Form keys: {string.Join(", ", form.Keys)}");
+                    _logger.LogInformation($"Form count: {form.Count}; keys: {string.Join(", ", form.Keys)}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to read Request.Form");
                 }
 
                 if (string.IsNullOrWhiteSpace(rawBody) == false)
                 {
-                    // Try url-encoded first, then JSON.
                     try
                     {
                         bodyValues = QueryHelpers.ParseQuery(rawBody)
                             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored, will try JSON
+                        _logger.LogDebug(ex, "Raw body is not standard url-encoded");
                     }
 
                     if (bodyValues == null || bodyValues.Count == 0)
@@ -122,9 +126,9 @@ namespace AppointmentManagementSystem.API.Controllers
                                 .EnumerateObject()
                                 .ToDictionary(p => p.Name, p => new Microsoft.Extensions.Primitives.StringValues(p.Value.ToString()));
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // ignored – if we can't parse JSON we fall back to query string below
+                            _logger.LogDebug(ex, "Raw body is not JSON");
                         }
                     }
                 }
@@ -134,14 +138,43 @@ namespace AppointmentManagementSystem.API.Controllers
                     _logger.LogInformation($"Parsed body keys: {string.Join(", ", bodyValues.Keys)}");
                 }
 
-                string? ReadValue(string key) =>
-                    (form != null && form.TryGetValue(key, out var formValue))
-                        ? formValue.ToString()
-                        : (bodyValues != null && bodyValues.TryGetValue(key, out var bodyValue))
-                            ? bodyValue.ToString()
-                            : Request.Query.ContainsKey(key)
-                                ? Request.Query[key].ToString()
-                                : null;
+                string? ReadValue(string key)
+                {
+                    if (form != null && form.TryGetValue(key, out var formValue))
+                    {
+                        return formValue.ToString();
+                    }
+
+                    if (bodyValues != null && bodyValues.TryGetValue(key, out var bodyValue))
+                    {
+                        return bodyValue.ToString();
+                    }
+
+                    if (Request.Query.ContainsKey(key))
+                    {
+                        return Request.Query[key].ToString();
+                    }
+
+                    if (posted != null)
+                    {
+                        return key switch
+                        {
+                            "merchant_oid" => posted.MerchantOid,
+                            "status" => posted.Status,
+                            "total_amount" => posted.TotalAmount,
+                            "hash" => posted.Hash,
+                            "utoken" => posted.Utoken,
+                            "ctoken" => posted.Ctoken,
+                            "card_type" => posted.CardType,
+                            "masked_pan" => posted.MaskedPan,
+                            "payment_id" => posted.PaymentId,
+                            "failed_reason_msg" => posted.FailedReasonMsg,
+                            _ => null
+                        };
+                    }
+
+                    return null;
+                }
 
                 var command = new ProcessPaymentWebhookCommand
                 {
@@ -165,6 +198,7 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"CardType: {command.CardType ?? "NULL"}");
                 _logger.LogInformation($"MaskedPan: {command.MaskedPan ?? "NULL"}");
                 _logger.LogInformation($"PaymentId: {command.PaymentId ?? "NULL"}");
+                _logger.LogInformation($"FailedReasonMsg: {command.FailedReasonMsg ?? "NULL"}");
 
                 var result = await _mediator.Send(command);
 
