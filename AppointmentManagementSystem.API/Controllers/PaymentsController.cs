@@ -270,6 +270,20 @@ namespace AppointmentManagementSystem.API.Controllers
             string? hash, string? utoken, string? ctoken, string? card_type, string? masked_pan,
             string? payment_id, string? failed_reason_msg)
         {
+            _logger.LogInformation("=== Fail Redirect Called ===");
+            _logger.LogInformation($"Method: {Request.Method}");
+            _logger.LogInformation($"Content-Type: {Request.ContentType}");
+            _logger.LogInformation($"Query Params - merchant_oid: {merchant_oid}, status: {status}, failed_reason_msg: {failed_reason_msg}");
+            
+            if (Request.HasFormContentType)
+            {
+                _logger.LogInformation($"Form Keys: {string.Join(", ", Request.Form.Keys)}");
+                foreach (var key in Request.Form.Keys)
+                {
+                    _logger.LogInformation($"Form[{key}] = {Request.Form[key]}");
+                }
+            }
+            
             return BuildRedirect(_configuration["PayTR:FailUrl"] ?? "/payment/failed",
                 merchant_oid, status, total_amount, hash, utoken, ctoken, card_type, masked_pan, payment_id,
                 failed_reason_msg);
