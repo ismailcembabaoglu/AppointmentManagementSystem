@@ -73,6 +73,10 @@ builder.Services.AddApplication();
 
 // Gemini AI
 builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemini"));
+// HttpClientFactory - PayTRDirectAPIService için gerekli
+builder.Services.AddHttpClient();
+
+// Gemini AI Client
 builder.Services.AddHttpClient<IGeminiClient, GeminiClient>();
 
 // JWT Authentication
