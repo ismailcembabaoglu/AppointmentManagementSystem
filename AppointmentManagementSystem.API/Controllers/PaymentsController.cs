@@ -220,6 +220,8 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"Ctoken: {command.Ctoken ?? "NULL"}");
                 _logger.LogInformation($"CardType: {command.CardType ?? "NULL"}");
                 _logger.LogInformation($"MaskedPan: {command.MaskedPan ?? "NULL"}");
+                _logger.LogInformation($"CardNumberLastFour: {cardNumberLastFour ?? "NULL"}");
+                _logger.LogInformation($"CardAssociation: {cardAssociation ?? "NULL"}");
                 _logger.LogInformation($"PaymentId: {command.PaymentId ?? "NULL"}");
                 _logger.LogInformation($"FailedReasonMsg: {command.FailedReasonMsg ?? "NULL"}");
 
