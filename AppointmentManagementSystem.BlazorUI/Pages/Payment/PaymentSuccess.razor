@@ -96,12 +96,47 @@
             Console.WriteLine($"CardType: {cardType}");
             Console.WriteLine($"MaskedPan: {maskedPan}");
 
-            // PayTR webhook'u otomatik olarak backend'e gelecek
-            // Burada sadece görüntüleme yapıyoruz
-            Console.WriteLine($"✅ Payment success page loaded");
-            Console.WriteLine($"MerchantOid: {merchantOid}");
-            Console.WriteLine($"Status: {status}");
-            Console.WriteLine($"PayTR webhook will be processed automatically by backend");
+            // PayTR webhook'unda utoken, ctoken gibi bilgiler gelmez
+            // Bu bilgiler sadece success redirect sayfasına gelir
+            // O yüzden bu bilgileri backend'e manuel olarak göndermeliyiz
+            if (!string.IsNullOrEmpty(merchantOid) && status == "success")
+            {
+                // MerchantOid'den BusinessId'yi çıkar
+                var businessId = ExtractBusinessIdFromMerchantOid(merchantOid);
+                
+                if (businessId > 0)
+                {
+                    Console.WriteLine($"Sending card registration data to backend for BusinessId: {businessId}");
+                    
+                    var completeDto = new CompleteCardRegistrationDto
+                    {
+                        BusinessId = businessId,
+                        MerchantOid = merchantOid ?? "",
+                        Utoken = utoken,
+                        Ctoken = ctoken,
+                        CardType = cardType,
+                        MaskedPan = maskedPan,
+                        PaymentId = paymentId,
+                        TotalAmount = totalAmount,
+                        IsCardUpdate = merchantOid?.StartsWith("CARD") ?? false
+                    };
+
+                    var result = await PaymentApiService.CompleteCardRegistrationAsync(completeDto);
+                    
+                    if (result.Success)
+                    {
+                        Console.WriteLine("✅ Card registration completed successfully");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"⚠️ Card registration failed: {result.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ Could not extract BusinessId from MerchantOid: {merchantOid}");
+                }
+            }
             
             // LocalStorage'ı temizle
             await LocalStorage.RemoveItemAsync("registrationBusinessId");
@@ -121,11 +156,57 @@
         }
     }
 
+    private int ExtractBusinessIdFromMerchantOid(string merchantOid)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(merchantOid))
+                return 0;
+
+            string afterPrefix;
+            
+            // REG veya CARD prefix'ini kaldır
+            if (merchantOid.StartsWith("REG"))
+            {
+                afterPrefix = merchantOid.Substring(3);
+            }
+            else if (merchantOid.StartsWith("CARD"))
+            {
+                afterPrefix = merchantOid.Substring(4);
+            }
+            else
+            {
+                // Prefix yoksa direkt parse etmeyi dene
+                if (int.TryParse(merchantOid, out var directId))
+                    return directId;
+                return 0;
+            }
+
+            // Underscore varsa önündeki kısmı al (REG6_abc123 -> 6)
+            if (afterPrefix.Contains("_"))
+            {
+                var parts = afterPrefix.Split('_');
+                if (int.TryParse(parts[0], out var id))
+                    return id;
+            }
+            else
+            {
+                // Underscore yoksa baştan rakamları al (REG6abc123 -> 6)
+                var digits = new string(afterPrefix.TakeWhile(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var id))
+                    return id;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error extracting BusinessId: {ex.Message}");
+        }
+
+        return 0;
+    }
+
     private void NavigateToLogin()
     {
         NavigationManager.NavigateTo("/login");
     }
-
-    // Manuel webhook tetikleme kodları kaldırıldı
-    // PayTR webhook'u otomatik olarak backend'e gelecek
 }
