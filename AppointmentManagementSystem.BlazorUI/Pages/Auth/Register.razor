@@ -436,46 +436,28 @@
                         }
                         else if (currentBusinessStep == 4)
                         {
-                            <!-- Step 5: Payment -->
-                            <RadzenStack Orientation="Orientation.Vertical" Gap="20px">
-                                <RadzenText TextStyle="TextStyle.H5" Style="margin: 0; font-weight: 600; text-align: center;">
-                                    💳 Ödeme Bilgileri
-                                </RadzenText>
-
-                                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
-                                    <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
-                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
-                                            📋 Abonelik Bilgileri
-                                        </RadzenText>
-                                        <RadzenText>• <strong>Aylık Ücret:</strong> 700 TL</RadzenText>
-                                        <RadzenText>• <strong>İlk Ödeme:</strong> Kayıt tamamlandıktan 30 gün sonra</RadzenText>
-                                        <RadzenText>• <strong>Ödeme Yöntemi:</strong> Otomatik kredi kartı tahsilatı</RadzenText>
-                                        <RadzenText>• <strong>İptal:</strong> İstediğiniz zaman iptal edebilirsiniz</RadzenText>
-                                    </RadzenStack>
-                                </RadzenAlert>
-
-                                @if (registeredBusinessId.HasValue && string.IsNullOrEmpty(paymentIFrameUrl))
-                                {
-                                    <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
-                                        <Template>⏳</Template>
-                                    </RadzenProgressBarCircular>
-                                    <RadzenText TextStyle="TextStyle.H6" Style="margin-top: 16px; text-align: center;">
+                            <!-- Step 5: Payment - Direct API -->
+                            @if (registeredBusinessId.HasValue)
+                            {
+                                <DirectAPIPaymentForm BusinessId="@registeredBusinessId.Value"
+                                                      Email="@registerDto.Email"
+                                                      BusinessName="@businessInfo.Name"
+                                                      OwnerName="@registerDto.Name"
+                                                      PhoneNumber="@(businessInfo.Phone ?? "5555555555")"
+                                                      Address="@(businessInfo.Address ?? "Türkiye")"
+                                                      OnPaymentSuccess="@HandlePaymentSuccess"
+                                                      OnPaymentFailed="@HandlePaymentFailed"
+                                                      IsTestMode="true" />
+                            }
+                            else
+                            {
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="20px" AlignItems="AlignItems.Center" Style="padding: 48px;">
+                                    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                                    <RadzenText TextStyle="TextStyle.H6">
                                         Ödeme ekranı hazırlanıyor...
                                     </RadzenText>
-                                }
-                                else if (!string.IsNullOrEmpty(paymentIFrameUrl))
-                                {
-                                    <PayTRIFrameComponent IFrameUrl="@paymentIFrameUrl"
-                                                          OnPaymentSuccess="@HandlePaymentSuccess"
-                                                          OnPaymentFailed="@HandlePaymentFailed" />
-                                }
-                                else
-                                {
-                                    <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat">
-                                        <RadzenText>Ödeme ekranı yüklenemedi. Lütfen sayfayı yenileyin.</RadzenText>
-                                    </RadzenAlert>
-                                }
-                            </RadzenStack>
+                                </RadzenStack>
+                            }
                         }
                     </RadzenCard>
 
