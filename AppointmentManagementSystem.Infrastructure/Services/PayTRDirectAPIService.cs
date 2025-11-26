@@ -83,8 +83,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
 
-                // Token oluştur
-                var paymentAmount = amount.ToString("F2");
+                // Token oluştur - PayTR nokta (.) bekliyor, virgül (,) değil!
+                var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
                 var paymentType = "card";
                 var installmentCount = "0";
                 var currency = "TL";
