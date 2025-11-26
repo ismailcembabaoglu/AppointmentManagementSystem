@@ -1,5 +1,6 @@
 @page "/api/payments/success-redirect"
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Yönlendiriliyor...</PageTitle>
 
@@ -11,15 +12,44 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-        var query = uri.Query.TrimStart('?');
+        if (firstRender)
+        {
+            try
+            {
+                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+                var query = uri.Query.TrimStart('?');
 
-        var target = string.IsNullOrWhiteSpace(query)
-            ? "/payment/success"
-            : $"/payment/success?{query}";
+                Console.WriteLine($"=== PayTR Success Redirect ===");
+                Console.WriteLine($"Full URL: {NavigationManager.Uri}");
+                Console.WriteLine($"Query String: {uri.Query}");
 
-        NavigationManager.NavigateTo(target, forceLoad: true);
+                // PayTR POST ile form data gönderiyor olabilir, JavaScript ile kontrol edelim
+                var formData = await JSRuntime.InvokeAsync<string>("eval", 
+                    @"(function() {
+                        const params = new URLSearchParams(window.location.search);
+                        const result = {};
+                        for (const [key, value] of params.entries()) {
+                            result[key] = value;
+                        }
+                        return JSON.stringify(result);
+                    })()");
+
+                Console.WriteLine($"Form Data from JS: {formData}");
+
+                var target = string.IsNullOrWhiteSpace(query)
+                    ? "/payment/success"
+                    : $"/payment/success?{query}";
+
+                Console.WriteLine($"Redirecting to: {target}");
+                NavigationManager.NavigateTo(target, forceLoad: false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in PaytrSuccessRedirect: {ex.Message}");
+                NavigationManager.NavigateTo("/payment/success", forceLoad: false);
+            }
+        }
     }
 }
