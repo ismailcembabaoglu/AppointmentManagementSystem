@@ -1,6 +1,7 @@
 @page "/business/kart-yonetimi"
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Components
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize(Roles = "Business")]
@@ -9,6 +10,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
+@inject DialogService DialogService
 
 <PageTitle>Kart Yönetimi</PageTitle>
 
