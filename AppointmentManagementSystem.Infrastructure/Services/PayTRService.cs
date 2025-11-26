@@ -121,6 +121,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"PayTR Request - MerchantId: {_merchantId}, UserIp: {userIp}, MerchantOid: {merchantOid}, Scenario: {scenario}");
                 _logger.LogInformation($"PayTR Request - Email: {customerEmail}, Amount: {paymentAmount}, Basket: {userBasketBase64}");
                 _logger.LogInformation($"PayTR Request - Token: {token.Substring(0, 20)}...");
+                _logger.LogInformation($"PayTR Request - UToken: {utoken}, StoreCard: 1");
 
                 var content = new FormUrlEncodedContent(formData);
                 var response = await _httpClient.PostAsync("https://www.paytr.com/odeme/api/get-token", content);
