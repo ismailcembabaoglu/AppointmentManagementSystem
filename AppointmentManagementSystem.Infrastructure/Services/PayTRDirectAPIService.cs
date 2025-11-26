@@ -195,7 +195,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var non3d = "1"; // Non-3D işlem
                 
                 // Direct API hash
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}{_merchantSalt}";
+                // NOT: merchantsalt GenerateToken metodunda ekleniyor
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}";
                 var paytrToken = GenerateToken(hashStr);
 
                 // Direct API form data - Kayıtlı karttan ödeme
