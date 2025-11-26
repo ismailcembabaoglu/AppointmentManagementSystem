@@ -1,5 +1,7 @@
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Features.Payments.Queries;
 using MediatR;
@@ -78,27 +80,58 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"Content-Type: {Request.ContentType}");
                 _logger.LogInformation($"Method: {Request.Method}");
 
-                // Parse payload from form, query or raw body (PayTR posts as form-url-encoded).
+                // Parse payload from form, query, raw url-encoded body or JSON (PayTR posts as form-url-encoded).
+                Request.EnableBuffering();
+                string rawBody;
+                using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+                {
+                    rawBody = await reader.ReadToEndAsync();
+                }
+                Request.Body.Position = 0;
+
+                _logger.LogInformation($"Raw body: {rawBody}");
+
                 IFormCollection? form = null;
                 Dictionary<string, Microsoft.Extensions.Primitives.StringValues>? bodyValues = null;
 
                 if (Request.HasFormContentType)
                 {
                     form = await Request.ReadFormAsync();
+                    _logger.LogInformation($"Form keys: {string.Join(", ", form.Keys)}");
                 }
-                else
-                {
-                    // Fallback: enable buffering and parse raw url-encoded body if form content type is not set.
-                    Request.EnableBuffering();
-                    using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
-                    var rawBody = await reader.ReadToEndAsync();
-                    Request.Body.Position = 0;
 
-                    if (!string.IsNullOrWhiteSpace(rawBody))
+                if (string.IsNullOrWhiteSpace(rawBody) == false)
+                {
+                    // Try url-encoded first, then JSON.
+                    try
                     {
                         bodyValues = QueryHelpers.ParseQuery(rawBody)
                             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     }
+                    catch
+                    {
+                        // ignored, will try JSON
+                    }
+
+                    if (bodyValues == null || bodyValues.Count == 0)
+                    {
+                        try
+                        {
+                            var jsonDoc = JsonDocument.Parse(rawBody);
+                            bodyValues = jsonDoc.RootElement
+                                .EnumerateObject()
+                                .ToDictionary(p => p.Name, p => new Microsoft.Extensions.Primitives.StringValues(p.Value.ToString()));
+                        }
+                        catch
+                        {
+                            // ignored – if we can't parse JSON we fall back to query string below
+                        }
+                    }
+                }
+
+                if (bodyValues != null)
+                {
+                    _logger.LogInformation($"Parsed body keys: {string.Join(", ", bodyValues.Keys)}");
                 }
 
                 string? ReadValue(string key) =>
