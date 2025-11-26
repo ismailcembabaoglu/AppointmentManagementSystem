@@ -438,6 +438,11 @@
                         else if (currentBusinessStep == 4)
                         {
                             <!-- Step 5: Payment - Direct API -->
+                            <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Style="margin-bottom: 16px;">
+                                <RadzenText Style="font-weight: 600;">🆕 Direct API Ödeme Formu Aktif</RadzenText>
+                                <RadzenText Style="font-size: 13px;">Kart bilgilerinizi direkt olarak gireceksiniz (iFrame kullanılmıyor)</RadzenText>
+                            </RadzenAlert>
+                            
                             @if (registeredBusinessId.HasValue)
                             {
                                 <DirectAPIPaymentForm BusinessId="@registeredBusinessId.Value"
