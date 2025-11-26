@@ -187,6 +187,7 @@ namespace AppointmentManagementSystem.API.Controllers
                             "masked_pan" => posted.MaskedPan,
                             "payment_id" => posted.PaymentId,
                             "failed_reason_msg" => posted.FailedReasonMsg,
+                            "card_number_last_four" => null, // iFrame API'de yok, form'dan gelebilir
                             _ => null
                         };
                     }
