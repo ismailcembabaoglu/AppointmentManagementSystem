@@ -70,6 +70,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var testMode = _isTestMode ? "1" : "0";
                 var scenario = isCardUpdate ? "Card Update" : "Subscription";
 
+                // utoken oluştur - PayTR kart tokenization için gerekli
+                // Format: USER_{BusinessId/Email}_{UniqueId}
+                var utokenUnique = Guid.NewGuid().ToString("N").Substring(0, 16).ToUpperInvariant();
+                var utoken = $"USER_{merchantOid}_{utokenUnique}";
+
                 // Token oluştur
                 var hashStr = $"{_merchantId}{userIp}{merchantOid}{sanitizedEmail}{paymentAmount}{userBasketBase64}{noInstallment}{maxInstallment}{currency}{testMode}{_merchantSalt}";
                 var token = GeneratePayTRToken(hashStr, _merchantSalt, _merchantKey);
