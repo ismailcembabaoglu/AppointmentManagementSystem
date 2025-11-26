@@ -7,11 +7,13 @@
 @using System.Linq
 @using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize(Roles = "Customer")]
 @inject IAiAssistantApiService AiAssistantApiService
 @inject ICategoryApiService CategoryApiService
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Gemini İşletme Asistanı</PageTitle>
 
@@ -238,7 +240,7 @@
 
         isLoading = true;
         response = null;
-
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var apiResponse = await AiAssistantApiService.GetRecommendationsAsync(requestModel);
         isLoading = false;
 

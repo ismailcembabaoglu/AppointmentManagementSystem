@@ -4,9 +4,11 @@
 @using AppointmentManagementSystem.Application.DTOs.Ai
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IAiAssistantApiService AiAssistantApiService
 @inject NotificationService NotificationService
 @inject Microsoft.JSInterop.IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
 @attribute [Authorize(Roles = "Business")]
 
 <PageTitle>İşletme AI Koçu</PageTitle>
@@ -162,6 +164,7 @@
 
         isLoading = true;
         response = null;
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var apiResponse = await AiAssistantApiService.GetBusinessInsightsAsync(request);
         isLoading = false;
 
@@ -179,6 +182,7 @@
     private async Task DownloadReport()
     {
         isDownloading = true;
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var apiResponse = await AiAssistantApiService.DownloadBusinessReportAsync();
         isDownloading = false;
 
