@@ -184,7 +184,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 // Sepet oluştur
                 var userBasket = new[]
                 {
-                    new object[] { "Aylık Abonelik Ücreti", amount.ToString("F2"), 1 }
+                    new object[] { "Aylık Abonelik Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
 
