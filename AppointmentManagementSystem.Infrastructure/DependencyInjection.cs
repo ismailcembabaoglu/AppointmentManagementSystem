@@ -46,9 +46,9 @@ namespace AppointmentManagementSystem.Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageOptimizationService, ImageOptimizationService>();
             
-            // PayTR Services - HttpClient ile birlikte register edilmeli
-            services.AddHttpClient<IPayTRService, PayTRService>();
-            services.AddHttpClient<IPayTRDirectAPIService, PayTRDirectAPIService>();
+            // PayTR Services - Manuel register (HttpClientFactory inject edilecek)
+            services.AddScoped<IPayTRService, PayTRService>();
+            services.AddScoped<IPayTRDirectAPIService, PayTRDirectAPIService>();
 
             // Background Services
             services.AddHostedService<MonthlyBillingService>();
