@@ -87,8 +87,15 @@ else
                             </Items>
                         </RadzenList>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
-                            <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">Yeni kart için 1 TL doğrulama ücreti alınacaktır.</RadzenText>
-                            <RadzenButton Text="Yeni Kart Ekle (1 TL)" Icon="credit_card" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" Disabled="@isStarting" Click="StartCardUpdate" Style="min-width: 220px;" />
+                            <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">
+                                🆕 Direct API: Kart bilgilerini direkt gireceksiniz
+                            </RadzenText>
+                            <RadzenButton Text="Kart Güncelle" 
+                                          Icon="credit_card" 
+                                          ButtonStyle="ButtonStyle.Success" 
+                                          Size="ButtonSize.Medium" 
+                                          Click="OpenCardUpdateDialog" 
+                                          Style="min-width: 180px;" />
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
