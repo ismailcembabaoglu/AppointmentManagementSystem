@@ -28,8 +28,13 @@ namespace AppointmentManagementSystem.API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// [DEPRECATED - iFrame API] İlk kayıt - iFrame API kullanır (kart tokenization çalışmıyor)
+        /// Yeni kayıtlar için /initiate-direct-card-registration kullanın
+        /// </summary>
         [HttpPost("initiate-card-registration")]
         [AllowAnonymous]
+        [Obsolete("Use /initiate-direct-card-registration instead. iFrame API does not support card tokenization.")]
         public async Task<IActionResult> InitiateCardRegistration([FromBody] InitiateCardRegistrationCommand command)
         {
             // Get user IP
@@ -42,6 +47,40 @@ namespace AppointmentManagementSystem.API.Controllers
                 return Ok(result);
             
             return BadRequest(result);
+        }
+
+        /// <summary>
+        /// [YENİ - Direct API] İlk kayıt ve kart saklama - Direct API kullanır
+        /// Kart bilgilerini (utoken/ctoken) webhook'ta alır ve kaydeder
+        /// </summary>
+        [HttpPost("initiate-direct-card-registration")]
+        [AllowAnonymous]
+        public async Task<IActionResult> InitiateDirectCardRegistration([FromBody] InitiateDirectAPICardRegistrationCommand command)
+        {
+            try
+            {
+                _logger.LogInformation("=== Direct API Card Registration Endpoint Called ===");
+                
+                // Get user IP
+                var userIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                command.UserIp = userIp;
+
+                var result = await _mediator.Send(command);
+                
+                if (result.Success)
+                {
+                    _logger.LogInformation($"✅ Direct API registration initiated: {result.Data?.MerchantOid}");
+                    return Ok(result);
+                }
+                
+                _logger.LogError($"❌ Direct API registration failed: {result.Message}");
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error in InitiateDirectCardRegistration endpoint");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpGet("subscription/{businessId}")]
