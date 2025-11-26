@@ -85,5 +85,29 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 };
             }
         }
+
+        public async Task<ApiResponse<DirectCardRegistrationResponseDto>> InitiateDirectCardRegistrationAsync(object requestDto)
+        {
+            try
+            {
+                Console.WriteLine("🔵 PaymentApiService: Calling Direct API endpoint...");
+                
+                // No auth required for registration
+                var response = await _httpClient.PostAsJsonAsync("api/payments/initiate-direct-card-registration", requestDto);
+                
+                Console.WriteLine($"📥 Response Status: {response.StatusCode}");
+                
+                return await HandleApiResponse<DirectCardRegistrationResponseDto>(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception in PaymentApiService: {ex.Message}");
+                return new ApiResponse<DirectCardRegistrationResponseDto>
+                {
+                    Success = false,
+                    Message = $"Direct API kart kaydı başlatılamadı: {ex.Message}"
+                };
+            }
+        }
     }
 }
