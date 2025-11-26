@@ -31,9 +31,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             ILogger<PayTRDirectAPIService> logger,
             IHttpClientFactory httpClientFactory)
         {
-            _configuration = configuration;
-            _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+
+            _logger.LogInformation("🔵 PayTRDirectAPIService constructor called");
 
             _merchantId = _configuration["PayTR:MerchantId"] ?? throw new ArgumentNullException("PayTR:MerchantId");
             _merchantKey = _configuration["PayTR:MerchantKey"] ?? throw new ArgumentNullException("PayTR:MerchantKey");
@@ -44,6 +46,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             _merchantOkUrl = $"{frontendUrl}/payment/success";
             _merchantFailUrl = $"{frontendUrl}/payment/fail";
             _callbackUrl = _configuration["PayTR:CallbackUrl"] ?? "https://hub.aptivaplan.com.tr/api/payments/webhook";
+
+            _logger.LogInformation($"✅ PayTRDirectAPIService initialized. MerchantId: {_merchantId}, TestMode: {_isTestMode}");
         }
 
         public async Task<PayTRDirectPaymentResponse> InitiateCardRegistrationPayment(
