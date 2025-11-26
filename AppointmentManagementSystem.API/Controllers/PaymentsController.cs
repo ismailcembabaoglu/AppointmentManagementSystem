@@ -1,7 +1,10 @@
+using System.Linq;
+using System.Text;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Features.Payments.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -75,12 +78,37 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation($"Content-Type: {Request.ContentType}");
                 _logger.LogInformation($"Method: {Request.Method}");
 
+                // Parse payload from form, query or raw body (PayTR posts as form-url-encoded).
+                IFormCollection? form = null;
+                Dictionary<string, Microsoft.Extensions.Primitives.StringValues>? bodyValues = null;
+
+                if (Request.HasFormContentType)
+                {
+                    form = await Request.ReadFormAsync();
+                }
+                else
+                {
+                    // Fallback: enable buffering and parse raw url-encoded body if form content type is not set.
+                    Request.EnableBuffering();
+                    using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
+                    var rawBody = await reader.ReadToEndAsync();
+                    Request.Body.Position = 0;
+
+                    if (!string.IsNullOrWhiteSpace(rawBody))
+                    {
+                        bodyValues = QueryHelpers.ParseQuery(rawBody)
+                            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    }
+                }
+
                 string? ReadValue(string key) =>
-                    Request.HasFormContentType && Request.Form.ContainsKey(key)
-                        ? Request.Form[key].ToString()
-                        : Request.Query.ContainsKey(key)
-                            ? Request.Query[key].ToString()
-                            : null;
+                    (form != null && form.TryGetValue(key, out var formValue))
+                        ? formValue.ToString()
+                        : (bodyValues != null && bodyValues.TryGetValue(key, out var bodyValue))
+                            ? bodyValue.ToString()
+                            : Request.Query.ContainsKey(key)
+                                ? Request.Query[key].ToString()
+                                : null;
 
                 var command = new ProcessPaymentWebhookCommand
                 {
