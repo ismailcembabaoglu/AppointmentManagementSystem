@@ -897,43 +897,6 @@
         }
     }
 
-    private async Task InitiatePayment()
-    {
-        if (!registeredBusinessId.HasValue)
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Hata", "İşletme ID bulunamadı.");
-            return;
-        }
-
-        try
-        {
-            var initiateRequest = new InitiateCardRegistrationDto
-            {
-                Email = registerDto.Email,
-                BusinessName = businessInfo.Name,
-                BusinessId = registeredBusinessId.Value
-            };
-
-            var response = await PaymentApiService.InitiateCardRegistrationAsync(initiateRequest);
-
-            if (response.Success && !string.IsNullOrEmpty(response.Data?.IFrameUrl))
-            {
-                paymentIFrameUrl = response.Data.IFrameUrl;
-                StateHasChanged();
-            }
-            else
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Hata",
-                    response.Message ?? "Ödeme ekranı başlatılamadı.");
-            }
-        }
-        catch (Exception ex)
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Hata",
-                $"Ödeme başlatılamadı: {ex.Message}");
-        }
-    }
-
     private async Task HandlePaymentSuccess()
     {
         NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
