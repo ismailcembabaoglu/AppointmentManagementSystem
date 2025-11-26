@@ -42,10 +42,12 @@ namespace AppointmentManagementSystem.Infrastructure
             // Services
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-            services.AddScoped<IPayTRService, PayTRService>();
+            services.AddScoped<IPayTRService, PayTRService>(); // Legacy iFrame API
+            services.AddScoped<IPayTRDirectAPIService, PayTRDirectAPIService>(); // NEW: Direct API for card tokenization
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IImageOptimizationService, ImageOptimizationService>();
             services.AddHttpClient<IPayTRService, PayTRService>();
+            services.AddHttpClient<IPayTRDirectAPIService, PayTRDirectAPIService>();
 
             // Background Services
             services.AddHostedService<MonthlyBillingService>();
