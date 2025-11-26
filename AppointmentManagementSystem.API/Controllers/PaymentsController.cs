@@ -79,6 +79,7 @@ namespace AppointmentManagementSystem.API.Controllers
                 _logger.LogInformation("=== PayTR Webhook Received ===");
                 _logger.LogInformation($"Content-Type: {Request.ContentType}");
                 _logger.LogInformation($"Method: {Request.Method}");
+                _logger.LogInformation($"Request URL: {Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
 
                 // Buffer and capture the raw body for diagnostics, then rewind so we can parse it again.
                 Request.EnableBuffering();
@@ -129,6 +130,23 @@ namespace AppointmentManagementSystem.API.Controllers
                         catch (Exception ex)
                         {
                             _logger.LogDebug(ex, "Raw body is not JSON");
+                        }
+                    }
+
+                    if ((form == null || form.Count == 0) && bodyValues == null)
+                    {
+                        try
+                        {
+                            var reconstructed = await new FormReader(rawBody).ReadFormAsync();
+                            if (reconstructed.Count > 0)
+                            {
+                                form = reconstructed;
+                                _logger.LogInformation($"Form reconstructed from raw body; keys: {string.Join(", ", reconstructed.Keys)}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Failed to reconstruct form from raw body");
                         }
                     }
                 }
