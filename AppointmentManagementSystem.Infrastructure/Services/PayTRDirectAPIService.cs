@@ -197,7 +197,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}{_merchantSalt}";
                 var paytrToken = GenerateToken(hashStr);
 
-                // Form data oluştur
+                // Direct API form data - Kayıtlı karttan ödeme
                 var formData = new Dictionary<string, string>
                 {
                     { "merchant_id", _merchantId },
@@ -206,15 +206,12 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "email", email },
                     { "payment_type", paymentType },
                     { "payment_amount", paymentAmount },
-                    { "installment_count", installmentCount },
                     { "currency", currency },
                     { "test_mode", testMode },
                     { "non_3d", non3d },
-                    { "merchant_ok_url", _merchantOkUrl },
-                    { "merchant_fail_url", _merchantFailUrl },
                     { "user_name", userName },
-                    { "user_address", "Türkiye" }, // Placeholder
-                    { "user_phone", "5555555555" }, // Placeholder
+                    { "user_address", "Türkiye" },
+                    { "user_phone", "5555555555" },
                     { "user_basket", userBasketJson },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
