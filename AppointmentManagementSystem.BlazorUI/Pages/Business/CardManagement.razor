@@ -133,6 +133,7 @@ else
 
             var businessIdClaim = user.FindFirst("BusinessId") ?? user.FindFirst("businessId");
             userEmail = user.FindFirst("email")?.Value ?? user.Identity?.Name;
+            ownerName = user.FindFirst("name")?.Value ?? user.Identity?.Name;
 
             if (businessIdClaim == null || !int.TryParse(businessIdClaim.Value, out businessId))
             {
