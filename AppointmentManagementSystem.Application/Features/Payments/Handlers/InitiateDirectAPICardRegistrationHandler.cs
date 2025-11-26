@@ -1,5 +1,7 @@
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Interfaces;
+using AppointmentManagementSystem.Application.Shared;
+using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
