@@ -96,7 +96,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Error in InitiateDirectAPICardRegistration");
-                return Result<InitiateDirectAPICardRegistrationResponse>.Failure(ex.Message);
+                return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(ex.Message);
             }
         }
     }
