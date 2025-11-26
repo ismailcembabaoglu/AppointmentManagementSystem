@@ -57,6 +57,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var merchantOid = $"REG{request.BusinessId}{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
 
                 // Direct API ile ödeme başlat
+                // İlk kayıtta 1 TL kart doğrulama ücreti alınır
                 var paymentResponse = await _paytrDirectService.InitiateCardRegistrationPayment(
                     businessId: request.BusinessId,
                     email: request.Email,
@@ -68,7 +69,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     expiryMonth: request.ExpiryMonth,
                     expiryYear: request.ExpiryYear,
                     cvv: request.CVV,
-                    amount: 700.00m, // İlk ödeme 700 TL
+                    amount: 1.00m, // Kart doğrulama ücreti: 1 TL
                     merchantOid: merchantOid,
                     userIp: request.UserIp,
                     existingUtoken: existingUtoken
