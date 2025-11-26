@@ -76,7 +76,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 if (!paymentResponse.Success)
                 {
                     _logger.LogError($"❌ Payment failed: {paymentResponse.ErrorMessage}");
-                    return Result<InitiateDirectAPICardRegistrationResponse>.Failure(
+                    return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(
                         paymentResponse.ErrorMessage ?? "Payment initiation failed");
                 }
 
