@@ -40,7 +40,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var business = await _businessRepository.GetByIdAsync(request.BusinessId);
                 if (business == null)
                 {
-                    return Result<InitiateDirectAPICardRegistrationResponse>.Failure("Business not found");
+                    return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult("Business not found");
                 }
 
                 // Mevcut subscription kontrolü (varsa utoken'ı alacağız)
