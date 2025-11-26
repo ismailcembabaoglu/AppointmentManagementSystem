@@ -195,6 +195,10 @@ namespace AppointmentManagementSystem.API.Controllers
                     return null;
                 }
 
+                // PayTR iFrame API'den gelen ek alanlar
+                var cardNumberLastFour = ReadValue("card_number_last_four");
+                var cardAssociation = ReadValue("card_association");
+                
                 var command = new ProcessPaymentWebhookCommand
                 {
                     MerchantOid = ReadValue("merchant_oid") ?? string.Empty,
@@ -203,8 +207,8 @@ namespace AppointmentManagementSystem.API.Controllers
                     Hash = ReadValue("hash") ?? string.Empty,
                     Utoken = ReadValue("utoken"),
                     Ctoken = ReadValue("ctoken"),
-                    CardType = ReadValue("card_type"),
-                    MaskedPan = ReadValue("masked_pan"),
+                    CardType = ReadValue("card_type") ?? cardAssociation, // iFrame API card_association gönderebilir
+                    MaskedPan = ReadValue("masked_pan") ?? (cardNumberLastFour != null ? $"**** **** **** {cardNumberLastFour}" : null),
                     PaymentId = ReadValue("payment_id"),
                     FailedReasonMsg = ReadValue("failed_reason_msg")
                 };
