@@ -43,7 +43,8 @@ builder.Services.AddScoped(sp =>
 //    return client;
 //});
 
-// API Services
+// API Services - Register edildi
+Console.WriteLine("🔧 Registering API Services...");
 builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<ICategoryApiService, CategoryApiService>();
 builder.Services.AddScoped<IBusinessApiService, BusinessApiService>();
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IDocumentApiService, DocumentApiService>();
 builder.Services.AddScoped<IPaymentApiService, PaymentApiService>();
 builder.Services.AddScoped<IAdminApiService, AdminApiService>();
 builder.Services.AddScoped<IAiAssistantApiService, AiAssistantApiService>();
+Console.WriteLine("✅ API Services registered successfully");
 
 // SignalR Notification Service (Scoped olarak değiştirdik)
 builder.Services.AddScoped<SignalRNotificationService>();
