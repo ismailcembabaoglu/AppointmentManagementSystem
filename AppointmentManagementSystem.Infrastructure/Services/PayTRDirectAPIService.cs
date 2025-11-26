@@ -97,6 +97,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"PayTR Token generated: {paytrToken.Substring(0, 20)}...");
 
                 // Form data oluştur
+                // Direct API form data - Kart saklama için
                 var formData = new Dictionary<string, string>
                 {
                     { "merchant_id", _merchantId },
@@ -105,12 +106,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "email", email },
                     { "payment_type", paymentType },
                     { "payment_amount", paymentAmount },
-                    { "installment_count", installmentCount },
                     { "currency", currency },
                     { "test_mode", testMode },
                     { "non_3d", non3d },
-                    { "merchant_ok_url", _merchantOkUrl },
-                    { "merchant_fail_url", _merchantFailUrl },
                     { "user_name", userName },
                     { "user_address", userAddress },
                     { "user_phone", userPhone },
@@ -122,7 +120,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "expiry_month", expiryMonth },
                     { "expiry_year", expiryYear },
                     { "cvv", cvv },
-                    { "store_card", "1" } // Kartı kaydet
+                    { "store_card", "1" } // Kartı kaydet (ZORUNLU)
                 };
 
                 // Eğer mevcut utoken varsa ekle (ikinci kart için)
