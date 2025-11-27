@@ -192,13 +192,14 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 // Token oluştur - PayTR Direct API için
                 var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
                 var paymentType = "card";
+                var installmentCount = "0"; // Taksit yok
                 var currency = "TL";
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem
                 
                 // Direct API hash
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{currency}{testMode}{non3d}";
+                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{installmentCount}{currency}{testMode}{non3d}";
                 var paytrToken = GenerateToken(hashStr);
 
                 // Direct API form data - Kayıtlı karttan ödeme
