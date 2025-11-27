@@ -115,6 +115,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "no_installment", noInstallment }, // ZORUNLU: 1 = taksit yapılmayacak
                     { "max_installment", maxInstallment }, // ZORUNLU: 0 = taksit yok
                     { "currency", currency },
+                    { "lang", lang }, // ZORUNLU: tr, en, de, fr
                     { "test_mode", testMode },
                     { "non_3d", non3d },
                     { "merchant_ok_url", _merchantOkUrl }, // ZORUNLU
