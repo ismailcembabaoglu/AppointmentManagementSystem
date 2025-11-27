@@ -200,6 +200,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
+                var maxInstallment = "0"; // Maksimum taksit sayısı
                 var currency = "TL";
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem
