@@ -2,6 +2,7 @@ using AppointmentManagementSystem.Application.DTOs.Payment;
 using AppointmentManagementSystem.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -70,6 +71,17 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             {
                 _logger.LogInformation($"🔵 Direct API: Initiating card registration payment for Business {businessId}");
                 _logger.LogInformation($"MerchantOid: {merchantOid}, Amount: {amount}, Email: {email}");
+
+                // PayTR dokümantasyonu IPv6 localhost'u kabul etmediği için normalize et
+                if (string.IsNullOrWhiteSpace(userIp))
+                {
+                    userIp = "127.0.0.1";
+                }
+
+                if (userIp == "::1" || userIp == "::ffff:127.0.0.1")
+                {
+                    userIp = "127.0.0.1";
+                }
                 
                 if (!string.IsNullOrEmpty(existingUtoken))
                 {
@@ -82,9 +94,13 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     new object[] { "İşletme Kayıt Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
                 // Token oluştur - PayTR Direct API için
-                var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                // PayTR kuruş (integer) format bekler
+                var paymentAmount = ((long)Math.Round(amount * 100m, 0, MidpointRounding.AwayFromZero))
+                    .ToString(CultureInfo.InvariantCulture);
+
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak, 0 = taksit yapılabilir
@@ -96,8 +112,29 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 
                 // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + installmentcount + currency + testmode + non3d
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{installmentCount}{currency}{testMode}{non3d}";
-                var paytrToken = GenerateToken(hashStr);
+                //var paytrToken = GenerateToken(
+                //    _merchantId,
+                //    userIp,
+                //    merchantOid,
+                //    email,
+                //    paymentAmount,
+                //    paymentType,
+                //    installmentCount,
+                //    currency,
+                //    testMode,
+                //    non3d);
+                string Birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
+                HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
+                byte[] b = hmac.ComputeHash(Encoding.UTF8.GetBytes(Birlestir));
+                var paytrToken = Convert.ToBase64String(b);
+
+                // İlk kart kaydında utoken gönderilmezse PayTR kart token üretmiyor
+                if (string.IsNullOrWhiteSpace(existingUtoken))
+                {
+                    var utokenUnique = Guid.NewGuid().ToString("N").Substring(0, 16).ToUpperInvariant();
+                    existingUtoken = $"USER_{merchantOid}_{utokenUnique}";
+                    _logger.LogInformation($"Generated new UToken for first card: {existingUtoken}");
+                }
 
                 _logger.LogInformation($"PayTR Token generated: {paytrToken.Substring(0, 20)}...");
 
@@ -120,10 +157,12 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "non_3d", non3d },
                     { "merchant_ok_url", _merchantOkUrl }, // ZORUNLU
                     { "merchant_fail_url", _merchantFailUrl }, // ZORUNLU
+                    { "callback_url", _callbackUrl },
                     { "user_name", userName },
                     { "user_address", userAddress },
                     { "user_phone", userPhone },
-                    { "user_basket", userBasketJson },
+                    // PayTR dokümantasyonuna göre basket base64 gönderilmeli
+                    { "user_basket", userBasketBase64 },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
                     { "cc_owner", ccOwner },
@@ -134,12 +173,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "store_card", "1" } // Kartı kaydet (ZORUNLU)
                 };
 
-                // Eğer mevcut utoken varsa ekle (ikinci kart için)
-                if (!string.IsNullOrEmpty(existingUtoken))
-                {
-                    formData.Add("utoken", existingUtoken);
-                    _logger.LogInformation("✅ UToken added to request for grouping cards under same user");
-                }
+                // Kullanıcı token'ını gönder (ilk veya ek kartlar)
+
+                _logger.LogInformation($"✅ UToken added to request: {existingUtoken}");
 
                 _logger.LogInformation($"📤 Sending Direct API request to PayTR...");
                 _logger.LogInformation($"Store Card: 1, Non-3D: {non3d}");
@@ -174,6 +210,12 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
+        private string GeneratePayTRToken(string hashString, string merchantSalt, string merchantKey)
+        {
+            var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(merchantKey));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString));
+            return Convert.ToBase64String(hash);
+        }
         public async Task<PayTRDirectPaymentResponse> ChargeStoredCard(
             string utoken,
             string ctoken,
@@ -190,15 +232,27 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}..., CToken: {ctoken.Substring(0, Math.Min(10, ctoken.Length))}...");
                 _logger.LogInformation($"MerchantOid: {merchantOid}, Amount: {amount}");
 
+                if (string.IsNullOrWhiteSpace(userIp))
+                {
+                    userIp = "127.0.0.1";
+                }
+
+                if (userIp == "::1" || userIp == "::ffff:127.0.0.1")
+                {
+                    userIp = "127.0.0.1";
+                }
+
                 // Sepet oluştur
                 var userBasket = new[]
                 {
                     new object[] { "Aylık Abonelik Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
                 // Token oluştur - PayTR Direct API için
-                var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                // PayTR Direct API kuruş (integer) bekliyor
+                var paymentAmount = FormatAmountToKurus(amount);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
@@ -210,8 +264,17 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 
                 // Direct API hash
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var hashStr = $"{_merchantId}{userIp}{merchantOid}{email}{paymentAmount}{paymentType}{installmentCount}{currency}{testMode}{non3d}";
-                var paytrToken = GenerateToken(hashStr);
+                var paytrToken = GenerateToken(
+                    _merchantId,
+                    userIp,
+                    merchantOid,
+                    email,
+                    paymentAmount,
+                    paymentType,
+                    installmentCount,
+                    currency,
+                    testMode,
+                    non3d);
 
                 // Direct API form data - Kayıtlı karttan ödeme
                 var formData = new Dictionary<string, string>
@@ -231,10 +294,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "non_3d", non3d },
                     { "merchant_ok_url", _merchantOkUrl }, // ZORUNLU
                     { "merchant_fail_url", _merchantFailUrl }, // ZORUNLU
+                    { "callback_url", _callbackUrl },
                     { "user_name", userName },
                     { "user_address", "Türkiye" },
                     { "user_phone", "5555555555" },
-                    { "user_basket", userBasketJson },
+                    { "user_basket", userBasketBase64 },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
                     { "utoken", utoken },
@@ -284,8 +348,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"🔵 Direct API: Getting stored cards for UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}...");
 
                 // Token oluştur
-                var hashStr = $"{_merchantId}{utoken}";
-                var paytrToken = GenerateToken(hashStr);
+                var paytrToken = GenerateToken(_merchantId, utoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -361,8 +424,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}..., CToken: {ctoken.Substring(0, Math.Min(10, ctoken.Length))}...");
 
                 // Token oluştur
-                var hashStr = $"{_merchantId}{utoken}{ctoken}";
-                var paytrToken = GenerateToken(hashStr);
+                var paytrToken = GenerateToken(_merchantId, utoken, ctoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -391,12 +453,19 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
-        private string GenerateToken(string hashStr)
+        private string GenerateToken(params string[] parts)
         {
-            var fullHash = hashStr + _merchantSalt;
+            var hashStr = string.Concat(parts);
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
-            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(fullHash));
+            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashStr));
             return Convert.ToBase64String(hashBytes);
+        }
+
+        private static string FormatAmountToKurus(decimal amount)
+        {
+            // PayTR miktarı kuruş olarak integer bekliyor. Banka yuvarlama uyumluluğu için ortadan uzak yuvarla.
+            var scaled = Math.Round(amount * 100m, 0, MidpointRounding.AwayFromZero);
+            return Convert.ToInt64(scaled).ToString(CultureInfo.InvariantCulture);
         }
     }
 }
