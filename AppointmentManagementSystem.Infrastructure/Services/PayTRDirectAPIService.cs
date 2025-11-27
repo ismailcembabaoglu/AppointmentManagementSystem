@@ -199,6 +199,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     new object[] { "Aylık Abonelik Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR Direct API kuruş (integer) bekliyor
