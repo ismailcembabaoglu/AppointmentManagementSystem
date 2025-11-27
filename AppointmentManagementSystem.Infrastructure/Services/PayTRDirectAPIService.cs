@@ -112,6 +112,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "payment_amount", paymentAmount },
                     { "installment_count", installmentCount }, // ZORUNLU: 0 = taksit yok
                     { "no_installment", noInstallment }, // ZORUNLU: 1 = taksit yapılmayacak
+                    { "max_installment", maxInstallment }, // ZORUNLU: 0 = taksit yok
                     { "currency", currency },
                     { "test_mode", testMode },
                     { "non_3d", non3d },
