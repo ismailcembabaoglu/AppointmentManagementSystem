@@ -98,8 +98,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR kuruş (integer) format bekler
-                // PayTR örnek kodunda ödeme tutarı TL olarak (2 hane) string gönderiliyor
-                var paymentAmount = amount.ToString("0.00", CultureInfo.InvariantCulture);
+                var paymentAmount = FormatAmountToKurus(amount);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak, 0 = taksit yapılabilir
@@ -241,8 +240,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR Direct API kuruş (integer) bekliyor
-                // PayTR örnek kodunda ödeme tutarı TL olarak (2 hane) string gönderiliyor
-                var paymentAmount = amount.ToString("0.00", CultureInfo.InvariantCulture);
+                var paymentAmount = FormatAmountToKurus(amount);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
@@ -449,6 +447,13 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashStr));
             return Convert.ToBase64String(hashBytes);
+        }
+
+        private static string FormatAmountToKurus(decimal amount)
+        {
+            // PayTR miktarı kuruş olarak integer bekliyor. Banka yuvarlama uyumluluğu için ortadan uzak yuvarla.
+            var scaled = Math.Round(amount * 100m, 0, MidpointRounding.AwayFromZero);
+            return Convert.ToInt64(scaled).ToString(CultureInfo.InvariantCulture);
         }
     }
 }
