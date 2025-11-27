@@ -217,6 +217,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "currency", currency },
                     { "test_mode", testMode },
                     { "non_3d", non3d },
+                    { "merchant_ok_url", _merchantOkUrl }, // ZORUNLU
+                    { "merchant_fail_url", _merchantFailUrl }, // ZORUNLU
                     { "user_name", userName },
                     { "user_address", "Türkiye" },
                     { "user_phone", "5555555555" },
