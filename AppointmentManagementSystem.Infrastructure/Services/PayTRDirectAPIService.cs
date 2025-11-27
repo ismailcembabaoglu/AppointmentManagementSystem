@@ -82,9 +82,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     new object[] { "İşletme Kayıt Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
                 };
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
                 // Token oluştur - PayTR Direct API için
-                var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                // PayTR kuruş (integer) format bekler
+                var paymentAmount = ((int)(amount * 100)).ToString();
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak, 0 = taksit yapılabilir
@@ -123,7 +125,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_name", userName },
                     { "user_address", userAddress },
                     { "user_phone", userPhone },
-                    { "user_basket", userBasketJson },
+                    // PayTR dokümantasyonuna göre basket base64 gönderilmeli
+                    { "user_basket", userBasketBase64 },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
                     { "cc_owner", ccOwner },
@@ -198,7 +201,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
 
                 // Token oluştur - PayTR Direct API için
-                var paymentAmount = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                // PayTR Direct API kuruş (integer) bekliyor
+                var paymentAmount = ((int)(amount * 100)).ToString();
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
@@ -234,7 +238,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_name", userName },
                     { "user_address", "Türkiye" },
                     { "user_phone", "5555555555" },
-                    { "user_basket", userBasketJson },
+                    { "user_basket", userBasketBase64 },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
                     { "utoken", utoken },
