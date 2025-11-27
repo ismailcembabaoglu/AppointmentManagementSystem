@@ -2,6 +2,7 @@ using AppointmentManagementSystem.Application.DTOs.Payment;
 using AppointmentManagementSystem.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -72,6 +73,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"MerchantOid: {merchantOid}, Amount: {amount}, Email: {email}");
 
                 // PayTR dokümantasyonu IPv6 localhost'u kabul etmediği için normalize et
+                if (string.IsNullOrWhiteSpace(userIp))
+                {
+                    userIp = "127.0.0.1";
+                }
+
                 if (userIp == "::1" || userIp == "::ffff:127.0.0.1")
                 {
                     userIp = "127.0.0.1";
@@ -92,7 +98,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR kuruş (integer) format bekler
-                var paymentAmount = ((int)Math.Round(amount * 100M, MidpointRounding.AwayFromZero)).ToString();
+                // PayTR örnek kodunda ödeme tutarı TL olarak (2 hane) string gönderiliyor
+                var paymentAmount = amount.ToString("0.00", CultureInfo.InvariantCulture);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak, 0 = taksit yapılabilir
@@ -214,6 +221,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}..., CToken: {ctoken.Substring(0, Math.Min(10, ctoken.Length))}...");
                 _logger.LogInformation($"MerchantOid: {merchantOid}, Amount: {amount}");
 
+                if (string.IsNullOrWhiteSpace(userIp))
+                {
+                    userIp = "127.0.0.1";
+                }
+
                 if (userIp == "::1" || userIp == "::ffff:127.0.0.1")
                 {
                     userIp = "127.0.0.1";
@@ -229,7 +241,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR Direct API kuruş (integer) bekliyor
-                var paymentAmount = ((int)Math.Round(amount * 100M, MidpointRounding.AwayFromZero)).ToString();
+                // PayTR örnek kodunda ödeme tutarı TL olarak (2 hane) string gönderiliyor
+                var paymentAmount = amount.ToString("0.00", CultureInfo.InvariantCulture);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
