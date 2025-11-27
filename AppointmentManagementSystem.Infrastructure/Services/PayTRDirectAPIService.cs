@@ -211,6 +211,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "email", email },
                     { "payment_type", paymentType },
                     { "payment_amount", paymentAmount },
+                    { "installment_count", installmentCount }, // ZORUNLU: 0 = taksit yok
                     { "currency", currency },
                     { "test_mode", testMode },
                     { "non_3d", non3d },
