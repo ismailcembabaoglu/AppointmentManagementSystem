@@ -204,6 +204,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
                 var maxInstallment = "0"; // Maksimum taksit sayısı
                 var currency = "TL";
+                var lang = "tr"; // Dil: tr, en, de, fr
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem
                 
