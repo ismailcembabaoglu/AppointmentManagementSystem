@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace AppointmentManagementSystem.Infrastructure.Services
 {
@@ -191,20 +192,88 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var responseContent = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation($"📥 PayTR Response: {responseContent}");
 
-                // Non-3D işlem olduğu için direkt sonuç döner
-                // Başarılıysa webhook'a bildirim gelecek ancak kart bilgilerini hemen saklıyoruz
+                // Non-3D işlem olduğu için direkt JSON döner; HTML dönerse (fail sayfası) hata kabul ediyoruz
                 var maskedPan = MaskCardNumber(cardNumber);
+                var fallbackBrand = DetectCardBrand(cardNumber);
+
+                try
+                {
+                    using var document = JsonDocument.Parse(responseContent);
+                    var root = document.RootElement;
+
+                    if (root.TryGetProperty("status", out var statusElement))
+                    {
+                        var status = statusElement.GetString();
+
+                        if (status == "success")
+                        {
+                            var utoken = root.TryGetProperty("utoken", out var utokenEl) ? utokenEl.GetString() : existingUtoken;
+                            var ctoken = root.TryGetProperty("ctoken", out var ctokenEl) ? ctokenEl.GetString() : null;
+                            var maskedPanFromResponse = root.TryGetProperty("masked_pan", out var maskedEl)
+                                ? maskedEl.GetString()
+                                : maskedPan;
+                            var cardBrand = root.TryGetProperty("card_brand", out var brandEl)
+                                ? brandEl.GetString()
+                                : fallbackBrand;
+
+                            return new PayTRDirectPaymentResponse
+                            {
+                                Success = true,
+                                Status = status,
+                                MerchantOid = merchantOid,
+                                UserToken = utoken,
+                                CardToken = ctoken,
+                                MaskedPan = maskedPanFromResponse,
+                                CardBrand = cardBrand
+                            };
+                        }
+
+                        var errMsg = root.TryGetProperty("err_msg", out var errEl)
+                            ? errEl.GetString()
+                            : root.TryGetProperty("reason", out var reasonEl)
+                                ? reasonEl.GetString()
+                                : responseContent;
+
+                        return new PayTRDirectPaymentResponse
+                        {
+                            Success = false,
+                            Status = status,
+                            MerchantOid = merchantOid,
+                            ErrorMessage = errMsg,
+                            UserToken = existingUtoken,
+                            MaskedPan = maskedPan,
+                            CardBrand = fallbackBrand
+                        };
+                    }
+                }
+                catch (JsonException)
+                {
+                    // PayTR bazen HTML form döndürebiliyor; gizli input'tan hata mesajını çekmeyi dene
+                    var failMatch = Regex.Match(responseContent, "name=\\\"fail_message\\\" value=\\\"([^\\\"]+)\\\"");
+                    if (failMatch.Success)
+                    {
+                        return new PayTRDirectPaymentResponse
+                        {
+                            Success = false,
+                            Status = "failed",
+                            MerchantOid = merchantOid,
+                            ErrorMessage = failMatch.Groups[1].Value,
+                            UserToken = existingUtoken,
+                            MaskedPan = maskedPan,
+                            CardBrand = fallbackBrand
+                        };
+                    }
+                }
 
                 return new PayTRDirectPaymentResponse
                 {
-                    Success = response.IsSuccessStatusCode,
-                    Status = response.IsSuccessStatusCode ? "success" : "failed",
+                    Success = false,
+                    Status = response.IsSuccessStatusCode ? "failed" : "http_error",
                     MerchantOid = merchantOid,
-                    ErrorMessage = response.IsSuccessStatusCode ? null : responseContent,
+                    ErrorMessage = responseContent,
                     UserToken = existingUtoken,
-                    CardToken = null,
                     MaskedPan = maskedPan,
-                    CardBrand = DetectCardBrand(cardNumber)
+                    CardBrand = fallbackBrand
                 };
             }
             catch (Exception ex)
