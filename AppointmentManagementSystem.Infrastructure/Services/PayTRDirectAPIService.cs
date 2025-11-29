@@ -166,6 +166,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "user_basket", userBasketBase64 },
                     { "debug_on", "1" },
                     { "paytr_token", paytrToken },
+                    // utoken ZORUNLU: PayTR kart token (ctoken) üretimi için gereklidir
+                    { "utoken", existingUtoken },
                     { "cc_owner", ccOwner },
                     { "card_number", cardNumber },
                     { "expiry_month", expiryMonth },
