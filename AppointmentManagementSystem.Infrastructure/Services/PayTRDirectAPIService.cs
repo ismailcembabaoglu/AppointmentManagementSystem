@@ -3,6 +3,7 @@ using AppointmentManagementSystem.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -189,13 +190,19 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"📥 PayTR Response: {responseContent}");
 
                 // Non-3D işlem olduğu için direkt sonuç döner
-                // Başarılıysa webhook'a bildirim gelecek
+                // Başarılıysa webhook'a bildirim gelecek ancak kart bilgilerini hemen saklıyoruz
+                var maskedPan = MaskCardNumber(cardNumber);
+
                 return new PayTRDirectPaymentResponse
                 {
                     Success = response.IsSuccessStatusCode,
                     Status = response.IsSuccessStatusCode ? "success" : "failed",
                     MerchantOid = merchantOid,
-                    ErrorMessage = response.IsSuccessStatusCode ? null : responseContent
+                    ErrorMessage = response.IsSuccessStatusCode ? null : responseContent,
+                    UserToken = existingUtoken,
+                    CardToken = null,
+                    MaskedPan = maskedPan,
+                    CardBrand = DetectCardBrand(cardNumber)
                 };
             }
             catch (Exception ex)
@@ -215,6 +222,38 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(merchantKey));
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashString));
             return Convert.ToBase64String(hash);
+        }
+
+        private static string? DetectCardBrand(string cardNumber)
+        {
+            var digits = new string((cardNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+            if (string.IsNullOrWhiteSpace(digits))
+            {
+                return null;
+            }
+
+            return digits[0] switch
+            {
+                '4' => "Visa",
+                '5' => "Mastercard",
+                '3' => "American Express",
+                '6' => "Discover",
+                _ => "Bilinmiyor"
+            };
+        }
+
+        private static string? MaskCardNumber(string cardNumber)
+        {
+            var digits = new string((cardNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+            if (digits.Length < 4)
+            {
+                return null;
+            }
+
+            var lastFour = digits[^4..];
+            return $"**** **** **** {lastFour}";
         }
         public async Task<PayTRDirectPaymentResponse> ChargeStoredCard(
             string utoken,

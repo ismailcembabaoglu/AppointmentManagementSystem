@@ -31,5 +31,9 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Commands
         public string? MerchantOid { get; set; }
         public string? Message { get; set; }
         public string? RedirectUrl { get; set; } // 3D Secure varsa
+        public string? PayTRUserToken { get; set; }
+        public string? PayTRCardToken { get; set; }
+        public string? MaskedCardNumber { get; set; }
+        public string? CardBrand { get; set; }
     }
 }

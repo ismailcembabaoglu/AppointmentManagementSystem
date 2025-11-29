@@ -8,6 +8,10 @@ namespace AppointmentManagementSystem.Application.DTOs.Payment
         public string? PaymentUrl { get; set; } // 3D Secure için redirect URL
         public string? MerchantOid { get; set; }
         public string? ErrorMessage { get; set; }
+        public string? UserToken { get; set; }
+        public string? CardToken { get; set; }
+        public string? MaskedPan { get; set; }
+        public string? CardBrand { get; set; }
     }
 
     public class PayTRCardListResponse

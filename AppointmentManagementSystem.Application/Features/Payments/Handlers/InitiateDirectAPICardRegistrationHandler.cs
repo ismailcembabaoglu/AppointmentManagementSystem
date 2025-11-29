@@ -1,9 +1,11 @@
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Interfaces;
 using AppointmentManagementSystem.Application.Shared;
+using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 {
@@ -13,17 +15,20 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         private readonly IPayTRDirectAPIService _paytrDirectService;
         private readonly IBusinessRepository _businessRepository;
         private readonly IBusinessSubscriptionRepository _subscriptionRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<InitiateDirectAPICardRegistrationHandler> _logger;
 
         public InitiateDirectAPICardRegistrationHandler(
             IPayTRDirectAPIService paytrDirectService,
             IBusinessRepository businessRepository,
             IBusinessSubscriptionRepository subscriptionRepository,
+            IUnitOfWork unitOfWork,
             ILogger<InitiateDirectAPICardRegistrationHandler> logger)
         {
             _paytrDirectService = paytrDirectService;
             _businessRepository = businessRepository;
             _subscriptionRepository = subscriptionRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -82,6 +87,16 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         paymentResponse.ErrorMessage ?? "Payment initiation failed");
                 }
 
+                var maskedPan = paymentResponse.MaskedPan ?? MaskCardNumber(request.CardNumber);
+                var cardBrand = paymentResponse.CardBrand ?? DetectCardBrand(request.CardNumber);
+
+                await SaveOrUpdateSubscriptionAsync(
+                    request.BusinessId,
+                    paymentResponse.UserToken,
+                    paymentResponse.CardToken,
+                    maskedPan,
+                    cardBrand);
+
                 _logger.LogInformation($"✅ Direct API payment initiated successfully");
                 _logger.LogInformation($"MerchantOid: {merchantOid}");
                 _logger.LogInformation($"⏳ Waiting for webhook callback with card tokens (utoken/ctoken)...");
@@ -92,7 +107,11 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         Success = true,
                         MerchantOid = merchantOid,
                         Message = "Payment processing. Webhook will confirm card storage.",
-                        RedirectUrl = paymentResponse.PaymentUrl // Null olacak (non-3D)
+                        RedirectUrl = paymentResponse.PaymentUrl, // Null olacak (non-3D)
+                        PayTRUserToken = paymentResponse.UserToken,
+                        PayTRCardToken = paymentResponse.CardToken,
+                        MaskedCardNumber = maskedPan,
+                        CardBrand = cardBrand
                     });
             }
             catch (Exception ex)
@@ -100,6 +119,100 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 _logger.LogError(ex, "❌ Error in InitiateDirectAPICardRegistration");
                 return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(ex.Message);
             }
+        }
+
+        private async Task SaveOrUpdateSubscriptionAsync(
+            int businessId,
+            string? userToken,
+            string? cardToken,
+            string? maskedPan,
+            string? cardBrand)
+        {
+            var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            var lastFour = maskedPan != null
+                ? new string(maskedPan.Where(char.IsDigit).TakeLast(4).ToArray())
+                : null;
+
+            if (subscription == null)
+            {
+                subscription = new BusinessSubscription
+                {
+                    BusinessId = businessId,
+                    PayTRUserToken = userToken,
+                    PayTRCardToken = cardToken,
+                    CardBrand = cardBrand,
+                    CardType = cardBrand,
+                    MaskedCardNumber = maskedPan,
+                    CardLastFourDigits = lastFour,
+                    MonthlyAmount = 700.00m,
+                    Status = SubscriptionStatus.PendingPayment,
+                    SubscriptionStatus = SubscriptionStatus.PendingPayment,
+                    StartDate = DateTime.UtcNow,
+                    SubscriptionStartDate = DateTime.UtcNow,
+                    AutoRenewal = true,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    NextBillingDate = DateTime.UtcNow.AddDays(30)
+                };
+
+                await _subscriptionRepository.AddAsync(subscription);
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(userToken))
+                {
+                    subscription.PayTRUserToken = userToken;
+                }
+
+                if (!string.IsNullOrWhiteSpace(cardToken))
+                {
+                    subscription.PayTRCardToken = cardToken;
+                }
+
+                subscription.CardBrand = cardBrand ?? subscription.CardBrand;
+                subscription.CardType = cardBrand ?? subscription.CardType;
+                subscription.MaskedCardNumber = maskedPan ?? subscription.MaskedCardNumber;
+                subscription.CardLastFourDigits = lastFour ?? subscription.CardLastFourDigits;
+                subscription.SubscriptionStatus = subscription.SubscriptionStatus ?? SubscriptionStatus.PendingPayment;
+                subscription.Status = subscription.Status ?? SubscriptionStatus.PendingPayment;
+                subscription.UpdatedAt = DateTime.UtcNow;
+
+                await _subscriptionRepository.UpdateAsync(subscription);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private static string? MaskCardNumber(string cardNumber)
+        {
+            var digits = new string((cardNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+            if (digits.Length < 4)
+            {
+                return null;
+            }
+
+            var lastFour = digits[^4..];
+            return $"**** **** **** {lastFour}";
+        }
+
+        private static string? DetectCardBrand(string cardNumber)
+        {
+            var digits = new string((cardNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+            if (string.IsNullOrWhiteSpace(digits))
+            {
+                return null;
+            }
+
+            return digits[0] switch
+            {
+                '4' => "Visa",
+                '5' => "Mastercard",
+                '3' => "American Express",
+                '6' => "Discover",
+                _ => "Bilinmiyor"
+            };
         }
     }
 }
