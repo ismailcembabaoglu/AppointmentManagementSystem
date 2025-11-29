@@ -403,27 +403,39 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var responseContent = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation($"📥 PayTR Card List Response: {responseContent}");
 
-                // Response parse et
-                var json = JsonSerializer.Deserialize<JsonElement>(responseContent);
-                var status = json.GetProperty("status").GetString();
+                // Response parse et (bazı cevaplarda eksik alanlar için savunmacı ol)
+                using var document = JsonDocument.Parse(responseContent);
+                var root = document.RootElement;
+
+                if (!root.TryGetProperty("status", out var statusElement))
+                {
+                    return new PayTRCardListResponse
+                    {
+                        Success = false,
+                        ErrorMessage = "PayTR kart listesi yanıtı beklenen formatta değil (status yok)."
+                    };
+                }
+
+                var status = statusElement.GetString();
 
                 if (status == "success")
                 {
                     var cards = new List<PayTRStoredCard>();
-                    var cardsArray = json.GetProperty("cards").EnumerateArray();
-
-                    foreach (var card in cardsArray)
+                    if (root.TryGetProperty("cards", out var cardsElement) && cardsElement.ValueKind == JsonValueKind.Array)
                     {
-                        cards.Add(new PayTRStoredCard
+                        foreach (var card in cardsElement.EnumerateArray())
                         {
-                            Ctoken = card.GetProperty("ctoken").GetString(),
-                            CardBrand = card.GetProperty("card_brand").GetString(),
-                            CardAssociation = card.GetProperty("card_association").GetString(),
-                            MaskedPan = card.GetProperty("masked_pan").GetString(),
-                            ExpiryMonth = card.GetProperty("expiry_month").GetString(),
-                            ExpiryYear = card.GetProperty("expiry_year").GetString(),
-                            RequireCvv = card.GetProperty("require_cvv").GetInt32() == 1
-                        });
+                            cards.Add(new PayTRStoredCard
+                            {
+                                Ctoken = card.TryGetProperty("ctoken", out var ctokenEl) ? ctokenEl.GetString() : null,
+                                CardBrand = card.TryGetProperty("card_brand", out var brandEl) ? brandEl.GetString() : null,
+                                CardAssociation = card.TryGetProperty("card_association", out var assocEl) ? assocEl.GetString() : null,
+                                MaskedPan = card.TryGetProperty("masked_pan", out var maskedEl) ? maskedEl.GetString() : null,
+                                ExpiryMonth = card.TryGetProperty("expiry_month", out var monthEl) ? monthEl.GetString() : null,
+                                ExpiryYear = card.TryGetProperty("expiry_year", out var yearEl) ? yearEl.GetString() : null,
+                                RequireCvv = card.TryGetProperty("require_cvv", out var cvvEl) && cvvEl.ValueKind == JsonValueKind.Number && cvvEl.GetInt32() == 1
+                            });
+                        }
                     }
 
                     return new PayTRCardListResponse
@@ -435,7 +447,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 }
                 else
                 {
-                    var reason = json.GetProperty("reason").GetString();
+                    var reason = root.TryGetProperty("reason", out var reasonElement)
+                        ? reasonElement.GetString()
+                        : "PayTR kart listesi başarısız döndü.";
                     return new PayTRCardListResponse
                     {
                         Success = false,
