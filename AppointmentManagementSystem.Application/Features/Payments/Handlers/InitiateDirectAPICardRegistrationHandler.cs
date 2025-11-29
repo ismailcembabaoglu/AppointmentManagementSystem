@@ -90,12 +90,71 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var maskedPan = paymentResponse.MaskedPan ?? MaskCardNumber(request.CardNumber);
                 var cardBrand = paymentResponse.CardBrand ?? DetectCardBrand(request.CardNumber);
 
-                await SaveOrUpdateSubscriptionAsync(
+                var subscription = await SaveOrUpdateSubscriptionAsync(
                     request.BusinessId,
                     paymentResponse.UserToken,
                     paymentResponse.CardToken,
                     maskedPan,
                     cardBrand);
+
+                // PayTR "Kayıtlı Karttan Ödeme" dokümantasyonu gereği, kart kaydedildikten sonra
+                // utoken/ctoken ile 1 TL doğrulama çekimi yapıyoruz.
+                var userToken = subscription.PayTRUserToken ?? paymentResponse.UserToken;
+                var cardToken = subscription.PayTRCardToken ?? paymentResponse.CardToken;
+
+                if (string.IsNullOrWhiteSpace(userToken))
+                {
+                    _logger.LogError("❌ UToken not found after card registration; cannot perform verification charge");
+                    return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(
+                        "Kart kaydedildi ancak kullanıcı token'ı alınamadı. Lütfen tekrar deneyin.");
+                }
+
+                // Eğer kart token yoksa kart listesinden çekmeyi dene
+                if (string.IsNullOrWhiteSpace(cardToken))
+                {
+                    var cardList = await _paytrDirectService.GetStoredCards(userToken);
+                    if (cardList.Success && cardList.Cards?.Any() == true)
+                    {
+                        var matchedCard = cardList.Cards
+                            .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c.MaskedPan) && c.MaskedPan == maskedPan)
+                            ?? cardList.Cards.First();
+
+                        cardToken = matchedCard.Ctoken;
+
+                        if (!string.IsNullOrWhiteSpace(cardToken) && subscription.PayTRCardToken != cardToken)
+                        {
+                            subscription.PayTRCardToken = cardToken;
+                            await _subscriptionRepository.UpdateAsync(subscription);
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(cardToken))
+                {
+                    _logger.LogError("❌ Card token not found; skipping verification charge");
+                    return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(
+                        "Kart kaydedildi ancak doğrulama çekimi için kart token'ı alınamadı.");
+                }
+
+                var verifyOid = $"VRF{request.BusinessId}{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
+                var chargeResponse = await _paytrDirectService.ChargeStoredCard(
+                    utoken: userToken,
+                    ctoken: cardToken,
+                    email: request.Email,
+                    userName: request.OwnerName,
+                    amount: 1.00m, // 1 TL doğrulama çekimi
+                    merchantOid: verifyOid,
+                    userIp: request.UserIp,
+                    cvv: request.CVV
+                );
+
+                if (!chargeResponse.Success)
+                {
+                    _logger.LogError($"❌ Verification charge failed: {chargeResponse.ErrorMessage}");
+                    return Result<InitiateDirectAPICardRegistrationResponse>.FailureResult(
+                        chargeResponse.ErrorMessage ?? "Kart doğrulama çekimi başarısız oldu.");
+                }
 
                 _logger.LogInformation($"✅ Direct API payment initiated successfully");
                 _logger.LogInformation($"MerchantOid: {merchantOid}");
@@ -121,7 +180,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             }
         }
 
-        private async Task SaveOrUpdateSubscriptionAsync(
+        private async Task<BusinessSubscription> SaveOrUpdateSubscriptionAsync(
             int businessId,
             string? userToken,
             string? cardToken,
@@ -181,6 +240,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            return subscription;
         }
 
         private static string? MaskCardNumber(string cardNumber)
