@@ -508,7 +508,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
         private string GenerateToken(params string[] parts)
         {
-            var hashStr = string.Concat(parts);
+            // PayTR hash format: concat(parts) + merchant_salt
+            var hashStr = string.Concat(parts) + _merchantSalt;
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashStr));
             return Convert.ToBase64String(hashBytes);
