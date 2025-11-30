@@ -98,10 +98,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
                 var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                // Token oluştur - PayTR Direct API için
-                // PayTR kuruş (integer) format bekler
-                var paymentAmount = ((long)Math.Round(amount * 100m, 0, MidpointRounding.AwayFromZero))
-                    .ToString(CultureInfo.InvariantCulture);
+                // PayTR örnek kodundaki formatla eşleşmesi için tutarı TL olarak (2 hane) gönder
+                // Kuruş formatına çevirip token üretmek, PayTR tarafından doğrulanamadığı için HTML fail sayfası dönebiliyordu
+                var paymentAmount = amount.ToString("F2", CultureInfo.InvariantCulture);
 
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
@@ -112,23 +111,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem (kart saklama için ZORUNLU)
                 
-                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + installmentcount + currency + testmode + non3d
-                // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                //var paytrToken = GenerateToken(
-                //    _merchantId,
-                //    userIp,
-                //    merchantOid,
-                //    email,
-                //    paymentAmount,
-                //    paymentType,
-                //    installmentCount,
-                //    currency,
-                //    testMode,
-                //    non3d);
-                string Birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
-                HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
-                byte[] b = hmac.ComputeHash(Encoding.UTF8.GetBytes(Birlestir));
-                var paytrToken = Convert.ToBase64String(b);
+                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + installmentcount + currency + testmode + non3d + merchant_salt
+                // PayTR dökümantasyonundaki referans uygulama ile aynı algoritma
+                var birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
+                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
+                var paytrToken = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(birlestir)));
 
                 // İlk kart kaydında utoken gönderilmezse PayTR kart token üretmiyor
                 if (string.IsNullOrWhiteSpace(existingUtoken))
@@ -362,7 +349,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
                 // Token oluştur - PayTR Direct API için
                 // PayTR Direct API kuruş (integer) bekliyor
-                var paymentAmount = FormatAmountToKurus(amount);
+                // PayTR referansındaki token algoritması ile uyuşması için tutarı TL formatında (F2) gönder
+                var paymentAmount = amount.ToString("F2", CultureInfo.InvariantCulture);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
@@ -374,17 +362,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 
                 // Direct API hash
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var paytrToken = GenerateToken(
-                    _merchantId,
-                    userIp,
-                    merchantOid,
-                    email,
-                    paymentAmount,
-                    paymentType,
-                    installmentCount,
-                    currency,
-                    testMode,
-                    non3d);
+                var birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
+                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
+                var paytrToken = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(birlestir)));
 
                 // Direct API form data - Kayıtlı karttan ödeme
                 var formData = new Dictionary<string, string>
