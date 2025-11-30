@@ -90,7 +90,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     _logger.LogInformation($"Existing UToken provided: {existingUtoken.Substring(0, Math.Min(10, existingUtoken.Length))}...");
                 }
 
-                // Sepet oluştur
+                // Sepet oluştur (TL formatı sadece bilgilendirme için)
                 var userBasket = new[]
                 {
                     new object[] { "İşletme Kayıt Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
@@ -98,9 +98,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
                 var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                // PayTR örnek kodundaki formatla eşleşmesi için tutarı TL olarak (2 hane) gönder
-                // Kuruş formatına çevirip token üretmek, PayTR tarafından doğrulanamadığı için HTML fail sayfası dönebiliyordu
-                var paymentAmount = amount.ToString("F2", CultureInfo.InvariantCulture);
+                // PayTR Direct API tutarı kuruş olarak ister (integer). Token da aynı string ile üretilmeli.
+                // TL formatı bilgilendirme için sepet içinde kullanılmaya devam ediyor.
+                var paymentAmount = FormatAmountToKurus(amount);
 
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
@@ -339,7 +339,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     userIp = "127.0.0.1";
                 }
 
-                // Sepet oluştur
+                // Sepet oluştur (TL formatı bilgilendirme amaçlı)
                 var userBasket = new[]
                 {
                     new object[] { "Aylık Abonelik Ücreti", amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 1 }
@@ -347,10 +347,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var userBasketJson = JsonSerializer.Serialize(userBasket);
                 var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
 
-                // Token oluştur - PayTR Direct API için
-                // PayTR Direct API kuruş (integer) bekliyor
-                // PayTR referansındaki token algoritması ile uyuşması için tutarı TL formatında (F2) gönder
-                var paymentAmount = amount.ToString("F2", CultureInfo.InvariantCulture);
+                // Token oluştur - PayTR Direct API için (kuruş formatı)
+                var paymentAmount = FormatAmountToKurus(amount);
                 var paymentType = "card";
                 var installmentCount = "0"; // Taksit yok
                 var noInstallment = "1"; // 1 = taksit yapılmayacak
