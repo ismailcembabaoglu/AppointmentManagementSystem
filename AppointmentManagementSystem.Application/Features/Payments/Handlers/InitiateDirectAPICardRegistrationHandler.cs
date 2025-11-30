@@ -5,6 +5,7 @@ using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
@@ -97,10 +98,22 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     maskedPan,
                     cardBrand);
 
+                // DB'deki utoken ile PayTR'den dönen utoken aynı mı kontrol et
+                if (!string.IsNullOrWhiteSpace(paymentResponse.UserToken)
+                    && !string.IsNullOrWhiteSpace(subscription.PayTRUserToken)
+                    && !string.Equals(paymentResponse.UserToken, subscription.PayTRUserToken, StringComparison.Ordinal))
+                {
+                    _logger.LogWarning($"⚠️ PayTR user token mismatch. DB: {subscription.PayTRUserToken}, Response: {paymentResponse.UserToken}");
+                }
+
+                // Her zaman DB'deki güncel utoken/ctoken'ı kullan
+                var userTokenFromDb = subscription.PayTRUserToken ?? paymentResponse.UserToken;
+                var cardTokenFromDb = subscription.PayTRCardToken ?? paymentResponse.CardToken;
+
                 // PayTR "Kayıtlı Karttan Ödeme" dokümantasyonu gereği, kart kaydedildikten sonra
                 // utoken/ctoken ile 1 TL doğrulama çekimi yapıyoruz.
-                var userToken = subscription.PayTRUserToken ?? paymentResponse.UserToken;
-                var cardToken = subscription.PayTRCardToken ?? paymentResponse.CardToken;
+                var userToken = userTokenFromDb;
+                var cardToken = cardTokenFromDb;
 
                 if (string.IsNullOrWhiteSpace(userToken))
                 {
@@ -167,8 +180,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         MerchantOid = merchantOid,
                         Message = "Payment processing. Webhook will confirm card storage.",
                         RedirectUrl = paymentResponse.PaymentUrl, // Null olacak (non-3D)
-                        PayTRUserToken = paymentResponse.UserToken,
-                        PayTRCardToken = paymentResponse.CardToken,
+                        PayTRUserToken = userTokenFromDb,
+                        PayTRCardToken = cardTokenFromDb,
                         MaskedCardNumber = maskedPan,
                         CardBrand = cardBrand
                     });
