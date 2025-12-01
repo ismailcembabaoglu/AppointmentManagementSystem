@@ -259,6 +259,18 @@
                                 </RadzenRow>
 
                                 <div>
+                                    <RadzenFormField Text="Harita Iframe Kodu" Style="width: 100%;">
+                                        <RadzenTextArea @bind-Value="businessInfo.MapEmbedCode"
+                                                        Rows="3"
+                                                        Placeholder="Google Maps yerleşim kodunu yapıştırın"
+                                                        Style="width: 100%;" />
+                                        <RadzenText Style="color: var(--rz-text-secondary-color);" TextStyle="TextStyle.Caption">
+                                            Harita iframe kodu işletme detay sayfasında mobil uyumlu harita olarak gösterilir.
+                                        </RadzenText>
+                                    </RadzenFormField>
+                                </div>
+
+                                <div>
                                     <RadzenLabel Text="İşletme Fotoğrafı (Opsiyonel)" />
                                     <FileUploadComponent @ref="businessPhotoComponent"
                                                          Multiple="false"
@@ -390,6 +402,14 @@
                                         @if (!string.IsNullOrEmpty(businessInfo.Phone))
                                         {
                                             <RadzenText><strong>Telefon:</strong> @businessInfo.Phone</RadzenText>
+                                        }
+                                        @if (!string.IsNullOrEmpty(businessInfo.Address))
+                                        {
+                                            <RadzenText><strong>Adres:</strong> @businessInfo.Address</RadzenText>
+                                        }
+                                        @if (!string.IsNullOrEmpty(businessInfo.MapEmbedCode))
+                                        {
+                                            <RadzenText><strong>Harita Kodu:</strong> Eklendi</RadzenText>
                                         }
                                         @if (businessPhoto is not null)
                                         {
@@ -845,6 +865,7 @@
                 District = businessInfo.District,
                 Latitude = businessInfo.Latitude,
                 Longitude = businessInfo.Longitude,
+                MapEmbedCode = businessInfo.MapEmbedCode,
                 BusinessPhotoBase64 = businessPhoto?.Base64Data,
                 Services = services.Select(s => new RegisterBusinessServiceDto
                 {
