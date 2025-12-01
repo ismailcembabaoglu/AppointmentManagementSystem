@@ -1,6 +1,7 @@
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
+@using System.Linq
 @inject IPaymentApiService PaymentApiService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
@@ -210,8 +211,8 @@
             if (response.Success)
             {
                 Console.WriteLine($"✅ Card update initiated: {response.Data?.MerchantOid}");
-                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
-                    "Kartınız güncelleniyor. Lütfen bekleyin...");
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
+                    $"Kart bilgileriniz kaydedildi (Kart: {response.Data?.MaskedCardNumber ?? GetMaskedCardNumber()}). Lütfen bekleyin...");
 
                 await Task.Delay(2000);
                 DialogService.Close(true);
@@ -234,6 +235,19 @@
             IsProcessing = false;
             StateHasChanged();
         }
+    }
+
+    private string GetMaskedCardNumber()
+    {
+        var digitsOnly = new string(cardNumber.Where(char.IsDigit).ToArray());
+
+        if (digitsOnly.Length < 4)
+        {
+            return "****";
+        }
+
+        var lastFour = digitsOnly[^4..];
+        return $"**** **** **** {lastFour}";
     }
 
     private void HandleCancel()
