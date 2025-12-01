@@ -17,5 +17,9 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         public bool Success { get; set; }
         public string? MerchantOid { get; set; }
         public string? Message { get; set; }
+        public string? PayTRUserToken { get; set; }
+        public string? PayTRCardToken { get; set; }
+        public string? MaskedCardNumber { get; set; }
+        public string? CardBrand { get; set; }
     }
 }
