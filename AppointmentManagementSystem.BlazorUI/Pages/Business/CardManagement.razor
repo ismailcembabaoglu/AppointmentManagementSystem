@@ -178,7 +178,7 @@ else
                                       Icon="payments"
                                       ButtonStyle="ButtonStyle.Primary"
                                       Click="StartManualBillingPayment"
-                                      Disabled="@paymentLoading || !IsManualPaymentValid()"
+                                      Disabled="@(paymentLoading || !IsManualPaymentValid())"
                                       Style="width: 100%;" />
                     </RadzenColumn>
                 </RadzenRow>
