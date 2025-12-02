@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Shared;
 using AppointmentManagementSystem.Domain.Entities;
@@ -42,7 +44,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             try
             {
-                _logger.LogInformation($"=== Webhook Received ===");
+                _logger.LogInformation("=== Webhook Received ===");
                 _logger.LogInformation($"MerchantOid: {request.MerchantOid}");
                 _logger.LogInformation($"Status: {request.Status}");
                 _logger.LogInformation($"TotalAmount: {request.TotalAmount}");
@@ -52,7 +54,6 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 _logger.LogInformation($"MaskedPan: {request.MaskedPan}");
                 _logger.LogInformation($"PaymentId: {request.PaymentId}");
 
-                // Validate required fields
                 if (string.IsNullOrEmpty(request.MerchantOid))
                 {
                     _logger.LogError("MerchantOid is empty!");
@@ -65,14 +66,12 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     return Result<bool>.FailureResult("Status is required");
                 }
 
-                // Validate webhook signature
-                var merchantSalt = _configuration["PayTR:MerchantSalt"] ?? "";
+                var merchantSalt = _configuration["PayTR:MerchantSalt"] ?? string.Empty;
                 var expectedHash = _paytrService.ValidateWebhookSignature(
                     request.MerchantOid,
                     request.Status,
                     request.TotalAmount,
-                    merchantSalt
-                );
+                    merchantSalt);
 
                 _logger.LogInformation($"Expected Hash (Base64): {expectedHash}");
                 _logger.LogInformation($"Received Hash: {request.Hash}");
@@ -82,46 +81,39 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     _logger.LogError($"❌ Invalid webhook signature for MerchantOid: {request.MerchantOid}");
                     _logger.LogError($"Expected: {expectedHash}");
                     _logger.LogError($"Received: {request.Hash}");
-                    
-                    // Hash uyuşmazlığında işlemi reddet
-                    // PayTR bu durumda "OK" alsa bile işlemi tamamlamayacaktır
                     return Result<bool>.FailureResult("Invalid webhook signature - security check failed");
                 }
 
-                // Check if this is initial registration (REG prefix), card update (CARD prefix) or recurring payment
-                if (request.MerchantOid.StartsWith("CARD") && request.Status == "success")
+                if (request.MerchantOid.StartsWith("CARD", StringComparison.Ordinal) && request.Status == "success")
                 {
                     _logger.LogInformation("✅ Processing card update callback");
                     return await HandleCardUpdateCallback(request, cancellationToken);
                 }
-                else if (request.MerchantOid.StartsWith("BILL") && request.Status == "success")
+
+                if (request.MerchantOid.StartsWith("BILL", StringComparison.Ordinal) && request.Status == "success")
                 {
                     _logger.LogInformation("✅ Processing manual billing callback");
                     return await HandleManualBillingCallback(request, cancellationToken);
                 }
-                else if (request.MerchantOid.StartsWith("REG") && request.Status == "success")
+
+                if (request.MerchantOid.StartsWith("REG", StringComparison.Ordinal) && request.Status == "success")
                 {
                     _logger.LogInformation("✅ Processing initial registration callback");
-                    // This is initial registration + first payment callback
                     return await HandleInitialRegistrationCallback(request, cancellationToken);
                 }
-                else if (request.Status == "success")
+
+                if (request.Status == "success")
                 {
                     _logger.LogInformation("✅ Processing recurring payment callback");
-                    // This is a recurring payment callback
                     return await HandlePaymentCallback(request, cancellationToken);
                 }
-                else
-                {
-                    _logger.LogWarning($"⚠️ Payment failed or invalid status: {request.Status}");
-                    return Result<bool>.FailureResult($"Payment status: {request.Status}");
-                }
+
+                _logger.LogWarning($"⚠️ Payment failed or invalid status: {request.Status}");
+                return Result<bool>.FailureResult($"Payment status: {request.Status}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"❌ Error processing webhook for MerchantOid: {request.MerchantOid}");
-                _logger.LogError($"Exception details: {ex.Message}");
-                _logger.LogError($"Stack trace: {ex.StackTrace}");
                 return Result<bool>.FailureResult($"Error processing webhook: {ex.Message}");
             }
         }
@@ -130,45 +122,33 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             _logger.LogInformation("=== HandleInitialRegistrationCallback Started ===");
 
-            // Extract BusinessId from MerchantOid
-            // Format: REG{BusinessId}_{Guid} or REG{BusinessId}{Guid}
             var merchantOid = request.MerchantOid;
-            var regPrefix = "REG";
-            
-            _logger.LogInformation($"MerchantOid: {merchantOid}");
-            
-            if (!merchantOid.StartsWith(regPrefix))
+            const string regPrefix = "REG";
+
+            if (!merchantOid.StartsWith(regPrefix, StringComparison.Ordinal))
             {
                 _logger.LogWarning($"Invalid MerchantOid format: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
             var afterReg = merchantOid.Substring(regPrefix.Length);
-            _logger.LogInformation($"After REG prefix: {afterReg}");
-            
             string businessIdStr;
-            
-            // Check if underscore separator exists (new format: REG6_abc123)
-            if (afterReg.Contains("_"))
+
+            if (afterReg.Contains("_", StringComparison.Ordinal))
             {
                 var parts = afterReg.Split('_');
                 businessIdStr = parts[0];
-                _logger.LogInformation($"Extracted BusinessId string (with separator): {businessIdStr}");
             }
             else
             {
-                // Old format: REG6abc123 - take only digits
                 businessIdStr = new string(afterReg.TakeWhile(char.IsDigit).ToArray());
-                _logger.LogInformation($"Extracted BusinessId string (without separator): {businessIdStr}");
             }
-            
-            if (!int.TryParse(businessIdStr, out int businessId))
+
+            if (!int.TryParse(businessIdStr, out var businessId))
             {
                 _logger.LogWarning($"Could not parse BusinessId from MerchantOid: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
-
-            _logger.LogInformation($"✅ Parsed BusinessId: {businessId}");
 
             var business = await _businessRepository.GetByIdAsync(businessId);
             if (business == null)
@@ -177,15 +157,11 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Business not found");
             }
 
-            _logger.LogInformation($"Business found: {business.Name} (ID: {business.Id})");
-
-            // 1. İlk ödeme kaydını oluştur
-            _logger.LogInformation("Creating payment record...");
             var payment = new Payment
             {
                 BusinessId = businessId,
                 MerchantOid = request.MerchantOid,
-                Amount = decimal.Parse(request.TotalAmount) / 100, // Kuruştan TL'ye
+                Amount = decimal.Parse(request.TotalAmount) / 100,
                 Currency = "TRY",
                 Status = PaymentStatus.Success,
                 PaymentDate = DateTime.UtcNow,
@@ -196,84 +172,62 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 CreatedAt = DateTime.UtcNow
             };
             await _paymentRepository.AddAsync(payment);
-            _logger.LogInformation($"Payment record created: Amount={payment.Amount} TL");
 
-            // 2. Abonelik oluştur veya güncelle
-            _logger.LogInformation("Checking for existing subscription...");
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
-            
-            // Kart bilgilerini al (utoken/ctoken olmasa bile en azından card_type ve masked_pan'i kaydet)
             var hasCardTokens = !string.IsNullOrEmpty(request.Utoken) && !string.IsNullOrEmpty(request.Ctoken);
-            
+
             if (!hasCardTokens)
             {
                 _logger.LogWarning("⚠️ Card tokens (utoken/ctoken) are NULL. iFrame API does not support card tokenization.");
-                _logger.LogWarning("⚠️ Saving only available card info (card_type and masked_pan) for display purposes.");
-                _logger.LogWarning("⚠️ Recurring payments will NOT work without card tokens!");
-                _logger.LogWarning("⚠️ Consider switching to Direct API for card tokenization: https://dev.paytr.com/direkt-api/kart-saklama-api");
             }
-            
+
             if (subscription == null)
             {
-                _logger.LogInformation("Creating new subscription...");
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
-                    PayTRUserToken = request.Utoken, // iFrame API'de NULL olacak
-                    PayTRCardToken = request.Ctoken, // iFrame API'de NULL olacak
+                    PayTRUserToken = request.Utoken,
+                    PayTRCardToken = request.Ctoken,
                     CardBrand = request.CardType,
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
-                    CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
-                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
-                        : null,
+                    CardLastFourDigits = GetLastFour(request.MaskedPan),
                     MonthlyAmount = 700.00m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
                     StartDate = DateTime.UtcNow,
                     SubscriptionStartDate = DateTime.UtcNow,
-                    LastBillingDate = DateTime.UtcNow, // İlk ödeme yapıldı
-                    NextBillingDate = DateTime.UtcNow.AddDays(30), // 30 gün sonra
+                    LastBillingDate = DateTime.UtcNow,
+                    NextBillingDate = DateTime.UtcNow.AddDays(30),
                     IsActive = true,
-                    AutoRenewal = !hasCardTokens ? false : true, // Token yoksa auto-renewal kapat
+                    AutoRenewal = hasCardTokens,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
-
-                if (hasCardTokens)
-                {
-                    _logger.LogInformation($"✅ New subscription created with card tokens: Utoken={request.Utoken?.Substring(0, 10)}..., NextBilling={subscription.NextBillingDate}");
-                }
-                else
-                {
-                    _logger.LogInformation($"⚠️ New subscription created WITHOUT card tokens. Card info: {request.CardType} {request.MaskedPan}");
-                }
             }
             else
             {
-                _logger.LogInformation("Updating existing subscription...");
-
-                // Sadece dolu olan değerleri güncelle (NULL olanları bozmamak için)
                 if (!string.IsNullOrEmpty(request.Utoken))
                 {
                     subscription.PayTRUserToken = request.Utoken;
                 }
+
                 if (!string.IsNullOrEmpty(request.Ctoken))
                 {
                     subscription.PayTRCardToken = request.Ctoken;
                 }
+
                 if (!string.IsNullOrEmpty(request.CardType))
                 {
                     subscription.CardBrand = request.CardType;
                     subscription.CardType = request.CardType;
                 }
+
                 if (!string.IsNullOrEmpty(request.MaskedPan))
                 {
                     subscription.MaskedCardNumber = request.MaskedPan;
-                    subscription.CardLastFourDigits = request.MaskedPan.Length >= 4
-                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
-                        : subscription.CardLastFourDigits;
+                    subscription.CardLastFourDigits = GetLastFour(request.MaskedPan) ?? subscription.CardLastFourDigits;
                 }
 
                 subscription.Status = SubscriptionStatus.Active;
@@ -281,38 +235,17 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.LastBillingDate = DateTime.UtcNow;
                 subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
                 subscription.IsActive = true;
-
-                // Token varsa auto-renewal açık olsun, yoksa kapalı kalsın
-                if (hasCardTokens)
-                {
-                    subscription.AutoRenewal = true;
-                }
-
+                subscription.AutoRenewal = hasCardTokens || subscription.AutoRenewal;
                 subscription.UpdatedAt = DateTime.UtcNow;
 
                 await _subscriptionRepository.UpdateAsync(subscription);
-
-                if (hasCardTokens)
-                {
-                    _logger.LogInformation($"✅ Subscription updated with card tokens: ID={subscription.Id}");
-                }
-                else
-                {
-                    _logger.LogInformation($"⚠️ Subscription updated WITHOUT card tokens. Card info: {request.CardType} {request.MaskedPan}");
-                }
             }
 
-            // 3. Business'ı aktifleştir
-            _logger.LogInformation($"Activating business... Current status: IsActive={business.IsActive}");
             business.IsActive = true;
             business.UpdatedAt = DateTime.UtcNow;
             await _businessRepository.UpdateAsync(business);
-            _logger.LogInformation($"Business activated: {business.Name} (ID: {business.Id})");
 
             await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation("All changes saved to database!");
-
-            _logger.LogInformation($"✅ Initial registration completed for Business {businessId}. Payment: 700 TL, Next billing: {subscription.NextBillingDate}");
             return Result<bool>.SuccessResult(true);
         }
 
@@ -320,11 +253,9 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             _logger.LogInformation("=== HandleManualBillingCallback Started ===");
 
-            // Extract BusinessId and optional billing period
+            const string billPrefix = "BILL";
             var merchantOid = request.MerchantOid;
-            var billPrefix = "BILL";
-
-            if (!merchantOid.StartsWith(billPrefix))
+            if (!merchantOid.StartsWith(billPrefix, StringComparison.Ordinal))
             {
                 _logger.LogWarning($"Invalid MerchantOid format for manual billing: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
@@ -332,26 +263,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
             var afterPrefix = merchantOid.Substring(billPrefix.Length);
             var businessIdStr = new string(afterPrefix.TakeWhile(char.IsDigit).ToArray());
-
-            if (!int.TryParse(businessIdStr, out int businessId))
+            if (!int.TryParse(businessIdStr, out var businessId))
             {
                 _logger.LogWarning($"Could not parse BusinessId from MerchantOid: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
-            DateTime targetPeriod = DateTime.UtcNow;
-            var mIndex = afterPrefix.IndexOf('M');
-            if (mIndex >= 0 && afterPrefix.Length >= mIndex + 7)
-            {
-                var yearSegment = afterPrefix.Substring(mIndex + 1, 4);
-                var monthSegment = afterPrefix.Substring(mIndex + 5, 2);
-
-                if (int.TryParse(yearSegment, out int billingYear) && int.TryParse(monthSegment, out int billingMonth) && billingMonth is >= 1 and <= 12)
-                {
-                    targetPeriod = new DateTime(billingYear, billingMonth, 1, 0, 0, 0, DateTimeKind.Utc);
-                }
-            }
-
+            var targetPeriod = ExtractTargetPeriod(afterPrefix);
             var business = await _businessRepository.GetByIdAsync(businessId);
             if (business == null)
             {
@@ -359,10 +277,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Business not found");
             }
 
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount)
-                ? parsedAmount / 100
-                : 0m;
             if (subscription == null)
             {
                 subscription = new BusinessSubscription
@@ -405,9 +321,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 if (!string.IsNullOrEmpty(request.MaskedPan))
                 {
                     subscription.MaskedCardNumber = request.MaskedPan;
-                    subscription.CardLastFourDigits = request.MaskedPan.Length >= 4
-                        ? request.MaskedPan[^4..]
-                        : subscription.CardLastFourDigits;
+                    subscription.CardLastFourDigits = GetLastFour(request.MaskedPan) ?? subscription.CardLastFourDigits;
                 }
 
                 if (!string.IsNullOrEmpty(request.CardType))
@@ -441,8 +355,6 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             await _businessRepository.UpdateAsync(business);
 
             await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation($"✅ Manual billing recorded for Business {businessId}. Period: {targetPeriod:yyyy-MM}");
             return Result<bool>.SuccessResult(true);
         }
 
@@ -450,27 +362,18 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
         {
             _logger.LogInformation("=== HandleCardUpdateCallback Started ===");
 
-            var merchantOid = request.MerchantOid;
             const string prefix = "CARD";
-
-            if (!merchantOid.StartsWith(prefix))
+            var merchantOid = request.MerchantOid;
+            if (!merchantOid.StartsWith(prefix, StringComparison.Ordinal))
             {
                 _logger.LogWarning($"Invalid CARD MerchantOid format: {merchantOid}");
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
             var afterPrefix = merchantOid.Substring(prefix.Length);
-            string businessIdStr;
-
-            if (afterPrefix.Contains("_"))
-            {
-                var parts = afterPrefix.Split('_');
-                businessIdStr = parts[0];
-            }
-            else
-            {
-                businessIdStr = new string(afterPrefix.TakeWhile(char.IsDigit).ToArray());
-            }
+            var businessIdStr = afterPrefix.Contains("_", StringComparison.Ordinal)
+                ? afterPrefix.Split('_')[0]
+                : new string(afterPrefix.TakeWhile(char.IsDigit).ToArray());
 
             if (!int.TryParse(businessIdStr, out var businessId))
             {
@@ -486,10 +389,8 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             }
 
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
-
             if (subscription == null)
             {
-                _logger.LogWarning($"Subscription not found for Business {businessId}, creating a placeholder to store new card info.");
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
@@ -498,9 +399,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     CardBrand = request.CardType,
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
-                    CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
-                        ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
-                        : null,
+                    CardLastFourDigits = GetLastFour(request.MaskedPan),
                     MonthlyAmount = 700.00m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
@@ -520,18 +419,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.CardBrand = request.CardType;
                 subscription.CardType = request.CardType;
                 subscription.MaskedCardNumber = request.MaskedPan;
-                subscription.CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
-                    ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
-                    : subscription.CardLastFourDigits;
+                subscription.CardLastFourDigits = GetLastFour(request.MaskedPan) ?? subscription.CardLastFourDigits;
                 subscription.UpdatedAt = DateTime.UtcNow;
 
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
 
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount)
-                ? parsedAmount / 100
-                : 0m;
-
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
             var payment = new Payment
             {
                 BusinessId = businessId,
@@ -565,10 +459,9 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             if (payment == null)
             {
                 _logger.LogWarning($"Payment not found for MerchantOid: {request.MerchantOid}");
-                return Result<bool>.SuccessResult(true); // Return success to prevent retries
+                return Result<bool>.SuccessResult(true);
             }
 
-            // Idempotency check - only process if payment is pending
             if (payment.Status != PaymentStatus.Pending)
             {
                 _logger.LogInformation($"Payment {payment.Id} already processed, ignoring duplicate webhook");
@@ -625,6 +518,33 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             await _unitOfWork.SaveChangesAsync();
 
             return Result<bool>.SuccessResult(true);
+        }
+
+        private static string? GetLastFour(string? maskedPan)
+        {
+            if (string.IsNullOrEmpty(maskedPan) || maskedPan.Length < 4)
+            {
+                return null;
+            }
+
+            return maskedPan.Substring(maskedPan.Length - 4);
+        }
+
+        private static DateTime ExtractTargetPeriod(string afterPrefix)
+        {
+            var mIndex = afterPrefix.IndexOf('M');
+            if (mIndex >= 0 && afterPrefix.Length >= mIndex + 7)
+            {
+                var yearSegment = afterPrefix.Substring(mIndex + 1, 4);
+                var monthSegment = afterPrefix.Substring(mIndex + 5, 2);
+
+                if (int.TryParse(yearSegment, out var billingYear) && int.TryParse(monthSegment, out var billingMonth) && billingMonth >= 1 && billingMonth <= 12)
+                {
+                    return new DateTime(billingYear, billingMonth, 1, 0, 0, 0, DateTimeKind.Utc);
+                }
+            }
+
+            return DateTime.UtcNow;
         }
     }
 }
