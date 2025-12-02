@@ -41,6 +41,24 @@ namespace AppointmentManagementSystem.Application.Interfaces
             string? cvv = null); // CVV bazen gerekli olabilir
 
         /// <summary>
+        /// Kayıtlı kart kullanmadan 3D Secure ödeme başlatır
+        /// </summary>
+        Task<PayTRDirectPaymentResponse> InitiateOneTime3DPayment(
+            int businessId,
+            string email,
+            string userName,
+            string userAddress,
+            string userPhone,
+            string ccOwner,
+            string cardNumber,
+            string expiryMonth,
+            string expiryYear,
+            string cvv,
+            decimal amount,
+            string merchantOid,
+            string userIp);
+
+        /// <summary>
         /// Kullanıcının kayıtlı kart listesini getirir
         /// </summary>
         Task<PayTRCardListResponse> GetStoredCards(string utoken);
