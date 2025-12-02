@@ -91,12 +91,12 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
             try
             {
                 Console.WriteLine("🔵 PaymentApiService: Calling Direct API endpoint...");
-                
-                // No auth required for registration
+
+                // Direct API registration does not require an auth token because PayTR handles card tokenization
                 var response = await _httpClient.PostAsJsonAsync("api/payments/initiate-direct-card-registration", requestDto);
-                
+
                 Console.WriteLine($"📥 Response Status: {response.StatusCode}");
-                
+
                 return await HandleApiResponse<DirectCardRegistrationResponseDto>(response);
             }
             catch (Exception ex)
@@ -106,6 +106,25 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
                 {
                     Success = false,
                     Message = $"Direct API kart kaydı başlatılamadı: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ApiResponse<ChargeManualBillingResponseDto>> InitiateManualBillingAsync(ManualBillingRequestDto request)
+        {
+            try
+            {
+                var httpRequest = await CreateRequestWithAuth(HttpMethod.Post, "api/payments/manual-billing");
+                httpRequest.Content = JsonContent.Create(request);
+                var response = await _httpClient.SendAsync(httpRequest);
+                return await HandleApiResponse<ChargeManualBillingResponseDto>(response);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<ChargeManualBillingResponseDto>
+                {
+                    Success = false,
+                    Message = $"Manual billing başlatılamadı: {ex.Message}"
                 };
             }
         }

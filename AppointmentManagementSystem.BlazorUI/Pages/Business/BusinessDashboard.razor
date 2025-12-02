@@ -2,6 +2,7 @@
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Models
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
+@using AppointmentManagementSystem.BlazorUI.Components
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Services
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Employees
 @using Microsoft.AspNetCore.Authorization
@@ -126,6 +127,61 @@ else
                         <RadzenFormField Text="Açıklama" Style="width: 100%;">
                             <RadzenTextArea @bind-Value="business.Description" Rows="4" Style="width: 100%;" />
                         </RadzenFormField>
+
+                        <RadzenRow Gap="16px">
+                            <RadzenColumn Size="12" SizeMD="8">
+                                <RadzenFormField Text="Harita (Iframe)" Style="width: 100%;">
+                                    <RadzenHtmlEditor @bind-Value="business.MapEmbedCode"
+                                                     Placeholder="Google Maps iframe kodunu buraya yapıştırın"
+                                                     Style="min-height: 240px;"
+                                                     HtmlEditorToolbar="HtmlEditorToolbar.Basic" />
+                                    <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">
+                                        Embed kodunu HTML olarak yapıştırın. Ön izleme işletme detay sayfasında gösterilecektir.
+                                    </RadzenText>
+                                </RadzenFormField>
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="12" SizeMD="4">
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="12px" Style="height: 100%;">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: 600;">Kapak Fotoğrafı</RadzenText>
+
+                                    @if (business.PhotoUrls != null && business.PhotoUrls.Any())
+                                    {
+                                        <div style="width: 100%; aspect-ratio: 4/3; overflow: hidden; border-radius: 8px; background: #f5f5f5;">
+                                            <img src="@business.PhotoUrls.First()" alt="@business.Name" style="width: 100%; height: 100%; object-fit: cover;" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div style="width: 100%; aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                            <RadzenIcon Icon="image" Style="font-size: 48px;" />
+                                        </div>
+                                    }
+
+                                    <FileUploadComponent @ref="businessPhotoUpload"
+                                                        ButtonText="Yeni Fotoğraf Seç"
+                                                        Multiple="false"
+                                                        Accept="image/*"
+                                                        OnFilesUploaded="HandleBusinessPhotoSelected"
+                                                        MaxFileSize="5_000_000" />
+
+                                    @if (selectedBusinessPhoto != null)
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-text-secondary-color);">
+                                            Seçilen: @selectedBusinessPhoto.FileName
+                                        </RadzenText>
+                                    }
+
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" JustifyContent="JustifyContent.End">
+                                        <RadzenButton Text="Fotoğrafı Güncelle"
+                                                      Icon="cloud_upload"
+                                                      ButtonStyle="ButtonStyle.Primary"
+                                                      Disabled="selectedBusinessPhoto == null || isPhotoUploading"
+                                                      Click="@UploadBusinessPhoto" />
+                                    </RadzenStack>
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
 
                         <RadzenRow Gap="16px">
                             <RadzenColumn Size="12" SizeMD="6">
@@ -382,6 +438,9 @@ else
     private List<BusinessReviewDto> reviews = new();
     private bool isLoading = true;
     private int selectedTabIndex = 0;
+    private FileUploadComponent? businessPhotoUpload;
+    private FileUploadComponent.UploadedFileModel? selectedBusinessPhoto;
+    private bool isPhotoUploading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -458,7 +517,8 @@ else
                 Phone = business.Phone,
                 Email = business.Email,
                 Website = business.Website,
-                CategoryId = business.CategoryId
+                CategoryId = business.CategoryId,
+                MapEmbedCode = business.MapEmbedCode
             };
 
             var response = await BusinessApiService.UpdateBusinessAsync(business.Id, updateDto);
@@ -476,6 +536,52 @@ else
         catch (Exception ex)
         {
             NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Kaydetme hatası: {ex.Message}");
+        }
+    }
+
+    private void HandleBusinessPhotoSelected(List<FileUploadComponent.UploadedFileModel> files)
+    {
+        selectedBusinessPhoto = files?.FirstOrDefault();
+        StateHasChanged();
+    }
+
+    private async Task UploadBusinessPhoto()
+    {
+        if (business == null || selectedBusinessPhoto == null)
+            return;
+
+        isPhotoUploading = true;
+
+        try
+        {
+            var uploadDto = new UploadPhotoDto
+            {
+                FileName = selectedBusinessPhoto.FileName,
+                Base64Data = selectedBusinessPhoto.Base64Data,
+                ContentType = selectedBusinessPhoto.ContentType
+            };
+
+            var response = await PhotoApiService.UploadBusinessPhotoAsync(business.Id, uploadDto);
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", "Kapak fotoğrafı güncellendi.");
+                selectedBusinessPhoto = null;
+                await LoadBusinessData();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Hata", response.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Hata", $"Fotoğraf yükleme hatası: {ex.Message}");
+        }
+        finally
+        {
+            isPhotoUploading = false;
+            StateHasChanged();
         }
     }
 
