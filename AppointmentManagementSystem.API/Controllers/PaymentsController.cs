@@ -29,7 +29,7 @@ namespace AppointmentManagementSystem.API.Controllers
         }
 
         [HttpPost("manual-billing")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> ChargeManualBilling([FromBody] ChargeManualBillingCommand command)
         {
             command.UserIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
