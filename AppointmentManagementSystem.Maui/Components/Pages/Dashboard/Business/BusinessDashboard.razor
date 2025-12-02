@@ -311,9 +311,9 @@ else
     private async Task LoadAppointments()
     {
         var response = await AppointmentApiService.GetAllAppointmentsAsync(businessId: businessId);
-        if (response.Success)
+        if (response.Success && response.Data != null)
         {
-            appointments = response.Data ?? new List<AppointmentDto>();
+            appointments = response.Data.Items ?? new List<AppointmentDto>();
             recentAppointments = appointments
                 .OrderByDescending(a => a.AppointmentDate)
                 .Take(6)
