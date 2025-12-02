@@ -560,7 +560,7 @@ else
                 Base64Data = selectedBusinessPhoto.Base64Data,
                 ContentType = selectedBusinessPhoto.ContentType
             };
-
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var response = await PhotoApiService.UploadBusinessPhotoAsync(business.Id, uploadDto);
 
             if (response.Success)
