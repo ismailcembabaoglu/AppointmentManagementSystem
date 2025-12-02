@@ -10,6 +10,7 @@ namespace AppointmentManagementSystem.BlazorUI.Models
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? District { get; set; }
+        public string? MapEmbedCode { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? CategoryName { get; set; }

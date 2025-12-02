@@ -48,6 +48,7 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
                 Address = business.Address,
                 City = business.City,
                 District = business.District,
+                MapEmbedCode = business.MapEmbedCode,
                 IsActive = business.IsActive,
                 CreatedAt = business.CreatedAt,
                 CategoryName = business.Category?.Name,

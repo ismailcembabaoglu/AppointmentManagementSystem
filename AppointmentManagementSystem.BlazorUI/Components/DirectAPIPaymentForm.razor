@@ -1,6 +1,7 @@
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using Radzen
+@using System.Linq
 @inject IPaymentApiService PaymentApiService
 @inject NotificationService NotificationService
 
@@ -252,8 +253,10 @@
             if (response.Success)
             {
                 Console.WriteLine($"✅ Payment initiated: {response.Data?.MerchantOid}");
-                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", 
-                    "Ödemeniz işleniyor. Lütfen bekleyin...");
+                var masked = response.Data?.MaskedCardNumber ?? GetMaskedCardNumber();
+
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
+                    $"Kart bilgileriniz kaydedildi (Kart: {masked}). Ödemeniz işleniyor. Lütfen bekleyin...");
 
                 // Webhook'u bekle (birkaç saniye)
                 await Task.Delay(3000);
@@ -284,5 +287,18 @@
             IsProcessing = false;
             StateHasChanged();
         }
+    }
+
+    private string GetMaskedCardNumber()
+    {
+        var digitsOnly = new string(cardNumber.Where(char.IsDigit).ToArray());
+
+        if (digitsOnly.Length < 4)
+        {
+            return "****";
+        }
+
+        var lastFour = digitsOnly[^4..];
+        return $"**** **** **** {lastFour}";
     }
 }

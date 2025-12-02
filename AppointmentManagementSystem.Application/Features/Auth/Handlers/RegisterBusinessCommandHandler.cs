@@ -111,6 +111,7 @@ namespace AppointmentManagementSystem.Application.Features.Auth.Handlers
                 District = dto.District,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
+                MapEmbedCode = dto.MapEmbedCode,
                 IsActive = false // Payment tamamlanana kadar pasif
             };
 

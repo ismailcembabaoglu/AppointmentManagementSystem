@@ -35,6 +35,9 @@ namespace AppointmentManagementSystem.Domain.Entities
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
+        [MaxLength(4000)]
+        public string? MapEmbedCode { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         // Navigation properties

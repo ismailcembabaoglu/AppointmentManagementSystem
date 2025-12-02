@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Net.Http;
 
 namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
@@ -15,6 +16,12 @@ namespace AppointmentManagementSystem.Maui.Services.ApiServices
         {
             _httpClient = httpClient;
             _localStorage = localStorage;
+        }
+
+        protected async Task<HttpRequestMessage> CreateRequestWithAuth(HttpMethod method, string url)
+        {
+            await AddAuthorizationHeader();
+            return new HttpRequestMessage(method, url);
         }
 
         protected async Task AddAuthorizationHeader()

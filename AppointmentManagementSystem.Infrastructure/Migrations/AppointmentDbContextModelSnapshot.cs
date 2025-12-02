@@ -159,6 +159,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("MapEmbedCode")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)

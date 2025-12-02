@@ -49,6 +49,9 @@ namespace AppointmentManagementSystem.Application.DTOs
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
+        [MaxLength(4000)]
+        public string? MapEmbedCode { get; set; }
+
         // Business Photo (Base64)
         public string? BusinessPhotoBase64 { get; set; }
 
