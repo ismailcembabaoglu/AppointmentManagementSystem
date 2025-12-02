@@ -28,22 +28,6 @@ namespace AppointmentManagementSystem.API.Controllers
             _logger = logger;
         }
 
-        [HttpPost("manual-billing")]
-        [Authorize]
-        public async Task<IActionResult> ChargeManualBilling([FromBody] ChargeManualBillingCommand command)
-        {
-            command.UserIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-
-            var result = await _mediator.Send(command);
-
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-
-            return BadRequest(result);
-        }
-
         /// <summary>
         /// [DEPRECATED - iFrame API] İlk kayıt - iFrame API kullanır (kart tokenization çalışmıyor)
         /// Yeni kayıtlar için /initiate-direct-card-registration kullanın

@@ -8,10 +8,10 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize(Roles = "Business")]
 @inject IPaymentApiService PaymentApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
-@inject DialogService DialogService
 
 <PageTitle>Kart Yönetimi</PageTitle>
 
@@ -42,7 +42,7 @@ else
                     <RadzenBadge Text="@(subscription?.SubscriptionStatus ?? "Bilinmiyor")" BadgeStyle="@GetSubscriptionBadgeStyle(subscription?.SubscriptionStatus)" />
                 </RadzenStack>
                 <RadzenText Style="color: rgba(255,255,255,0.85); margin: 0;">
-                    PayTR Direct API ile kart bilgilerinizi güvenle güncelleyebilir ve abonelik ödemelerinizi tamamlayabilirsiniz.
+                    PayTR iFrame API ile kart bilgilerinizi güvenle güncelleyebilir ve abonelik ödemelerinizi tamamlayabilirsiniz.
                 </RadzenText>
             </RadzenStack>
         </RadzenCard>
@@ -89,7 +89,7 @@ else
                         </RadzenList>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
                             <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                PayTR Direct API: Kart bilgilerinizi güvenli şekilde güncelleyin
+                                PayTR iFrame: Kart bilgilerinizi güvenli pencerede güncelleyin
                             </RadzenText>
                             <RadzenButton Text="Kart Güncelle"
                                           Icon="credit_card"
@@ -137,19 +137,18 @@ else
                     </RadzenAlert>
                 }
 
-                @if (!string.IsNullOrEmpty(manualPaymentMessage))
-                {
-                    <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat">
-                        <RadzenText>@manualPaymentMessage</RadzenText>
-                    </RadzenAlert>
-                }
-
                 @if (paymentLoading)
                 {
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
                         <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-                        <RadzenText>Ödeme başlatılıyor...</RadzenText>
+                        <RadzenText>Ödeme ekranı hazırlanıyor...</RadzenText>
                     </RadzenStack>
+                }
+                else if (!string.IsNullOrEmpty(paymentFrameUrl))
+                {
+                    <PayTRIFrameComponent IFrameUrl="@paymentFrameUrl"
+                                          OnPaymentSuccess="EventCallback.Factory.Create(this, LoadSubscriptionAsync)"
+                                          OnPaymentFailed="EventCallback.Factory.Create<string>(this, message => paymentError = message)" />
                 }
             </RadzenStack>
         </RadzenCard>
@@ -164,8 +163,8 @@ else
     private string? ownerName;
     private bool isLoading = true;
     private string? loadError;
+    private string? paymentFrameUrl;
     private string? paymentError;
-    private string? manualPaymentMessage;
     private bool paymentLoading;
     private DateTime? selectedBillingPeriod;
     private List<BillingOption> billingOptions = new();
@@ -254,30 +253,33 @@ else
         }
 
         paymentError = null;
-        manualPaymentMessage = null;
+        paymentFrameUrl = null;
         paymentLoading = true;
         StateHasChanged();
 
         try
         {
-            var request = new ManualBillingRequestDto
+            var request = new InitiateCardRegistrationDto
             {
                 BusinessId = businessId,
+                Email = userEmail ?? string.Empty,
+                BusinessName = subscription?.BusinessName ?? "İşletme",
+                Amount = subscription?.MonthlyAmount ?? 700m,
+                Description = $"{selectedBillingPeriod:MMMM yyyy} abonelik ödemesi",
+                IsManualBilling = true,
                 BillingYear = selectedBillingPeriod.Value.Year,
                 BillingMonth = selectedBillingPeriod.Value.Month
             };
 
-            var response = await PaymentApiService.InitiateManualBillingAsync(request);
+            var response = await PaymentApiService.InitiateCardRegistrationAsync(request);
 
-            if (response.Success)
+            if (response.Success && response.Data != null && !string.IsNullOrEmpty(response.Data.IFrameUrl))
             {
-                manualPaymentMessage = response.Data?.Message ?? "Ödeme talebi gönderildi. Webhook ile teyit edilecek.";
-                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", manualPaymentMessage);
-                await LoadSubscriptionAsync();
+                paymentFrameUrl = response.Data.IFrameUrl;
             }
             else
             {
-                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Ödeme başlatılamadı.";
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Ödeme formu hazırlanamadı.";
             }
         }
         catch (Exception ex)
@@ -300,24 +302,41 @@ else
         }
 
         paymentError = null;
+        paymentFrameUrl = null;
+        paymentLoading = true;
+        StateHasChanged();
 
-        var parameters = new Dictionary<string, object>
+        try
         {
-            { "BusinessId", businessId },
-            { "Email", userEmail ?? string.Empty },
-            { "BusinessName", subscription?.BusinessName ?? "İşletme" },
-            { "OwnerName", ownerName ?? string.Empty }
-        };
+            var request = new InitiateCardRegistrationDto
+            {
+                BusinessId = businessId,
+                Email = userEmail ?? string.Empty,
+                BusinessName = subscription?.BusinessName ?? "İşletme",
+                Amount = 1m,
+                Description = "Kart güncelleme doğrulaması",
+                IsCardUpdate = true
+            };
 
-        var result = await DialogService.OpenAsync<DirectAPICardUpdateDialog>("Kart Güncelle", parameters, new DialogOptions
-        {
-            Width = "520px",
-            AutoFocusFirstElement = true
-        });
+            var response = await PaymentApiService.InitiateCardRegistrationAsync(request);
 
-        if (result != null)
+            if (response.Success && response.Data != null && !string.IsNullOrEmpty(response.Data.IFrameUrl))
+            {
+                paymentFrameUrl = response.Data.IFrameUrl;
+            }
+            else
+            {
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Kart güncelleme formu alınamadı.";
+            }
+        }
+        catch (Exception ex)
         {
-            await LoadSubscriptionAsync();
+            paymentError = $"Kart güncelleme başlatılamadı: {ex.Message}";
+        }
+        finally
+        {
+            paymentLoading = false;
+            StateHasChanged();
         }
     }
 
