@@ -44,7 +44,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
             try
             {
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.Now.Date;
                 var dueSubscriptions = await context.Set<BusinessSubscription>()
                     .Include(s => s.Business)
                     .Where(s => s.IsActive &&
@@ -83,7 +83,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
             try
             {
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
                 var failedPayments = await context.Set<Payment>()
                     .Include(p => p.Business)
                         .ThenInclude(b => b!.Subscription)
@@ -128,7 +128,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 Amount = subscription.MonthlyAmount,
                 Currency = subscription.Currency,
                 Status = PaymentStatus.Pending,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             context.Set<Payment>().Add(payment);
@@ -150,11 +150,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             if (result.Success && result.Status == "success")
             {
                 payment.Status = PaymentStatus.Success;
-                payment.PaymentDate = DateTime.UtcNow;
+                payment.PaymentDate = DateTime.Now;
 
                 // Update subscription
-                subscription.LastBillingDate = DateTime.UtcNow;
-                subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
+                subscription.LastBillingDate = DateTime.Now;
+                subscription.NextBillingDate = DateTime.Now.AddDays(30);
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
 
                 // Ensure business is active
@@ -170,7 +170,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 payment.Status = PaymentStatus.Failed;
                 payment.ErrorMessage = result.ErrorMessage ?? "Payment declined";
                 payment.RetryCount = 0;
-                payment.NextRetryDate = DateTime.UtcNow.AddHours(1); // Retry after 1 hour
+                payment.NextRetryDate = DateTime.Now.AddHours(1); // Retry after 1 hour
 
                 // Suspend business on payment failure
                 subscription.SubscriptionStatus = SubscriptionStatus.Suspended;
@@ -212,18 +212,18 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             );
 
             payment.PayTRResponse = result.RawResponse;
-            payment.UpdatedAt = DateTime.UtcNow;
+            payment.UpdatedAt = DateTime.Now;
 
             if (result.Success && result.Status == "success")
             {
                 payment.Status = PaymentStatus.Success;
-                payment.PaymentDate = DateTime.UtcNow;
+                payment.PaymentDate = DateTime.Now;
                 payment.PayTRTransactionId = result.TransactionId;
 
                 // Reactivate subscription and business
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
-                subscription.LastBillingDate = DateTime.UtcNow;
-                subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
+                subscription.LastBillingDate = DateTime.Now;
+                subscription.NextBillingDate = DateTime.Now.AddDays(30);
 
                 if (subscription.Business != null)
                 {
@@ -236,7 +236,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             {
                 // Schedule next retry with exponential backoff
                 var retryHours = Math.Min(24 * (int)Math.Pow(2, payment.RetryCount - 1), 336); // Max 14 days
-                payment.NextRetryDate = DateTime.UtcNow.AddHours(retryHours);
+                payment.NextRetryDate = DateTime.Now.AddHours(retryHours);
                 payment.ErrorMessage = result.ErrorMessage;
 
                 _logger.LogWarning($"Payment {payment.Id} retry {payment.RetryCount} failed. Next retry in {retryHours} hours");

@@ -64,12 +64,12 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         MonthlyAmount = 700m,
                         Status = SubscriptionStatus.Active,
                         SubscriptionStatus = SubscriptionStatus.Active,
-                        StartDate = DateTime.UtcNow,
-                        SubscriptionStartDate = DateTime.UtcNow,
+                        StartDate = DateTime.Now,
+                        SubscriptionStartDate = DateTime.Now,
                         AutoRenewal = true,
                         IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        NextBillingDate = DateTime.UtcNow.AddDays(30)
+                        CreatedAt = DateTime.Now,
+                        NextBillingDate = DateTime.Now.AddDays(30)
                     };
 
                     await _subscriptionRepository.AddAsync(subscription);
@@ -84,7 +84,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     subscription.CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
                         ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
                         : subscription.CardLastFourDigits;
-                    subscription.UpdatedAt = DateTime.UtcNow;
+                    subscription.UpdatedAt = DateTime.Now;
 
                     await _subscriptionRepository.UpdateAsync(subscription);
                 }
@@ -100,18 +100,18 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     Amount = amount,
                     Currency = "TRY",
                     Status = PaymentStatus.Success,
-                    PaymentDate = DateTime.UtcNow,
+                    PaymentDate = DateTime.Now,
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
                     PaymentType = isCardUpdate ? "CardUpdate" : "ManualWebhook",
                     PayTRTransactionId = request.PaymentId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 await _paymentRepository.AddAsync(payment);
 
                 business.IsActive = true;
-                business.UpdatedAt = DateTime.UtcNow;
+                business.UpdatedAt = DateTime.Now;
                 await _businessRepository.UpdateAsync(business);
 
                 await _unitOfWork.SaveChangesAsync();
