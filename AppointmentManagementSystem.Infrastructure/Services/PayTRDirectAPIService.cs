@@ -380,7 +380,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "0"; // 3D Secure zorunlu
 
-                var paytrToken = GenerateToken(
+                var paytrToken = GeneratePaytrToken(
                     _merchantId,
                     userIp,
                     merchantOid,
