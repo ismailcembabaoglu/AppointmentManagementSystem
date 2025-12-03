@@ -6,12 +6,14 @@
 @using System.Linq
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
 @attribute [Authorize(Roles = "Business")]
 @inject IPaymentApiService PaymentApiService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Kart Yönetimi</PageTitle>
 
@@ -169,6 +171,20 @@ else
                     </RadzenAlert>
                 }
 
+                @if (!string.IsNullOrEmpty(paymentRedirectUrl))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                            <RadzenText>3D Secure sayfası yeni sekmede açılmadıysa aşağıdaki butonu kullanabilirsiniz.</RadzenText>
+                            <RadzenButton Text="Ödeme Ekranını Aç"
+                                          Icon="open_in_new"
+                                          Size="ButtonSize.Medium"
+                                          Click="TriggerPaymentRedirect"
+                                          Style="max-width: 240px;" />
+                        </RadzenStack>
+                    </RadzenAlert>
+                }
+
                 @if (paymentLoading)
                 {
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
@@ -191,6 +207,7 @@ else
     private string? loadError;
     private string? paymentError;
     private string? manualPaymentMessage;
+    private string? paymentRedirectUrl;
     private bool paymentLoading;
     private DateTime? selectedBillingPeriod;
     private List<BillingOption> billingOptions = new();
@@ -279,6 +296,7 @@ else
 
         paymentError = null;
         manualPaymentMessage = null;
+        paymentRedirectUrl = null;
         paymentLoading = true;
         StateHasChanged();
 
@@ -309,10 +327,11 @@ else
             if (response.Success)
             {
                 manualPaymentMessage = response.Data?.Message ?? "3D Secure ödeme ekranına yönlendiriliyorsunuz.";
+                paymentRedirectUrl = response.Data?.PaymentUrl;
 
-                if (!string.IsNullOrEmpty(response.Data?.PaymentUrl))
+                if (!string.IsNullOrEmpty(paymentRedirectUrl))
                 {
-                    Navigation.NavigateTo(response.Data.PaymentUrl!, forceLoad: true);
+                    await TriggerPaymentRedirect();
                 }
 
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", manualPaymentMessage);
@@ -330,6 +349,23 @@ else
         {
             paymentLoading = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task TriggerPaymentRedirect()
+    {
+        if (string.IsNullOrWhiteSpace(paymentRedirectUrl))
+        {
+            return;
+        }
+
+        if (paymentRedirectUrl.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase))
+        {
+            await JSRuntime.InvokeVoidAsync("paymentRedirect.open", paymentRedirectUrl);
+        }
+        else
+        {
+            Navigation.NavigateTo(paymentRedirectUrl, forceLoad: true);
         }
     }
 
