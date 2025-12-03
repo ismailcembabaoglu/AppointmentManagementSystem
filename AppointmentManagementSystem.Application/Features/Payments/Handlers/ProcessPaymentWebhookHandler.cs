@@ -174,6 +174,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             await _paymentRepository.AddAsync(payment);
 
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            var nextBillingBase = subscription?.NextBillingDate ?? DateTime.Now;
             var hasCardTokens = !string.IsNullOrEmpty(request.Utoken) && !string.IsNullOrEmpty(request.Ctoken);
 
             if (!hasCardTokens)
@@ -198,7 +199,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     StartDate = DateTime.Now,
                     SubscriptionStartDate = DateTime.Now,
                     LastBillingDate = DateTime.Now,
-                    NextBillingDate = DateTime.Now.AddDays(30),
+                    NextBillingDate = nextBillingBase.AddDays(30),
                     IsActive = true,
                     AutoRenewal = hasCardTokens,
                     CreatedAt = DateTime.Now
@@ -233,7 +234,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.LastBillingDate = DateTime.Now;
-                subscription.NextBillingDate = DateTime.Now.AddDays(30);
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
                 subscription.IsActive = true;
                 subscription.AutoRenewal = hasCardTokens || subscription.AutoRenewal;
                 subscription.UpdatedAt = DateTime.Now;
@@ -279,6 +280,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
             var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            var nextBillingBase = subscription?.NextBillingDate ?? now;
             if (subscription == null)
             {
                 subscription = new BusinessSubscription
@@ -291,7 +293,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     StartDate = now,
                     SubscriptionStartDate = now,
                     LastBillingDate = now,
-                    NextBillingDate = now.AddDays(30),
+                    NextBillingDate = nextBillingBase.AddDays(30),
                     AutoRenewal = false,
                     IsActive = true,
                     CreatedAt = DateTime.Now
@@ -302,7 +304,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             else
             {
                 subscription.LastBillingDate = now;
-                subscription.NextBillingDate = now.AddDays(30);
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.IsActive = true;
@@ -479,8 +481,9 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
                 if (subscription != null)
                 {
+                    var nextBillingBase = subscription.NextBillingDate ?? DateTime.Now;
                     subscription.LastBillingDate = DateTime.Now;
-                    subscription.NextBillingDate = DateTime.Now.AddDays(30);
+                    subscription.NextBillingDate = nextBillingBase.AddDays(30);
                     subscription.SubscriptionStatus = SubscriptionStatus.Active;
                     await _subscriptionRepository.UpdateAsync(subscription);
                 }

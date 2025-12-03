@@ -96,6 +96,12 @@ else
                             <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">
                                 Ödeme 3D Secure ile tamamlanacaktır. Kart kaydı yapılmaz.
                             </RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                                <RadzenIcon Icon="event" Style="color: var(--rz-primary-color);" />
+                                <RadzenText Style="margin: 0; color: var(--rz-text-color);">
+                                    Sonraki tahsilat: @((subscription?.NextBillingDate?.ToLocalTime().ToString("dd.MM.yyyy")) ?? "-")
+                                </RadzenText>
+                            </RadzenStack>
                             <RadzenButton Text="Ödemeyi Başlat"
                                           Icon="payments"
                                           ButtonStyle="ButtonStyle.Primary"

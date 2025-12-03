@@ -152,9 +152,11 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 payment.Status = PaymentStatus.Success;
                 payment.PaymentDate = DateTime.Now;
 
+                var nextBillingBase = subscription.NextBillingDate ?? DateTime.Now;
+
                 // Update subscription
                 subscription.LastBillingDate = DateTime.Now;
-                subscription.NextBillingDate = DateTime.Now.AddDays(30);
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
 
                 // Ensure business is active
@@ -220,10 +222,12 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 payment.PaymentDate = DateTime.Now;
                 payment.PayTRTransactionId = result.TransactionId;
 
+                var nextBillingBase = subscription.NextBillingDate ?? DateTime.Now;
+
                 // Reactivate subscription and business
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.LastBillingDate = DateTime.Now;
-                subscription.NextBillingDate = DateTime.Now.AddDays(30);
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
 
                 if (subscription.Business != null)
                 {

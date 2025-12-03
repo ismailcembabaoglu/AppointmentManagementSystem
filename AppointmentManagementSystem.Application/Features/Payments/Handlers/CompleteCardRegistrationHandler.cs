@@ -46,6 +46,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 }
 
                 var subscription = await _subscriptionRepository.GetByBusinessIdAsync(request.BusinessId);
+                var nextBillingBase = subscription?.NextBillingDate ?? DateTime.Now;
                 var isCardUpdate = request.IsCardUpdate || request.MerchantOid.StartsWith("CARD");
 
                 if (subscription == null)
@@ -69,7 +70,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         AutoRenewal = true,
                         IsActive = true,
                         CreatedAt = DateTime.Now,
-                        NextBillingDate = DateTime.Now.AddDays(30)
+                        NextBillingDate = nextBillingBase.AddDays(30)
                     };
 
                     await _subscriptionRepository.AddAsync(subscription);
@@ -84,6 +85,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     subscription.CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
                         ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
                         : subscription.CardLastFourDigits;
+                    subscription.NextBillingDate = nextBillingBase.AddDays(30);
                     subscription.UpdatedAt = DateTime.Now;
 
                     await _subscriptionRepository.UpdateAsync(subscription);
