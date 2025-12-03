@@ -10,14 +10,15 @@
 @using Radzen
 @using static AppointmentManagementSystem.BlazorUI.Components.FileUploadComponent
 @using Blazored.LocalStorage
+@using System.Linq
 @inject IApiService ApiService
 @inject ICategoryApiService CategoryApiService
-@inject IPaymentApiService PaymentApiService
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
+@inject IPaymentApiService PaymentApiService
 
 <div class="auth-container" style="padding: 2rem 0;">
     <RadzenCard Style="@cardStyle">
@@ -259,6 +260,18 @@
                                 </RadzenRow>
 
                                 <div>
+                                    <RadzenFormField Text="Harita Iframe Kodu" Style="width: 100%;">
+                                        <RadzenTextArea @bind-Value="businessInfo.MapEmbedCode"
+                                                        Rows="3"
+                                                        Placeholder="Google Maps yerleşim kodunu yapıştırın"
+                                                        Style="width: 100%;" />
+                                        <RadzenText Style="color: var(--rz-text-secondary-color);" TextStyle="TextStyle.Caption">
+                                            Harita iframe kodu işletme detay sayfasında mobil uyumlu harita olarak gösterilir.
+                                        </RadzenText>
+                                    </RadzenFormField>
+                                </div>
+
+                                <div>
                                     <RadzenLabel Text="İşletme Fotoğrafı (Opsiyonel)" />
                                     <FileUploadComponent @ref="businessPhotoComponent"
                                                          Multiple="false"
@@ -391,6 +404,14 @@
                                         {
                                             <RadzenText><strong>Telefon:</strong> @businessInfo.Phone</RadzenText>
                                         }
+                                        @if (!string.IsNullOrEmpty(businessInfo.Address))
+                                        {
+                                            <RadzenText><strong>Adres:</strong> @businessInfo.Address</RadzenText>
+                                        }
+                                        @if (!string.IsNullOrEmpty(businessInfo.MapEmbedCode))
+                                        {
+                                            <RadzenText><strong>Harita Kodu:</strong> Eklendi</RadzenText>
+                                        }
                                         @if (businessPhoto is not null)
                                         {
                                             <RadzenText><strong>Fotoğraf:</strong> Eklendi ✓</RadzenText>
@@ -437,32 +458,70 @@
                         }
                         else if (currentBusinessStep == 4)
                         {
-                            <!-- Step 5: Payment - Direct API -->
+                            <!-- Step 5: Payment - PayTR Direct API -->
                             <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Style="margin-bottom: 16px;">
-                                <RadzenText Style="font-weight: 600;">🆕 Direct API Ödeme Formu Aktif</RadzenText>
-                                <RadzenText Style="font-size: 13px;">Kart bilgilerinizi direkt olarak gireceksiniz (iFrame kullanılmıyor)</RadzenText>
+                                <RadzenText Style="font-weight: 600;">💳 PayTR Direct API Ödeme Adımı</RadzenText>
+                                <RadzenText Style="font-size: 13px;">Kart bilgilerinizi 3D Secure ile girip işletmenizi hemen aktifleştirin.</RadzenText>
                             </RadzenAlert>
-                            
+
+                            @if (!string.IsNullOrEmpty(paymentError))
+                            {
+                                <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Style="margin-bottom: 12px;">
+                                    <RadzenText>@paymentError</RadzenText>
+                                </RadzenAlert>
+                            }
+
+                            @if (!string.IsNullOrEmpty(paymentSuccessMessage))
+                            {
+                                <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Style="margin-bottom: 12px;">
+                                    <RadzenText>@paymentSuccessMessage</RadzenText>
+                                </RadzenAlert>
+                            }
+
                             @if (registeredBusinessId.HasValue)
                             {
-                                <DirectAPIPaymentForm BusinessId="@registeredBusinessId.Value"
-                                                      Email="@registerDto.Email"
-                                                      BusinessName="@businessInfo.Name"
-                                                      OwnerName="@registerDto.Name"
-                                                      PhoneNumber="@(businessInfo.Phone ?? "5555555555")"
-                                                      Address="@(businessInfo.Address ?? "Türkiye")"
-                                                      OnPaymentSuccess="@HandlePaymentSuccess"
-                                                      OnPaymentFailed="@HandlePaymentFailed"
-                                                      IsTestMode="true" />
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" Wrap="FlexWrap.Wrap">
+                                        <RadzenTextBox @bind-Value="paymentCardOwner"
+                                                       Placeholder="Kart Üzerindeki İsim"
+                                                       Style="flex:1; min-width: 240px;" />
+                                        <RadzenTextBox @bind-Value="paymentCardNumber"
+                                                       Placeholder="Kart Numarası"
+                                                       Style="flex:1; min-width: 240px;" />
+                                    </RadzenStack>
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" Wrap="FlexWrap.Wrap">
+                                        <RadzenTextBox @bind-Value="paymentExpiryMonth"
+                                                       Placeholder="Ay (MM)"
+                                                       Style="width: 120px;" />
+                                        <RadzenTextBox @bind-Value="paymentExpiryYear"
+                                                       Placeholder="Yıl (YY)"
+                                                       Style="width: 120px;" />
+                                        <RadzenTextBox @bind-Value="paymentCvv"
+                                                       Placeholder="CVV"
+                                                       Style="width: 120px;" />
+                                    </RadzenStack>
+
+                                    <RadzenButton Text="Ödemeyi Başlat"
+                                                  Icon="payment"
+                                                  ButtonStyle="ButtonStyle.Primary"
+                                                  Click="@SubmitDirectCardRegistrationAsync"
+                                                  Disabled="@(paymentLoading || !IsRegistrationPaymentValid())"
+                                                  Style="width: 100%;" />
+
+                                    @if (paymentLoading)
+                                    {
+                                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                                            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                                            <RadzenText>Ödeme başlatılıyor, lütfen bekleyin...</RadzenText>
+                                        </RadzenStack>
+                                    }
+                                </RadzenStack>
                             }
                             else
                             {
-                                <RadzenStack Orientation="Orientation.Vertical" Gap="20px" AlignItems="AlignItems.Center" Style="padding: 48px;">
-                                    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
-                                    <RadzenText TextStyle="TextStyle.H6">
-                                        Ödeme ekranı hazırlanıyor...
-                                    </RadzenText>
-                                </RadzenStack>
+                                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Style="margin-bottom: 12px;">
+                                    <RadzenText>Önce işletme kaydını tamamlayın, ardından kart ekleme adımına geçebilirsiniz.</RadzenText>
+                                </RadzenAlert>
                             }
                         }
                     </RadzenCard>
@@ -555,7 +614,14 @@
     private List<string> cities = new();
     // Payment
     private int? registeredBusinessId = null;
-    private string paymentIFrameUrl = string.Empty;
+    private string? paymentError;
+    private string? paymentSuccessMessage;
+    private bool paymentLoading;
+    private string paymentCardOwner = string.Empty;
+    private string paymentCardNumber = string.Empty;
+    private string paymentExpiryMonth = string.Empty;
+    private string paymentExpiryYear = string.Empty;
+    private string paymentCvv = string.Empty;
 
     private string cardStyle => $"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;";
     private void OnCityChanged()
@@ -845,6 +911,7 @@
                 District = businessInfo.District,
                 Latitude = businessInfo.Latitude,
                 Longitude = businessInfo.Longitude,
+                MapEmbedCode = businessInfo.MapEmbedCode,
                 BusinessPhotoBase64 = businessPhoto?.Base64Data,
                 Services = services.Select(s => new RegisterBusinessServiceDto
                 {
@@ -878,12 +945,12 @@
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
                     "İşletme kaydınız oluşturuldu. Şimdi ödeme bilgilerinizi ekleyin.");
 
-                // Move to payment step
+                // Move to payment step and prefill card owner
+                paymentCardOwner = registerDto.Name;
                 currentBusinessStep++;
-                
+
                 Console.WriteLine($"✅ Moving to payment step. BusinessId: {registeredBusinessId}");
-                Console.WriteLine($"🔵 Direct API Payment Form will be rendered");
-                
+
                 StateHasChanged();
             }
             else
@@ -906,19 +973,69 @@
         }
     }
 
-    private async Task HandlePaymentSuccess()
+    private bool IsRegistrationPaymentValid()
     {
-        NotificationService.Notify(NotificationSeverity.Success, "Başarılı",
-            "Kart bilgileriniz başarıyla kaydedildi! Hoş geldiniz.");
-
-        await Task.Delay(2000);
-        Navigation.NavigateTo("/login");
+        return !string.IsNullOrWhiteSpace(paymentCardOwner)
+            && !string.IsNullOrWhiteSpace(paymentCardNumber)
+            && !string.IsNullOrWhiteSpace(paymentExpiryMonth)
+            && !string.IsNullOrWhiteSpace(paymentExpiryYear)
+            && !string.IsNullOrWhiteSpace(paymentCvv)
+            && paymentCardNumber.Replace(" ", string.Empty).Length >= 12
+            && paymentExpiryMonth.Length >= 2
+            && paymentExpiryYear.Length >= 2
+            && paymentCvv.Length >= 3;
     }
 
-    private async Task HandlePaymentFailed(string errorMessage)
+    private async Task SubmitDirectCardRegistrationAsync()
     {
-        NotificationService.Notify(NotificationSeverity.Error, "Ödeme Başarısız",
-            $"Kart kaydı başarısız oldu: {errorMessage}");
+        if (!registeredBusinessId.HasValue)
+        {
+            paymentError = "Ödeme başlatmak için önce işletme kaydını tamamlayın.";
+            return;
+        }
+
+        paymentLoading = true;
+        paymentError = null;
+        paymentSuccessMessage = null;
+
+        try
+        {
+            var request = new
+            {
+                BusinessId = registeredBusinessId.Value,
+                Email = registerDto.Email,
+                BusinessName = businessInfo.Name,
+                OwnerName = registerDto.Name,
+                PhoneNumber = businessInfo.Phone ?? string.Empty,
+                Address = businessInfo.Address ?? "Türkiye",
+                CardOwner = paymentCardOwner,
+                CardNumber = paymentCardNumber,
+                ExpiryMonth = paymentExpiryMonth,
+                ExpiryYear = paymentExpiryYear,
+                CVV = paymentCvv
+            };
+
+            var response = await PaymentApiService.InitiateDirectCardRegistrationAsync(request);
+
+            if (response.Success)
+            {
+                paymentSuccessMessage = "Kart doğrulama işlemi PayTR üzerinden başlatıldı. İşlem tamamlandığında giriş yapabilirsiniz.";
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", paymentSuccessMessage);
+            }
+            else
+            {
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Ödeme başlatılamadı.";
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Ödeme başlatılırken hata oluştu: {ex.Message}";
+        }
+        finally
+        {
+            paymentLoading = false;
+            StateHasChanged();
+        }
     }
 
     // Models for Registration

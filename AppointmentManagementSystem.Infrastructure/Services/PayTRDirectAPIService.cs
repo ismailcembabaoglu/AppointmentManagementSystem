@@ -109,24 +109,18 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var lang = "tr"; // Dil: tr, en, de, fr
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem (kart saklama için ZORUNLU)
-                
-                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + installmentcount + currency + testmode + non3d
-                // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                //var paytrToken = GenerateToken(
-                //    _merchantId,
-                //    userIp,
-                //    merchantOid,
-                //    email,
-                //    paymentAmount,
-                //    paymentType,
-                //    installmentCount,
-                //    currency,
-                //    testMode,
-                //    non3d);
-                string Birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
-                HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
-                byte[] b = hmac.ComputeHash(Encoding.UTF8.GetBytes(Birlestir));
-                var paytrToken = Convert.ToBase64String(b);
+
+                var paytrToken = GeneratePaytrToken(
+                    _merchantId,
+                    userIp,
+                    merchantOid,
+                    email,
+                    paymentAmount,
+                    paymentType,
+                    installmentCount,
+                    currency,
+                    testMode,
+                    non3d);
 
                 // İlk kart kaydında utoken gönderilmezse PayTR kart token üretmiyor
                 if (string.IsNullOrWhiteSpace(existingUtoken))
@@ -170,7 +164,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "expiry_month", expiryMonth },
                     { "expiry_year", expiryYear },
                     { "cvv", cvv },
-                    { "store_card", "1" } // Kartı kaydet (ZORUNLU)
+                    { "store_card", "1" }, // Kartı kaydet (ZORUNLU)
+                    { "utoken", existingUtoken }
                 };
 
                 // Kullanıcı token'ını gönder (ilk veya ek kartlar)
@@ -264,7 +259,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 
                 // Direct API hash
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var paytrToken = GenerateToken(
+                var paytrToken = GeneratePaytrToken(
                     _merchantId,
                     userIp,
                     merchantOid,
@@ -341,6 +336,140 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
+        public async Task<PayTRDirectPaymentResponse> InitiateOneTime3DPayment(
+            int businessId,
+            string email,
+            string userName,
+            string userAddress,
+            string userPhone,
+            string ccOwner,
+            string cardNumber,
+            string expiryMonth,
+            string expiryYear,
+            string cvv,
+            decimal amount,
+            string merchantOid,
+            string userIp)
+        {
+            try
+            {
+                _logger.LogInformation($"🔵 Direct API: Initiating 3D payment for Business {businessId}");
+                _logger.LogInformation($"MerchantOid: {merchantOid}, Amount: {amount}, Email: {email}");
+
+                if (string.IsNullOrWhiteSpace(userIp) || userIp == "::1" || userIp == "::ffff:127.0.0.1")
+                {
+                    userIp = "127.0.0.1";
+                }
+
+                var userBasket = new[]
+                {
+                    new object[] { "Manuel Abonelik Ödemesi", amount.ToString("F2", CultureInfo.InvariantCulture), 1 }
+                };
+                var userBasketJson = JsonSerializer.Serialize(userBasket);
+                var userBasketBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(userBasketJson));
+
+                var paymentAmount = ((long)Math.Round(amount * 100m, 0, MidpointRounding.AwayFromZero))
+                    .ToString(CultureInfo.InvariantCulture);
+
+                var paymentType = "card";
+                var installmentCount = "0";
+                var noInstallment = "1";
+                var maxInstallment = "0";
+                var currency = "TL";
+                var lang = "tr";
+                var testMode = _isTestMode ? "1" : "0";
+                var non3d = "0"; // 3D Secure zorunlu
+
+                var paytrToken = GeneratePaytrToken(
+                    _merchantId,
+                    userIp,
+                    merchantOid,
+                    email,
+                    paymentAmount,
+                    paymentType,
+                    installmentCount,
+                    currency,
+                    testMode,
+                    non3d);
+
+                var formData = new Dictionary<string, string>
+                {
+                    { "merchant_id", _merchantId },
+                    { "user_ip", userIp },
+                    { "merchant_oid", merchantOid },
+                    { "email", email },
+                    { "payment_type", paymentType },
+                    { "payment_amount", paymentAmount },
+                    { "installment_count", installmentCount },
+                    { "no_installment", noInstallment },
+                    { "max_installment", maxInstallment },
+                    { "currency", currency },
+                    { "lang", lang },
+                    { "test_mode", testMode },
+                    { "non_3d", non3d },
+                    { "merchant_ok_url", _merchantOkUrl },
+                    { "merchant_fail_url", _merchantFailUrl },
+                    { "callback_url", _callbackUrl },
+                    { "user_name", userName },
+                    { "user_address", userAddress },
+                    { "user_phone", userPhone },
+                    { "user_basket", userBasketBase64 },
+                    { "cc_owner", ccOwner },
+                    { "card_number", cardNumber },
+                    { "expiry_month", expiryMonth },
+                    { "expiry_year", expiryYear },
+                    { "cvv", cvv },
+                    { "store_card", "0" },
+                    { "debug_on", "1" },
+                    { "paytr_token", paytrToken }
+                };
+
+                _logger.LogInformation($"📤 Sending 3D Direct API request to PayTR...");
+                var client = _httpClientFactory.CreateClient();
+                var content = new FormUrlEncodedContent(formData);
+                var response = await client.PostAsync("https://www.paytr.com/odeme", content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation($"📥 PayTR 3D Response: {responseContent}");
+
+                string? paymentUrl = null;
+                try
+                {
+                    var parsed = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
+                    if (parsed != null && parsed.TryGetValue("token", out var token))
+                    {
+                        paymentUrl = $"https://www.paytr.com/odeme/guvenli/{token}";
+                    }
+                    if (parsed != null && parsed.TryGetValue("payment_url", out var parsedUrl))
+                    {
+                        paymentUrl ??= parsedUrl;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "⚠️ Could not parse PayTR 3D response");
+                }
+
+                return new PayTRDirectPaymentResponse
+                {
+                    Success = response.IsSuccessStatusCode,
+                    Status = response.IsSuccessStatusCode ? "success" : "failed",
+                    MerchantOid = merchantOid,
+                    PaymentUrl = paymentUrl,
+                    ErrorMessage = response.IsSuccessStatusCode ? null : responseContent
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error in InitiateOneTime3DPayment");
+                return new PayTRDirectPaymentResponse
+                {
+                    Success = false,
+                    Status = "failed",
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
         public async Task<PayTRCardListResponse> GetStoredCards(string utoken)
         {
             try
@@ -348,7 +477,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"🔵 Direct API: Getting stored cards for UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}...");
 
                 // Token oluştur
-                var paytrToken = GenerateToken(_merchantId, utoken);
+                var paytrToken = GeneratePaytrToken(_merchantId, utoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -424,7 +553,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}..., CToken: {ctoken.Substring(0, Math.Min(10, ctoken.Length))}...");
 
                 // Token oluştur
-                var paytrToken = GenerateToken(_merchantId, utoken, ctoken);
+                var paytrToken = GeneratePaytrToken(_merchantId, utoken, ctoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -453,9 +582,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
-        private string GenerateToken(params string[] parts)
+        private string GeneratePaytrToken(params string[] parts)
         {
-            var hashStr = string.Concat(parts);
+            var hashStr = string.Concat(parts) + _merchantSalt;
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashStr));
             return Convert.ToBase64String(hashBytes);

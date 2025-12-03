@@ -32,10 +32,20 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var safeIp = string.IsNullOrWhiteSpace(request.UserIp) ? "127.0.0.1" : request.UserIp;
 
                 // Generate merchant_oid without special characters (PayTR requires alphanumeric)
-                // Format example: REG6A1B2C3D or CARD6A1B2C3D
-                var guidPart = "A"+Guid.NewGuid().ToString("N").Substring(0, 7).ToUpperInvariant();
-                var prefix = request.IsCardUpdate ? "CARD" : "REG";
-                var merchantOid = $"{prefix}{request.BusinessId}{guidPart}";
+                // Format examples:
+                // - REG6A1B2C3D (initial registration)
+                // - CARD6A1B2C3D (card update)
+                // - BILL6M202507A1B2C3D (manual month payment for July 2025)
+                var guidPart = "A" + Guid.NewGuid().ToString("N").Substring(0, 7).ToUpperInvariant();
+                var prefix = request.IsCardUpdate ? "CARD" : request.IsManualBilling ? "BILL" : "REG";
+                var periodSuffix = string.Empty;
+
+                if (request.BillingYear.HasValue && request.BillingMonth.HasValue)
+                {
+                    periodSuffix = $"M{request.BillingYear.Value:D4}{request.BillingMonth.Value:D2}";
+                }
+
+                var merchantOid = $"{prefix}{request.BusinessId}{periodSuffix}{guidPart}";
 
                 var result = await _paytrService.InitiateCardRegistrationAsync(
                     safeEmail,

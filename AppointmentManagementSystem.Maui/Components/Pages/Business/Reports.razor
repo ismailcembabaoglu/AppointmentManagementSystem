@@ -439,7 +439,7 @@ else
                 var response = await AppointmentService.GetAllAppointmentsAsync(null, business.Id);
                 if (response.Success && response.Data != null)
                 {
-                    allAppointments = response.Data;
+                    allAppointments = response.Data.Items ?? new List<AppointmentDto>();
                 }
             }
         }

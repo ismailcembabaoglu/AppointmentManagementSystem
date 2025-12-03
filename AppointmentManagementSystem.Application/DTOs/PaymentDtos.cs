@@ -8,6 +8,9 @@ namespace AppointmentManagementSystem.Application.DTOs
         public decimal Amount { get; set; } = 700m;
         public string Description { get; set; } = "Aylık Abonelik Ücreti";
         public bool IsCardUpdate { get; set; }
+        public bool IsManualBilling { get; set; }
+        public int? BillingYear { get; set; }
+        public int? BillingMonth { get; set; }
     }
 
     public class CardRegistrationResponseDto

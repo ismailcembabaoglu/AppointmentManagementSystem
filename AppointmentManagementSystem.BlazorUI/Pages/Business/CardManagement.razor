@@ -2,11 +2,12 @@
 @using AppointmentManagementSystem.Application.DTOs
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Components
+@using System.Globalization
+@using System.Linq
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize(Roles = "Business")]
 @inject IPaymentApiService PaymentApiService
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
@@ -41,7 +42,7 @@ else
                     <RadzenBadge Text="@(subscription?.SubscriptionStatus ?? "Bilinmiyor")" BadgeStyle="@GetSubscriptionBadgeStyle(subscription?.SubscriptionStatus)" />
                 </RadzenStack>
                 <RadzenText Style="color: rgba(255,255,255,0.85); margin: 0;">
-                    🆕 Direct API ile kart bilgilerinizi güvenle güncelleyin. Yeni kart eklemek için 1 TL doğrulama ücreti alınır.
+                    PayTR Direct API ile kart bilgilerinizi güvenle güncelleyebilir ve abonelik ödemelerinizi tamamlayabilirsiniz.
                 </RadzenText>
             </RadzenStack>
         </RadzenCard>
@@ -77,30 +78,106 @@ else
                     <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
                             <RadzenIcon Icon="phone_iphone" Style="color: var(--rz-success-color);" />
-                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Mobil Uyumlu Adımlar</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Kart Bilgilerini Güncelle</RadzenText>
                         </RadzenStack>
-                        <RadzenList Style="margin: 0;">
-                            <Items>
-                                <RadzenListItem>1 TL doğrulama işlemi için yeni kart bilgilerinizi girin.</RadzenListItem>
-                                <RadzenListItem>Doğrulama tamamlanınca abonelik kartınız güncellenir.</RadzenListItem>
-                                <RadzenListItem>Ödeme ekranı mobil uyumludur; ekranı kaydırarak tamamlayın.</RadzenListItem>
-                            </Items>
-                        </RadzenList>
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                            <RadzenTextBox @bind-Value="cardOwner"
+                                           Placeholder="Kart Üzerindeki İsim"
+                                           Style="width: 100%;" />
+                            <RadzenTextBox @bind-Value="cardNumber"
+                                           Placeholder="Kart Numarası"
+                                           Style="width: 100%;" />
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                                <RadzenTextBox @bind-Value="cardExpiryMonth"
+                                               Placeholder="Ay (MM)"
+                                               Style="width: 100px;" />
+                                <RadzenTextBox @bind-Value="cardExpiryYear"
+                                               Placeholder="Yıl (YY)"
+                                               Style="width: 100px;" />
+                                <RadzenTextBox @bind-Value="cardCvv"
+                                               Placeholder="CVV"
+                                               Style="width: 100px;" />
+                            </RadzenStack>
+                        </RadzenStack>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Gap="12px">
                             <RadzenText Style="color: var(--rz-text-secondary-color); margin: 0;">
-                                🆕 Direct API: Kart bilgilerini direkt gireceksiniz
+                                PayTR Direct API ile kartınızı doğrulayın ve saklayın
                             </RadzenText>
-                            <RadzenButton Text="Kart Güncelle" 
-                                          Icon="credit_card" 
-                                          ButtonStyle="ButtonStyle.Success" 
-                                          Size="ButtonSize.Medium" 
-                                          Click="OpenCardUpdateDialog" 
+                            <RadzenButton Text="Kart Güncelle"
+                                          Icon="credit_card"
+                                          ButtonStyle="ButtonStyle.Success"
+                                          Size="ButtonSize.Medium"
+                                          Click="StartCardUpdatePayment"
+                                          Disabled="@(paymentLoading || !IsCardInputValid())"
                                           Style="min-width: 180px;" />
                         </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
             </RadzenColumn>
         </RadzenRow>
+
+        <RadzenCard Style="border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                    <RadzenIcon Icon="event" Style="color: var(--rz-primary-color);" />
+                    <RadzenText TextStyle="TextStyle.H6" Style="margin: 0; font-weight: 700;">Ay Seçerek Ödeme Yap</RadzenText>
+                </RadzenStack>
+
+                <RadzenRow Gap="12px">
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenFormField Text="Ödeme Ayı" Style="width: 100%;">
+                            <RadzenDropDown @bind-Value="@selectedBillingPeriod"
+                                            Data="@billingOptions"
+                                            TextProperty="Label"
+                                            ValueProperty="Period"
+                                            Style="width: 100%;"
+                                            Placeholder="Ay seçin" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="6" Style="display: flex; align-items: flex-end;">
+                        <RadzenButton Text="Ödemeyi Başlat"
+                                      Icon="payments"
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Click="StartManualBillingPayment"
+                                      Disabled="@(paymentLoading || !IsCardInputValid())"
+                                      Style="width: 100%;" />
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                    <RadzenText TextStyle="TextStyle.H6">Kart Bilgileri</RadzenText>
+                    <RadzenTextBox @bind-Value="cardOwner" Placeholder="Kart Üzerindeki İsim" Style="width: 100%;" />
+                    <RadzenTextBox @bind-Value="cardNumber" Placeholder="Kart Numarası" Style="width: 100%;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="8px" Wrap="FlexWrap.Wrap">
+                        <RadzenTextBox @bind-Value="cardExpiryMonth" Placeholder="Ay (MM)" Style="width: 120px;" />
+                        <RadzenTextBox @bind-Value="cardExpiryYear" Placeholder="Yıl (YY)" Style="width: 120px;" />
+                        <RadzenTextBox @bind-Value="cardCvv" Placeholder="CVV" Style="width: 120px;" />
+                    </RadzenStack>
+                </RadzenStack>
+
+                @if (!string.IsNullOrEmpty(paymentError))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat">
+                        <RadzenText>@paymentError</RadzenText>
+                    </RadzenAlert>
+                }
+
+                @if (!string.IsNullOrEmpty(manualPaymentMessage))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat">
+                        <RadzenText>@manualPaymentMessage</RadzenText>
+                    </RadzenAlert>
+                }
+
+                @if (paymentLoading)
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                        <RadzenText>Ödeme başlatılıyor...</RadzenText>
+                    </RadzenStack>
+                }
+            </RadzenStack>
+        </RadzenCard>
 
     </RadzenStack>
 }
@@ -112,10 +189,21 @@ else
     private string? ownerName;
     private bool isLoading = true;
     private string? loadError;
+    private string? paymentError;
+    private string? manualPaymentMessage;
+    private bool paymentLoading;
+    private DateTime? selectedBillingPeriod;
+    private List<BillingOption> billingOptions = new();
+    private string cardOwner = string.Empty;
+    private string cardNumber = string.Empty;
+    private string cardExpiryMonth = string.Empty;
+    private string cardExpiryYear = string.Empty;
+    private string cardCvv = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSubscriptionAsync();
+        BuildBillingOptions();
     }
 
     private async Task LoadSubscriptionAsync()
@@ -161,45 +249,137 @@ else
         }
     }
 
-    private async Task OpenCardUpdateDialog()
+    private void BuildBillingOptions()
+    {
+        var culture = new CultureInfo("tr-TR");
+        var startMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+        billingOptions = Enumerable.Range(0, 12)
+            .Select(i =>
+            {
+                var period = startMonth.AddMonths(i);
+                return new BillingOption
+                {
+                    Period = period,
+                    Label = period.ToString("MMMM yyyy", culture)
+                };
+            })
+            .ToList();
+
+        selectedBillingPeriod ??= billingOptions.FirstOrDefault()?.Period;
+    }
+
+    private async Task StartManualBillingPayment()
     {
         if (businessId == 0 || string.IsNullOrEmpty(userEmail))
         {
-            NotificationService.Notify(NotificationSeverity.Warning, "Eksik Bilgi", 
-                "İşletme veya kullanıcı bilgisi eksik.");
+            NotificationService.Notify(NotificationSeverity.Warning, "Eksik Bilgi", "İşletme veya kullanıcı bilgisi eksik.");
             return;
         }
 
-        var parameters = new Dictionary<string, object>
-        {
-            { "BusinessId", businessId },
-            { "Email", userEmail ?? "" },
-            { "BusinessName", subscription?.BusinessName ?? "İşletme" },
-            { "OwnerName", ownerName ?? "" }
-        };
+        paymentError = null;
+        manualPaymentMessage = null;
+        paymentLoading = true;
+        StateHasChanged();
 
-        var result = await DialogService.OpenAsync<DirectAPICardUpdateDialog>(
-            "Kart Güncelle",
-            parameters,
-            new DialogOptions 
-            { 
-                Width = "600px",
-                Height = "auto",
-                Resizable = false,
-                Draggable = false,
-                CloseDialogOnEsc = true
-            });
-
-        if (result is bool boolResult && boolResult)
+        try
         {
-            // Reload subscription to show updated card
-            await Task.Delay(2000);
-            isLoading = true;
+            if (selectedBillingPeriod == null)
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Uyarı", "Lütfen ödeme ayını seçin.");
+                return;
+            }
+
+            var request = new ManualBillingRequestDto
+            {
+                BusinessId = businessId,
+                BillingYear = selectedBillingPeriod.Value.Year,
+                BillingMonth = selectedBillingPeriod.Value.Month,
+                Email = userEmail ?? string.Empty,
+                CustomerName = ownerName ?? string.Empty,
+                CardOwner = cardOwner,
+                CardNumber = cardNumber,
+                ExpiryMonth = cardExpiryMonth,
+                ExpiryYear = cardExpiryYear,
+                CVV = cardCvv
+            };
+
+            var response = await PaymentApiService.InitiateManualBillingAsync(request);
+
+            if (response.Success)
+            {
+                manualPaymentMessage = response.Data?.Message ?? "3D Secure ödeme ekranına yönlendiriliyorsunuz.";
+
+                if (!string.IsNullOrEmpty(response.Data?.PaymentUrl))
+                {
+                    Navigation.NavigateTo(response.Data.PaymentUrl!, forceLoad: true);
+                }
+
+                NotificationService.Notify(NotificationSeverity.Success, "Başarılı", manualPaymentMessage);
+            }
+            else
+            {
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Ödeme başlatılamadı.";
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Ödeme başlatılamadı: {ex.Message}";
+        }
+        finally
+        {
+            paymentLoading = false;
             StateHasChanged();
-            await LoadSubscriptionAsync();
-            
-            NotificationService.Notify(NotificationSeverity.Success, "Tamamlandı", 
-                "Kartınız başarıyla güncellendi!");
+        }
+    }
+
+    private async Task StartCardUpdatePayment()
+    {
+        if (businessId == 0 || string.IsNullOrEmpty(userEmail))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Eksik Bilgi", "İşletme veya kullanıcı bilgisi eksik.");
+            return;
+        }
+
+        paymentError = null;
+        paymentLoading = true;
+
+        try
+        {
+            var request = new
+            {
+                Email = userEmail ?? string.Empty,
+                BusinessName = subscription?.BusinessName ?? "İşletme",
+                BusinessId = businessId,
+                OwnerName = ownerName ?? string.Empty,
+                PhoneNumber = "5555555555",
+                Address = subscription?.BusinessName ?? "Türkiye",
+                CardOwner = cardOwner,
+                CardNumber = cardNumber,
+                ExpiryMonth = cardExpiryMonth,
+                ExpiryYear = cardExpiryYear,
+                CVV = cardCvv
+            };
+
+            var response = await PaymentApiService.InitiateDirectCardRegistrationAsync(request);
+
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Başlatıldı", "Kart doğrulama işlemi PayTR ile başlatıldı.");
+            }
+            else
+            {
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Kart güncelleme başlatılamadı.";
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Kart güncelleme sırasında hata: {ex.Message}";
+        }
+        finally
+        {
+            paymentLoading = false;
+            StateHasChanged();
         }
     }
 
@@ -212,5 +392,24 @@ else
             "expired" => BadgeStyle.Danger,
             _ => BadgeStyle.Light
         };
+    }
+
+    private bool IsCardInputValid()
+    {
+        return !string.IsNullOrWhiteSpace(cardOwner)
+            && !string.IsNullOrWhiteSpace(cardNumber)
+            && !string.IsNullOrWhiteSpace(cardExpiryMonth)
+            && !string.IsNullOrWhiteSpace(cardExpiryYear)
+            && !string.IsNullOrWhiteSpace(cardCvv)
+            && cardNumber.Replace(" ", string.Empty).Length >= 12
+            && cardExpiryMonth.Length >= 2
+            && cardExpiryYear.Length >= 2
+            && cardCvv.Length >= 3;
+    }
+
+    private class BillingOption
+    {
+        public DateTime Period { get; set; }
+        public string Label { get; set; } = string.Empty;
     }
 }

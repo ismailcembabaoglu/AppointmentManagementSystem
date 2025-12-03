@@ -388,7 +388,7 @@
 
         try
         {
-            ApiResponse<List<AppointmentDto>> response;
+            ApiResponse<PaginatedResult<AppointmentDto>> response;
 
             if (userRole == "Business" && currentBusinessId.HasValue)
             {
@@ -406,9 +406,9 @@
                 response = await AppointmentApiService.GetAllAppointmentsAsync();
             }
 
-            if (response.Success)
+            if (response.Success && response.Data != null)
             {
-                appointments = response.Data ?? new List<AppointmentDto>();
+                appointments = response.Data.Items ?? new List<AppointmentDto>();
                 
                 // Load business options for customer
                 if (userRole == "Customer")
