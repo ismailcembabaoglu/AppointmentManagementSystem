@@ -114,9 +114,8 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                var httpRequest = await CreateRequestWithAuth(HttpMethod.Post, "api/payments/manual-billing");
-                httpRequest.Content = JsonContent.Create(request);
-                var response = await _httpClient.SendAsync(httpRequest);
+                // Manual billing end-point is open for 3D Secure submissions; avoid auth requirement to prevent 401s
+                var response = await _httpClient.PostAsJsonAsync("api/payments/manual-billing", request);
                 return await HandleApiResponse<ChargeManualBillingResponseDto>(response);
             }
             catch (Exception ex)

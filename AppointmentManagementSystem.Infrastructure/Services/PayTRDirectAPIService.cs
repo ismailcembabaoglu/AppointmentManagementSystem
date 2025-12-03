@@ -109,24 +109,18 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 var lang = "tr"; // Dil: tr, en, de, fr
                 var testMode = _isTestMode ? "1" : "0";
                 var non3d = "1"; // Non-3D işlem (kart saklama için ZORUNLU)
-                
-                // Direct API hash: merchantid + userip + merchantoid + email + paymentamount + paymenttype + installmentcount + currency + testmode + non3d
-                // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                //var paytrToken = GenerateToken(
-                //    _merchantId,
-                //    userIp,
-                //    merchantOid,
-                //    email,
-                //    paymentAmount,
-                //    paymentType,
-                //    installmentCount,
-                //    currency,
-                //    testMode,
-                //    non3d);
-                string Birlestir = string.Concat(_merchantId, userIp, merchantOid, email, paymentAmount, paymentType, installmentCount, currency, testMode, non3d, _merchantSalt);
-                HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
-                byte[] b = hmac.ComputeHash(Encoding.UTF8.GetBytes(Birlestir));
-                var paytrToken = Convert.ToBase64String(b);
+
+                var paytrToken = GeneratePaytrToken(
+                    _merchantId,
+                    userIp,
+                    merchantOid,
+                    email,
+                    paymentAmount,
+                    paymentType,
+                    installmentCount,
+                    currency,
+                    testMode,
+                    non3d);
 
                 // İlk kart kaydında utoken gönderilmezse PayTR kart token üretmiyor
                 if (string.IsNullOrWhiteSpace(existingUtoken))
@@ -170,7 +164,8 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     { "expiry_month", expiryMonth },
                     { "expiry_year", expiryYear },
                     { "cvv", cvv },
-                    { "store_card", "1" } // Kartı kaydet (ZORUNLU)
+                    { "store_card", "1" }, // Kartı kaydet (ZORUNLU)
+                    { "utoken", existingUtoken }
                 };
 
                 // Kullanıcı token'ını gönder (ilk veya ek kartlar)
@@ -264,7 +259,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 
                 // Direct API hash
                 // NOT: merchantsalt GenerateToken metodunda ekleniyor
-                var paytrToken = GenerateToken(
+                var paytrToken = GeneratePaytrToken(
                     _merchantId,
                     userIp,
                     merchantOid,
@@ -482,7 +477,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"🔵 Direct API: Getting stored cards for UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}...");
 
                 // Token oluştur
-                var paytrToken = GenerateToken(_merchantId, utoken);
+                var paytrToken = GeneratePaytrToken(_merchantId, utoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -558,7 +553,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 _logger.LogInformation($"UToken: {utoken.Substring(0, Math.Min(10, utoken.Length))}..., CToken: {ctoken.Substring(0, Math.Min(10, ctoken.Length))}...");
 
                 // Token oluştur
-                var paytrToken = GenerateToken(_merchantId, utoken, ctoken);
+                var paytrToken = GeneratePaytrToken(_merchantId, utoken, ctoken);
 
                 var formData = new Dictionary<string, string>
                 {
@@ -587,9 +582,9 @@ namespace AppointmentManagementSystem.Infrastructure.Services
             }
         }
 
-        private string GenerateToken(params string[] parts)
+        private string GeneratePaytrToken(params string[] parts)
         {
-            var hashStr = string.Concat(parts);
+            var hashStr = string.Concat(parts) + _merchantSalt;
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_merchantKey));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(hashStr));
             return Convert.ToBase64String(hashBytes);
