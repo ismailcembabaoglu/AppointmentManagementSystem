@@ -18,6 +18,7 @@
 @inject DialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
+@inject IPaymentApiService PaymentApiService
 
 <div class="auth-container" style="padding: 2rem 0;">
     <RadzenCard Style="@cardStyle">
@@ -457,10 +458,10 @@
                         }
                         else if (currentBusinessStep == 4)
                         {
-                            <!-- Step 5: Payment - PayTR Direct API -->
+                            <!-- Step 5: Payment - PayTR iFrame API -->
                             <RadzenAlert AlertStyle="AlertStyle.Success" Variant="Variant.Flat" Style="margin-bottom: 16px;">
-                                <RadzenText Style="font-weight: 600;">💳 PayTR Direct API Ödeme Adımı</RadzenText>
-                                <RadzenText Style="font-size: 13px;">Kart bilgilerinizi güvenle girin, PayTR Direct API ile saklayalım.</RadzenText>
+                                <RadzenText Style="font-weight: 600;">💳 PayTR iFrame Ödeme Adımı</RadzenText>
+                                <RadzenText Style="font-size: 13px;">Kart bilgilerinizi PayTR iFrame içerisinde güvenle girin.</RadzenText>
                             </RadzenAlert>
 
                             @if (!string.IsNullOrEmpty(paymentError))
@@ -472,15 +473,27 @@
 
                             @if (registeredBusinessId.HasValue)
                             {
-                                <DirectAPIPaymentForm BusinessId="@registeredBusinessId.Value"
-                                                      Email="@registerDto.Email"
-                                                      BusinessName="@businessInfo.Name"
-                                                      OwnerName="@registerDto.Name"
-                                                      PhoneNumber="@businessInfo.Phone"
-                                                      Address="@(businessInfo.Address ?? "Türkiye")"
-                                                      OnPaymentSuccess="@HandlePaymentSuccess"
-                                                      OnPaymentFailed="@HandlePaymentFailed"
-                                                      IsTestMode="false" />
+                                @if (paymentLoading)
+                                {
+                                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="12px">
+                                        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                                        <RadzenText>Ödeme formu hazırlanıyor...</RadzenText>
+                                    </RadzenStack>
+                                }
+                                else if (!string.IsNullOrEmpty(registrationIframeUrl))
+                                {
+                                    <PayTRIFrameComponent IFrameUrl="@registrationIframeUrl"
+                                                         OnPaymentSuccess="@HandlePaymentSuccess"
+                                                         OnPaymentFailed="@HandlePaymentFailed" />
+                                }
+                                else
+                                {
+                                    <RadzenButton Text="Ödeme Formunu Yükle"
+                                                  Icon="payment"
+                                                  ButtonStyle="ButtonStyle.Primary"
+                                                  Click="@LoadRegistrationPaymentFrameAsync"
+                                                  Style="width: 100%;" />
+                                }
                             }
                             else
                             {
@@ -580,6 +593,8 @@
     // Payment
     private int? registeredBusinessId = null;
     private string? paymentError;
+    private string? registrationIframeUrl;
+    private bool paymentLoading;
 
     private string cardStyle => $"max-width: {(selectedRole == "Business" ? "1200px" : "550px")}; width: 95%; margin: 0 auto;";
     private void OnCityChanged()
@@ -905,10 +920,12 @@
 
                 // Move to payment step
                 currentBusinessStep++;
-                
+
+                await LoadRegistrationPaymentFrameAsync();
+
                 Console.WriteLine($"✅ Moving to payment step. BusinessId: {registeredBusinessId}");
-                Console.WriteLine($"🔵 Direct API Payment Form will be rendered");
-                
+                Console.WriteLine($"🔵 PayTR iFrame Payment Form will be rendered");
+
                 StateHasChanged();
             }
             else
@@ -946,6 +963,53 @@
         paymentError = errorMessage;
         NotificationService.Notify(NotificationSeverity.Error, "Ödeme Başarısız",
             $"Kart kaydı başarısız oldu: {errorMessage}");
+    }
+
+    private async Task LoadRegistrationPaymentFrameAsync()
+    {
+        if (!registeredBusinessId.HasValue)
+        {
+            paymentError = "Ödeme başlatmak için önce işletme kaydını tamamlayın.";
+            return;
+        }
+
+        paymentLoading = true;
+        paymentError = null;
+
+        try
+        {
+            var request = new InitiateCardRegistrationDto
+            {
+                Email = registerDto.Email,
+                BusinessName = businessInfo.Name,
+                BusinessId = registeredBusinessId.Value,
+                Amount = 700m,
+                Description = "İşletme Kaydı Ödemesi",
+                IsCardUpdate = false,
+                IsManualBilling = false
+            };
+
+            var response = await PaymentApiService.InitiateCardRegistrationAsync(request);
+
+            if (response.Success && response.Data != null && !string.IsNullOrEmpty(response.Data.IFrameUrl))
+            {
+                registrationIframeUrl = response.Data.IFrameUrl;
+                Console.WriteLine($"✅ PayTR iFrame URL alındı: {registrationIframeUrl}");
+            }
+            else
+            {
+                paymentError = response.Message ?? response.Errors?.FirstOrDefault() ?? "Ödeme formu oluşturulamadı.";
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Ödeme başlatılırken hata oluştu: {ex.Message}";
+        }
+        finally
+        {
+            paymentLoading = false;
+            StateHasChanged();
+        }
     }
 
     // Models for Registration
