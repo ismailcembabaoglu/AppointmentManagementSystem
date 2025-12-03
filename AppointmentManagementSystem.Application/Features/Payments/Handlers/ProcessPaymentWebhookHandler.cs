@@ -193,7 +193,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
                     CardLastFourDigits = GetLastFour(request.MaskedPan),
-                    MonthlyAmount = 700.00m,
+                    MonthlyAmount = 1m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
                     StartDate = DateTime.Now,
@@ -235,6 +235,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.LastBillingDate = DateTime.Now;
                 subscription.NextBillingDate = nextBillingBase.AddDays(30);
+                subscription.MonthlyAmount = 1m;
                 subscription.IsActive = true;
                 subscription.AutoRenewal = hasCardTokens || subscription.AutoRenewal;
                 subscription.UpdatedAt = DateTime.Now;
@@ -278,7 +279,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Business not found");
             }
 
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) && parsedAmount > 0 ? parsedAmount / 100 : 1m;
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
             var nextBillingBase = subscription?.NextBillingDate ?? now;
             if (subscription == null)
@@ -286,7 +287,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
-                    MonthlyAmount = amount,
+                    MonthlyAmount = 1m,
                     Currency = "TRY",
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
@@ -305,6 +306,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             {
                 subscription.LastBillingDate = now;
                 subscription.NextBillingDate = nextBillingBase.AddDays(30);
+                subscription.MonthlyAmount = 1m;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.IsActive = true;
@@ -402,7 +404,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
                     CardLastFourDigits = GetLastFour(request.MaskedPan),
-                    MonthlyAmount = 700.00m,
+                    MonthlyAmount = 1m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
                     StartDate = DateTime.Now,
@@ -422,12 +424,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.CardType = request.CardType;
                 subscription.MaskedCardNumber = request.MaskedPan;
                 subscription.CardLastFourDigits = GetLastFour(request.MaskedPan) ?? subscription.CardLastFourDigits;
+                subscription.MonthlyAmount = 1m;
                 subscription.UpdatedAt = DateTime.Now;
 
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
 
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) && parsedAmount > 0 ? parsedAmount / 100 : 1m;
             var payment = new Payment
             {
                 BusinessId = businessId,

@@ -62,7 +62,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                         CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
                             ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
                             : null,
-                        MonthlyAmount = 700m,
+                        MonthlyAmount = 1m,
                         Status = SubscriptionStatus.Active,
                         SubscriptionStatus = SubscriptionStatus.Active,
                         StartDate = DateTime.Now,
@@ -85,6 +85,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     subscription.CardLastFourDigits = request.MaskedPan != null && request.MaskedPan.Length >= 4
                         ? request.MaskedPan.Substring(request.MaskedPan.Length - 4)
                         : subscription.CardLastFourDigits;
+                    subscription.MonthlyAmount = 1m;
                     subscription.NextBillingDate = nextBillingBase.AddDays(30);
                     subscription.UpdatedAt = DateTime.Now;
 
@@ -93,7 +94,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
                 var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount)
                     ? parsedAmount / 100
-                    : (isCardUpdate ? 1m : 700m);
+                    : 1m;
 
                 var payment = new Payment
                 {

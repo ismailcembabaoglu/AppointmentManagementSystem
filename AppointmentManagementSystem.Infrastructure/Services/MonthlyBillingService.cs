@@ -120,12 +120,15 @@ namespace AppointmentManagementSystem.Infrastructure.Services
         {
             var merchantOid = Guid.NewGuid().ToString();
 
+            const decimal chargeAmount = 1m;
+            subscription.MonthlyAmount = chargeAmount;
+
             // Create payment record
             var payment = new Payment
             {
                 BusinessId = subscription.BusinessId,
                 MerchantOid = merchantOid,
-                Amount = subscription.MonthlyAmount,
+                Amount = chargeAmount,
                 Currency = subscription.Currency,
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTime.Now
@@ -140,7 +143,7 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                 utoken: subscription.PayTRUserToken ?? "",
                 ctoken: subscription.PayTRCardToken ?? "",
                 merchantOid: merchantOid,
-                amount: subscription.MonthlyAmount,
+                amount: chargeAmount,
                 userIp: "127.0.0.1" // Server IP for automated payments
             );
 
@@ -204,12 +207,16 @@ namespace AppointmentManagementSystem.Infrastructure.Services
 
             payment.RetryCount++;
 
+            const decimal chargeAmount = 1m;
+            payment.Amount = chargeAmount;
+            subscription.MonthlyAmount = chargeAmount;
+
             var result = await paytrService.ChargeRecurringPaymentAsync(
                 customerEmail: subscription.Business?.Email ?? "business@example.com",
                 utoken: subscription.PayTRUserToken,
                 ctoken: subscription.PayTRCardToken,
                 merchantOid: payment.MerchantOid,
-                amount: payment.Amount,
+                amount: chargeAmount,
                 userIp: "127.0.0.1"
             );
 

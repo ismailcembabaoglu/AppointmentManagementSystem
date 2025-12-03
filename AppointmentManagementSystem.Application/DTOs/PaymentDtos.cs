@@ -5,7 +5,7 @@ namespace AppointmentManagementSystem.Application.DTOs
         public string Email { get; set; } = string.Empty;
         public string BusinessName { get; set; } = string.Empty;
         public int BusinessId { get; set; }
-        public decimal Amount { get; set; } = 700m;
+        public decimal Amount { get; set; } = 1m;
         public string Description { get; set; } = "Aylık Abonelik Ücreti";
         public bool IsCardUpdate { get; set; }
         public bool IsManualBilling { get; set; }
