@@ -572,7 +572,7 @@
             builder.CloseElement();
         };
 
-        await DialogService.OpenAsync("Fotoğraf", content, new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
+        await DialogService.OpenAsync("Fotoğraf", content, null, new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
     }
 
     private string GetPhotoDataUri(string base64Data)
