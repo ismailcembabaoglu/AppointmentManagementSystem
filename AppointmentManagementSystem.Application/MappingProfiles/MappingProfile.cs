@@ -48,11 +48,23 @@ namespace AppointmentManagementSystem.Application.MappingProfiles
             CreateMap<CreateEmployeeDto, Employee>();
 
             // Appointment mappings
+            CreateMap<AppointmentServiceItem, AppointmentServiceDto>();
+
             CreateMap<Appointment, AppointmentDto>()
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : ""))
                 .ForMember(dest => dest.BusinessName, opt => opt.MapFrom(src => src.Business != null ? src.Business.Name : ""))
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.Name : null))
-                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service != null ? src.Service.Name : ""))
+                .ForMember(dest => dest.Services, opt => opt.MapFrom(src => src.AppointmentServices))
+                .ForMember(dest => dest.ServiceIds, opt => opt.MapFrom(src => src.AppointmentServices.Select(s => s.ServiceId).ToList()))
+                .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.AppointmentServices.Select(s => s.ServiceId).FirstOrDefault()))
+                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.AppointmentServices.Any()
+                    ? string.Join(", ", src.AppointmentServices.Select(s => s.ServiceName))
+                    : src.Service != null ? src.Service.Name : ""))
+                .ForMember(dest => dest.ServicesSummary, opt => opt.MapFrom(src => src.AppointmentServices.Any()
+                    ? string.Join(", ", src.AppointmentServices.Select(s => s.ServiceName))
+                    : string.Empty))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.AppointmentServices.Sum(s => s.Price)))
+                .ForMember(dest => dest.TotalDurationMinutes, opt => opt.MapFrom(src => src.AppointmentServices.Sum(s => s.DurationMinutes)))
                 .ForMember(dest => dest.PhotoUrls, opt => opt.MapFrom(src => src.Photos != null
                     ? src.Photos.Select(FormatImageData)
                         .Where(data => !string.IsNullOrEmpty(data))

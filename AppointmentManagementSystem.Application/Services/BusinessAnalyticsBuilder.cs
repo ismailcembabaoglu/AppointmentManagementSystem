@@ -41,7 +41,9 @@ namespace AppointmentManagementSystem.Application.Services
                 .Select(a => new AiBusinessReviewDto
                 {
                     CustomerName = a.Customer != null ? a.Customer.Name : "Anonim",
-                    ServiceName = a.Service?.Name,
+                    ServiceName = a.AppointmentServices.Any()
+                        ? string.Join(", ", a.AppointmentServices.Select(s => s.ServiceName))
+                        : a.Service?.Name,
                     Rating = a.Rating!.Value,
                     Review = a.Review,
                     RatingDate = a.RatingDate ?? a.UpdatedAt
@@ -58,14 +60,20 @@ namespace AppointmentManagementSystem.Application.Services
                     ? appointments.Where(a => a.Rating.HasValue).Average(a => a.Rating) : null,
                 TotalRevenue = appointments
                     .Where(a => a.Status == "Completed")
-                    .Sum(a => a.Service?.Price ?? 0)
+                    .Sum(a => a.AppointmentServices.Any()
+                        ? a.AppointmentServices.Sum(s => s.Price)
+                        : a.Service?.Price ?? 0)
             };
 
             var serviceSummaries = services
                 .Select(s =>
                 {
-                    var ratings = appointments
-                        .Where(a => a.ServiceId == s.Id && a.Rating.HasValue)
+                    var relatedAppointmentServices = appointments
+                        .Where(a => a.AppointmentServices.Any(item => item.ServiceId == s.Id))
+                        .ToList();
+
+                    var ratings = relatedAppointmentServices
+                        .Where(a => a.Rating.HasValue)
                         .Select(a => (double)a.Rating!)
                         .ToList();
 
@@ -74,11 +82,11 @@ namespace AppointmentManagementSystem.Application.Services
                         ServiceId = s.Id,
                         Name = s.Name,
                         Price = s.Price,
-                        BookingCount = appointments.Count(a => a.ServiceId == s.Id),
-                        CompletedCount = appointments.Count(a => a.ServiceId == s.Id && a.Status == "Completed"),
-                        Revenue = appointments
-                            .Where(a => a.ServiceId == s.Id && a.Status == "Completed")
-                            .Sum(a => a.Service?.Price ?? 0),
+                        BookingCount = relatedAppointmentServices.Count,
+                        CompletedCount = relatedAppointmentServices.Count(a => a.Status == "Completed"),
+                        Revenue = relatedAppointmentServices
+                            .Where(a => a.Status == "Completed")
+                            .Sum(a => a.AppointmentServices.Where(item => item.ServiceId == s.Id).Sum(item => item.Price)),
                         AverageRating = ratings.Any() ? ratings.Average() : null
                     };
                 })
@@ -94,9 +102,13 @@ namespace AppointmentManagementSystem.Application.Services
                     AppointmentDate = a.AppointmentDate.Date + a.StartTime,
                     CustomerName = a.Customer?.Name,
                     EmployeeName = a.Employee?.Name,
-                    ServiceName = a.Service?.Name ?? "Bilinmiyor",
+                    ServiceName = a.AppointmentServices.Any()
+                        ? string.Join(", ", a.AppointmentServices.Select(s => s.ServiceName))
+                        : a.Service?.Name ?? "Bilinmiyor",
                     Status = a.Status,
-                    Price = a.Service?.Price ?? 0,
+                    Price = a.AppointmentServices.Any()
+                        ? a.AppointmentServices.Sum(s => s.Price)
+                        : a.Service?.Price ?? 0,
                     Rating = a.Rating
                 })
                 .ToList();

@@ -4,6 +4,7 @@ using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
 {
@@ -46,14 +47,28 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
 
         public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
         {
-            // Servis süresini al
-            var service = await _serviceRepository.GetByIdAsync(request.CreateAppointmentDto.ServiceId);
-            if (service == null)
-                throw new Exception("Hizmet bulunamadı.");
+            var serviceIds = request.CreateAppointmentDto.ServiceIds != null && request.CreateAppointmentDto.ServiceIds.Any()
+                ? request.CreateAppointmentDto.ServiceIds
+                : new List<int> { request.CreateAppointmentDto.ServiceId };
+
+            var services = (await _serviceRepository.GetAllWithBusinessAsync(request.CreateAppointmentDto.BusinessId))
+                .Where(s => serviceIds.Contains(s.Id))
+                .ToList();
+
+            if (!services.Any() || services.Count != serviceIds.Count)
+                throw new Exception("Seçilen hizmetlerden biri veya birkaçı bulunamadı.");
 
             var appointment = _mapper.Map<Appointment>(request.CreateAppointmentDto);
+            appointment.ServiceId = services.First().Id;
             appointment.Status = "Pending";
-            appointment.EndTime = appointment.StartTime.Add(TimeSpan.FromMinutes(service.DurationMinutes));
+            appointment.EndTime = appointment.StartTime.Add(TimeSpan.FromMinutes(services.Sum(s => s.DurationMinutes)));
+            appointment.AppointmentServices = services.Select(s => new AppointmentServiceItem
+            {
+                ServiceId = s.Id,
+                ServiceName = s.Name,
+                Price = s.Price ?? 0,
+                DurationMinutes = s.DurationMinutes
+            }).ToList();
 
             await _appointmentRepository.AddAsync(appointment);
             await _unitOfWork.SaveChangesAsync();
@@ -90,13 +105,13 @@ namespace AppointmentManagementSystem.Application.Features.Appointments.Handlers
                     ? await _employeeRepository.GetByIdAsync(appointment.EmployeeId.Value) 
                     : null;
 
-                if (customer != null && business != null && service != null)
+                if (customer != null && business != null && services.Any())
                 {
                     await _emailService.SendAppointmentConfirmationAsync(
                         customer.Email,
                         customer.Name,
                         business.Name,
-                        service.Name,
+                        string.Join(", ", services.Select(s => s.Name)),
                         appointment.AppointmentDate,
                         appointment.StartTime,
                         appointment.EndTime,

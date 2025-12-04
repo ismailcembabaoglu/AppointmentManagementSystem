@@ -12,8 +12,9 @@ namespace AppointmentManagementSystem.Application.DTOs
 
         public int? EmployeeId { get; set; }
 
-        [Required]
         public int ServiceId { get; set; }
+
+        public List<int> ServiceIds { get; set; } = new();
 
         [Required]
         public DateTime AppointmentDate { get; set; }
