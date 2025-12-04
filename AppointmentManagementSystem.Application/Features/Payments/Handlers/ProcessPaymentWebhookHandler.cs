@@ -164,16 +164,17 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 Amount = decimal.Parse(request.TotalAmount) / 100,
                 Currency = "TRY",
                 Status = PaymentStatus.Success,
-                PaymentDate = DateTime.UtcNow,
+                PaymentDate = DateTime.Now,
                 CardType = request.CardType,
                 MaskedCardNumber = request.MaskedPan,
                 PaymentType = "InitialSubscription",
                 PayTRTransactionId = request.PaymentId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             await _paymentRepository.AddAsync(payment);
 
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            var nextBillingBase = subscription?.NextBillingDate ?? DateTime.Now;
             var hasCardTokens = !string.IsNullOrEmpty(request.Utoken) && !string.IsNullOrEmpty(request.Ctoken);
 
             if (!hasCardTokens)
@@ -192,16 +193,16 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
                     CardLastFourDigits = GetLastFour(request.MaskedPan),
-                    MonthlyAmount = 700.00m,
+                    MonthlyAmount = 1m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
-                    StartDate = DateTime.UtcNow,
-                    SubscriptionStartDate = DateTime.UtcNow,
-                    LastBillingDate = DateTime.UtcNow,
-                    NextBillingDate = DateTime.UtcNow.AddDays(30),
+                    StartDate = DateTime.Now,
+                    SubscriptionStartDate = DateTime.Now,
+                    LastBillingDate = DateTime.Now,
+                    NextBillingDate = nextBillingBase.AddDays(30),
                     IsActive = true,
                     AutoRenewal = hasCardTokens,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
@@ -232,17 +233,18 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
 
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
-                subscription.LastBillingDate = DateTime.UtcNow;
-                subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
+                subscription.LastBillingDate = DateTime.Now;
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
+                subscription.MonthlyAmount = 1m;
                 subscription.IsActive = true;
                 subscription.AutoRenewal = hasCardTokens || subscription.AutoRenewal;
-                subscription.UpdatedAt = DateTime.UtcNow;
+                subscription.UpdatedAt = DateTime.Now;
 
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
 
             business.IsActive = true;
-            business.UpdatedAt = DateTime.UtcNow;
+            business.UpdatedAt = DateTime.Now;
             await _businessRepository.UpdateAsync(business);
 
             await _unitOfWork.SaveChangesAsync();
@@ -269,7 +271,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Invalid MerchantOid format");
             }
 
-            var targetPeriod = ExtractTargetPeriod(afterPrefix);
+            var now = DateTime.Now;
             var business = await _businessRepository.GetByIdAsync(businessId);
             if (business == null)
             {
@@ -277,36 +279,38 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 return Result<bool>.FailureResult("Business not found");
             }
 
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) && parsedAmount > 0 ? parsedAmount / 100 : 1m;
             var subscription = await _subscriptionRepository.GetByBusinessIdAsync(businessId);
+            var nextBillingBase = subscription?.NextBillingDate ?? now;
             if (subscription == null)
             {
                 subscription = new BusinessSubscription
                 {
                     BusinessId = businessId,
-                    MonthlyAmount = amount,
+                    MonthlyAmount = 1m,
                     Currency = "TRY",
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
-                    StartDate = targetPeriod,
-                    SubscriptionStartDate = targetPeriod,
-                    LastBillingDate = targetPeriod,
-                    NextBillingDate = targetPeriod.AddMonths(1),
+                    StartDate = now,
+                    SubscriptionStartDate = now,
+                    LastBillingDate = now,
+                    NextBillingDate = nextBillingBase.AddDays(30),
                     AutoRenewal = false,
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
             }
             else
             {
-                subscription.LastBillingDate = targetPeriod;
-                subscription.NextBillingDate = targetPeriod.AddMonths(1);
+                subscription.LastBillingDate = now;
+                subscription.NextBillingDate = nextBillingBase.AddDays(30);
+                subscription.MonthlyAmount = 1m;
                 subscription.SubscriptionStatus = SubscriptionStatus.Active;
                 subscription.Status = SubscriptionStatus.Active;
                 subscription.IsActive = true;
-                subscription.UpdatedAt = DateTime.UtcNow;
+                subscription.UpdatedAt = DateTime.Now;
 
                 if (!string.IsNullOrEmpty(request.Utoken))
                 {
@@ -340,18 +344,18 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 Amount = amount,
                 Currency = "TRY",
                 Status = request.Status,
-                PaymentDate = DateTime.UtcNow,
+                PaymentDate = DateTime.Now,
                 CardType = request.CardType,
                 MaskedCardNumber = request.MaskedPan,
                 PaymentType = "ManualBilling",
                 PayTRTransactionId = request.PaymentId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _paymentRepository.AddAsync(payment);
 
             business.IsActive = true;
-            business.UpdatedAt = DateTime.UtcNow;
+            business.UpdatedAt = DateTime.Now;
             await _businessRepository.UpdateAsync(business);
 
             await _unitOfWork.SaveChangesAsync();
@@ -400,14 +404,14 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     CardType = request.CardType,
                     MaskedCardNumber = request.MaskedPan,
                     CardLastFourDigits = GetLastFour(request.MaskedPan),
-                    MonthlyAmount = 700.00m,
+                    MonthlyAmount = 1m,
                     Status = SubscriptionStatus.Active,
                     SubscriptionStatus = SubscriptionStatus.Active,
-                    StartDate = DateTime.UtcNow,
-                    SubscriptionStartDate = DateTime.UtcNow,
+                    StartDate = DateTime.Now,
+                    SubscriptionStartDate = DateTime.Now,
                     IsActive = true,
                     AutoRenewal = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 await _subscriptionRepository.AddAsync(subscription);
@@ -420,12 +424,13 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 subscription.CardType = request.CardType;
                 subscription.MaskedCardNumber = request.MaskedPan;
                 subscription.CardLastFourDigits = GetLastFour(request.MaskedPan) ?? subscription.CardLastFourDigits;
-                subscription.UpdatedAt = DateTime.UtcNow;
+                subscription.MonthlyAmount = 1m;
+                subscription.UpdatedAt = DateTime.Now;
 
                 await _subscriptionRepository.UpdateAsync(subscription);
             }
 
-            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) ? parsedAmount / 100 : 0m;
+            var amount = decimal.TryParse(request.TotalAmount, out var parsedAmount) && parsedAmount > 0 ? parsedAmount / 100 : 1m;
             var payment = new Payment
             {
                 BusinessId = businessId,
@@ -433,18 +438,18 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 Amount = amount,
                 Currency = "TRY",
                 Status = PaymentStatus.Success,
-                PaymentDate = DateTime.UtcNow,
+                PaymentDate = DateTime.Now,
                 CardType = request.CardType,
                 MaskedCardNumber = request.MaskedPan,
                 PaymentType = "CardUpdate",
                 PayTRTransactionId = request.PaymentId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _paymentRepository.AddAsync(payment);
 
             business.IsActive = true;
-            business.UpdatedAt = DateTime.UtcNow;
+            business.UpdatedAt = DateTime.Now;
             await _businessRepository.UpdateAsync(business);
 
             await _unitOfWork.SaveChangesAsync();
@@ -474,13 +479,14 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             if (request.Status == "success")
             {
                 payment.Status = PaymentStatus.Success;
-                payment.PaymentDate = DateTime.UtcNow;
+                payment.PaymentDate = DateTime.Now;
                 payment.PayTRTransactionId = request.PaymentId;
 
                 if (subscription != null)
                 {
-                    subscription.LastBillingDate = DateTime.UtcNow;
-                    subscription.NextBillingDate = DateTime.UtcNow.AddDays(30);
+                    var nextBillingBase = subscription.NextBillingDate ?? DateTime.Now;
+                    subscription.LastBillingDate = DateTime.Now;
+                    subscription.NextBillingDate = nextBillingBase.AddDays(30);
                     subscription.SubscriptionStatus = SubscriptionStatus.Active;
                     await _subscriptionRepository.UpdateAsync(subscription);
                 }
@@ -497,7 +503,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             {
                 payment.Status = PaymentStatus.Failed;
                 payment.ErrorMessage = request.FailedReasonMsg ?? "Payment declined";
-                payment.NextRetryDate = DateTime.UtcNow.AddHours(1);
+                payment.NextRetryDate = DateTime.Now.AddHours(1);
 
                 if (subscription != null)
                 {
@@ -530,21 +536,5 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             return maskedPan.Substring(maskedPan.Length - 4);
         }
 
-        private static DateTime ExtractTargetPeriod(string afterPrefix)
-        {
-            var mIndex = afterPrefix.IndexOf('M');
-            if (mIndex >= 0 && afterPrefix.Length >= mIndex + 7)
-            {
-                var yearSegment = afterPrefix.Substring(mIndex + 1, 4);
-                var monthSegment = afterPrefix.Substring(mIndex + 5, 2);
-
-                if (int.TryParse(yearSegment, out var billingYear) && int.TryParse(monthSegment, out var billingMonth) && billingMonth >= 1 && billingMonth <= 12)
-                {
-                    return new DateTime(billingYear, billingMonth, 1, 0, 0, 0, DateTimeKind.Utc);
-                }
-            }
-
-            return DateTime.UtcNow;
-        }
     }
 }

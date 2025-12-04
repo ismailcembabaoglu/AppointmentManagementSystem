@@ -538,6 +538,11 @@ else
 
     private decimal GetAppointmentPrice(AppointmentDto appointment)
     {
+        if (appointment.Services != null && appointment.Services.Any())
+        {
+            return appointment.Services.Sum(s => s.Price);
+        }
+
         var service = services.FirstOrDefault(s => s.Id == appointment.ServiceId);
         return service?.Price ?? 0;
     }

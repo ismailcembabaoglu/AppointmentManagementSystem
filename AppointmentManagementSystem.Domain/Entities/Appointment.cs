@@ -42,6 +42,7 @@ namespace AppointmentManagementSystem.Domain.Entities
         public virtual Business? Business { get; set; }
         public virtual Employee? Employee { get; set; }
         public virtual Service? Service { get; set; }
+        public virtual ICollection<AppointmentServiceItem> AppointmentServices { get; set; } = new List<AppointmentServiceItem>();
         public virtual BusinessUser? CreatedBy { get; set; }
         public virtual ICollection<AppointmentPhoto>? Photos { get; set; }
     }

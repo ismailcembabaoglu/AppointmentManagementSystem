@@ -22,6 +22,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
+                .Include(a => a.AppointmentServices)
                 // Photos kaldırıldı
                 .Where(a => a.CustomerId == customerId && !a.IsDeleted && a.AppointmentDate >= sixMonthsAgo)
                 .OrderByDescending(a => a.AppointmentDate)
@@ -40,6 +41,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
+                .Include(a => a.AppointmentServices)
                 // Photos kaldırıldı
                 .Where(a => a.BusinessId == businessId && !a.IsDeleted && a.AppointmentDate >= sixMonthsAgo)
                 .OrderByDescending(a => a.AppointmentDate)
@@ -58,6 +60,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
+                .Include(a => a.AppointmentServices)
                 // Photos kaldırıldı - çok büyük veri çekiyor ve gereksiz
                 .Where(a => !a.IsDeleted && a.AppointmentDate >= sixMonthsAgo) // ⚡ Sadece son 6 ay
                 .AsQueryable();
@@ -81,6 +84,7 @@ namespace AppointmentManagementSystem.Infrastructure.Repositories
                 .Include(a => a.Business)
                 .Include(a => a.Employee)
                 .Include(a => a.Service)
+                .Include(a => a.AppointmentServices)
                 //.Include(a => a.Photos)
                 .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted); // ISDELETED EKLENDİ
         }

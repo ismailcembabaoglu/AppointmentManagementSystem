@@ -1,5 +1,6 @@
 using AppointmentManagementSystem.Application.DTOs;
 using FluentValidation;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Validators
 {
@@ -13,8 +14,9 @@ namespace AppointmentManagementSystem.Application.Validators
             RuleFor(x => x.BusinessId)
                 .GreaterThan(0).WithMessage("Geçerli bir işletme seçmelisiniz.");
 
-            RuleFor(x => x.ServiceId)
-                .GreaterThan(0).WithMessage("Geçerli bir hizmet seçmelisiniz.");
+            RuleFor(x => x)
+                .Must(x => (x.ServiceIds != null && x.ServiceIds.Any()) || x.ServiceId > 0)
+                .WithMessage("Geçerli en az bir hizmet seçmelisiniz.");
 
             RuleFor(x => x.AppointmentDate)
                 .NotEmpty().WithMessage("Randevu tarihi gereklidir.")

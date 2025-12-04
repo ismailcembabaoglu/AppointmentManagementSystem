@@ -87,14 +87,15 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
             var appointmentsWithDetails = await _appointmentRepository.GetAllWithDetailsAsync();
             var topServices = appointmentsWithDetails
                 .Where(a => a.AppointmentDate >= startDate && a.AppointmentDate <= endDate)
-                .GroupBy(a => new { a.ServiceId, ServiceName = a.Service?.Name, BusinessName = a.Business?.Name })
+                .SelectMany(a => a.AppointmentServices.Select(s => new { Appointment = a, Service = s }))
+                .GroupBy(x => new { x.Service.ServiceId, x.Service.ServiceName, BusinessName = x.Appointment.Business?.Name })
                 .Select(g => new TopServicesDto
                 {
                     ServiceId = g.Key.ServiceId,
                     ServiceName = g.Key.ServiceName ?? "N/A",
                     BusinessName = g.Key.BusinessName ?? "N/A",
                     BookingCount = g.Count(),
-                    TotalRevenue = g.Sum(a => a.Service?.Price ?? 0)
+                    TotalRevenue = g.Sum(x => x.Service.Price)
                 })
                 .OrderByDescending(s => s.BookingCount)
                 .Take(10)

@@ -113,6 +113,51 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.ToTable("Appointments");
                 });
 
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("AppointmentId", "ServiceId");
+
+                    b.ToTable("AppointmentServices");
+                });
+
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Business", b =>
                 {
                     b.Property<int>("Id")
@@ -851,6 +896,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("AppointmentServices");
                     b.Navigation("Business");
 
                     b.Navigation("CreatedBy");
@@ -858,6 +904,25 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Appointment", "Appointment")
+                        .WithMany("AppointmentServices")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("Service");
                 });
