@@ -4,6 +4,7 @@
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs
 @using Radzen
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IAppointmentApiService AppointmentApiService
 @inject NotificationService NotificationService
@@ -143,7 +144,7 @@
                                     <!-- Service Info -->
                                     <div>
                                         <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">HİZMETLER</RadzenText>
-                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.FlexStart">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
                                             <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--rz-info-lighter); display: flex; align-items: center; justify-content: center;">
                                                 <RadzenIcon Icon="build" Style="color: var(--rz-info); font-size: 20px;" />
                                             </div>
@@ -559,12 +560,19 @@
     private async Task ShowPhotoDialog(string photoUrl)
     {
         var photoDataUri = GetPhotoDataUri(photoUrl);
-        await DialogService.OpenAsync("Fotoğraf",
-            ds =>
-            @<div style="text-align: center;">
-                <img src="@photoDataUri" alt="Randevu fotoğrafı" style="max-width: 100%; max-height: 80vh; border-radius: 8px;" />
-            </div>,
-            new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
+        RenderFragment content = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "style", "text-align: center;");
+            builder.OpenElement(2, "img");
+            builder.AddAttribute(3, "src", photoDataUri);
+            builder.AddAttribute(4, "alt", "Randevu fotoğrafı");
+            builder.AddAttribute(5, "style", "max-width: 100%; max-height: 80vh; border-radius: 8px;");
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+
+        await DialogService.OpenAsync("Fotoğraf", content, new DialogOptions { Width = "90%", Height = "auto", ShowClose = true });
     }
 
     private string GetPhotoDataUri(string base64Data)
