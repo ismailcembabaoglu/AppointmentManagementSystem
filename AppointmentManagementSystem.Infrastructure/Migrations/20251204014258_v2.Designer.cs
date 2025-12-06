@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppointmentDbContext))]
-    [Migration("20251111202417_v1")]
-    partial class v1
+    [Migration("20251204014258_v2")]
+    partial class v2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,17 +89,74 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessId");
+                    b.HasIndex("AppointmentDate")
+                        .HasDatabaseName("IX_Appointments_AppointmentDate");
+
+                    b.HasIndex("BusinessId")
+                        .HasDatabaseName("IX_Appointments_BusinessId");
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_Appointments_CustomerId");
 
                     b.HasIndex("EmployeeId");
 
                     b.HasIndex("ServiceId");
 
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Appointments_Status");
+
+                    b.HasIndex("CustomerId", "AppointmentDate")
+                        .HasDatabaseName("IX_Appointments_Customer_Date");
+
+                    b.HasIndex("BusinessId", "AppointmentDate", "Status")
+                        .HasDatabaseName("IX_Appointments_Business_Date_Status");
+
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("AppointmentId", "ServiceId");
+
+                    b.ToTable("AppointmentServices");
                 });
 
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Business", b =>
@@ -147,6 +204,10 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<string>("MapEmbedCode")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -355,7 +416,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2086),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8150),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -364,7 +425,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2088),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8154),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -373,7 +434,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2089),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8299),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -382,7 +443,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 11, 20, 24, 17, 33, DateTimeKind.Utc).AddTicks(2090),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8302),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -705,10 +766,20 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<string>("EmailVerificationToken")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("EmailVerificationTokenExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEmailVerified")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -833,6 +904,25 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Appointment", "Appointment")
+                        .WithMany("AppointmentServices")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("Service");
                 });
@@ -983,6 +1073,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Appointment", b =>
                 {
+                    b.Navigation("AppointmentServices");
+
                     b.Navigation("Photos");
                 });
 

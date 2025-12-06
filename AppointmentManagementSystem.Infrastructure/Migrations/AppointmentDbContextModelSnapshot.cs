@@ -149,8 +149,6 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppointmentId");
-
                     b.HasIndex("ServiceId");
 
                     b.HasIndex("AppointmentId", "ServiceId");
@@ -415,7 +413,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(638),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8150),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -424,7 +422,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(640),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8154),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -433,7 +431,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(641),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8299),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -442,7 +440,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(643),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8302),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -896,7 +894,6 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("AppointmentServices");
                     b.Navigation("Business");
 
                     b.Navigation("CreatedBy");
@@ -913,13 +910,13 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.HasOne("AppointmentManagementSystem.Domain.Entities.Appointment", "Appointment")
                         .WithMany("AppointmentServices")
                         .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("AppointmentManagementSystem.Domain.Entities.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Appointment");
@@ -1073,6 +1070,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Appointment", b =>
                 {
+                    b.Navigation("AppointmentServices");
+
                     b.Navigation("Photos");
                 });
 

@@ -169,7 +169,7 @@ namespace AppointmentManagementSystem.Infrastructure.Data
                 entity.HasOne(a => a.Appointment)
                       .WithMany(a => a.AppointmentServices)
                       .HasForeignKey(a => a.AppointmentId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(a => a.Service)
                       .WithMany()
