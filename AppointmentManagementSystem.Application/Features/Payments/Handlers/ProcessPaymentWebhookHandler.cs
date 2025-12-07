@@ -84,25 +84,27 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     return Result<bool>.FailureResult("Invalid webhook signature - security check failed");
                 }
 
-                if (request.MerchantOid.StartsWith("CARD", StringComparison.Ordinal) && request.Status == "success")
+                var isSuccessStatus = string.Equals(request.Status, "success", StringComparison.OrdinalIgnoreCase);
+
+                if (request.MerchantOid.StartsWith("CARD", StringComparison.Ordinal) && isSuccessStatus)
                 {
                     _logger.LogInformation("✅ Processing card update callback");
                     return await HandleCardUpdateCallback(request, cancellationToken);
                 }
 
-                if (request.MerchantOid.StartsWith("BILL", StringComparison.Ordinal) && request.Status == "success")
+                if (request.MerchantOid.StartsWith("BILL", StringComparison.Ordinal) && isSuccessStatus)
                 {
                     _logger.LogInformation("✅ Processing manual billing callback");
                     return await HandleManualBillingCallback(request, cancellationToken);
                 }
 
-                if (request.MerchantOid.StartsWith("REG", StringComparison.Ordinal) && request.Status == "success")
+                if (request.MerchantOid.StartsWith("REG", StringComparison.Ordinal) && isSuccessStatus)
                 {
                     _logger.LogInformation("✅ Processing initial registration callback");
                     return await HandleInitialRegistrationCallback(request, cancellationToken);
                 }
 
-                if (request.Status == "success")
+                if (isSuccessStatus)
                 {
                     _logger.LogInformation("✅ Processing recurring payment callback");
                     return await HandlePaymentCallback(request, cancellationToken);
@@ -343,7 +345,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 MerchantOid = request.MerchantOid,
                 Amount = amount,
                 Currency = "TRY",
-                Status = request.Status,
+                Status = PaymentStatus.Success,
                 PaymentDate = DateTime.Now,
                 CardType = request.CardType,
                 MaskedCardNumber = request.MaskedPan,
