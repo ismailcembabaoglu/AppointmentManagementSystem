@@ -7,6 +7,7 @@
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs.Registration
 @using AppointmentManagementSystem.BlazorUI.Components
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
 @using Radzen
 @using static AppointmentManagementSystem.BlazorUI.Components.FileUploadComponent
 @using Blazored.LocalStorage
@@ -19,6 +20,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
 @inject IPaymentApiService PaymentApiService
+@inject IJSRuntime JSRuntime
 
 <div class="auth-container" style="padding: 2rem 0;">
     <RadzenCard Style="@cardStyle">
@@ -478,6 +480,20 @@
                                 </RadzenAlert>
                             }
 
+                            @if (!string.IsNullOrEmpty(paymentRedirectUrl))
+                            {
+                                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Style="margin-bottom: 12px;">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="8px">
+                                        <RadzenText>3D Secure sayfası otomatik açılmadıysa aşağıdaki butonu kullanabilirsiniz.</RadzenText>
+                                        <RadzenButton Text="Ödeme Ekranını Aç"
+                                                      Icon="open_in_new"
+                                                      Size="ButtonSize.Medium"
+                                                      Click="TriggerPaymentRedirect"
+                                                      Style="max-width: 240px;" />
+                                    </RadzenStack>
+                                </RadzenAlert>
+                            }
+
                             @if (registeredBusinessId.HasValue)
                             {
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="12px">
@@ -617,6 +633,7 @@
     private string? paymentError;
     private string? paymentSuccessMessage;
     private bool paymentLoading;
+    private string? paymentRedirectUrl;
     private string paymentCardOwner = string.Empty;
     private string paymentCardNumber = string.Empty;
     private string paymentExpiryMonth = string.Empty;
@@ -997,17 +1014,18 @@
         paymentLoading = true;
         paymentError = null;
         paymentSuccessMessage = null;
+        paymentRedirectUrl = null;
 
         try
         {
-            var request = new
+            var now = DateTime.Now;
+            var request = new ManualBillingRequestDto
             {
                 BusinessId = registeredBusinessId.Value,
-                Email = registerDto.Email,
-                BusinessName = businessInfo.Name,
-                OwnerName = registerDto.Name,
-                PhoneNumber = businessInfo.Phone ?? string.Empty,
-                Address = businessInfo.Address ?? "Türkiye",
+                BillingYear = now.Year,
+                BillingMonth = now.Month,
+                Email = registerDto.Email ?? string.Empty,
+                CustomerName = registerDto.Name ?? businessInfo.Name ?? string.Empty,
                 CardOwner = paymentCardOwner,
                 CardNumber = paymentCardNumber,
                 ExpiryMonth = paymentExpiryMonth,
@@ -1015,11 +1033,18 @@
                 CVV = paymentCvv
             };
 
-            var response = await PaymentApiService.InitiateDirectCardRegistrationAsync(request);
+            var response = await PaymentApiService.InitiateManualBillingAsync(request);
 
             if (response.Success)
             {
-                paymentSuccessMessage = "Kart doğrulama işlemi PayTR üzerinden başlatıldı. İşlem tamamlandığında giriş yapabilirsiniz.";
+                paymentSuccessMessage = response.Data?.Message ?? "3D Secure ödeme ekranına yönlendiriliyorsunuz.";
+                paymentRedirectUrl = response.Data?.PaymentUrl;
+
+                if (!string.IsNullOrEmpty(paymentRedirectUrl))
+                {
+                    await TriggerPaymentRedirect();
+                }
+
                 NotificationService.Notify(NotificationSeverity.Success, "Başarılı", paymentSuccessMessage);
             }
             else
@@ -1035,6 +1060,23 @@
         {
             paymentLoading = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task TriggerPaymentRedirect()
+    {
+        if (string.IsNullOrWhiteSpace(paymentRedirectUrl))
+        {
+            return;
+        }
+
+        if (paymentRedirectUrl.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase))
+        {
+            await JSRuntime.InvokeVoidAsync("paymentRedirect.open", paymentRedirectUrl);
+        }
+        else
+        {
+            Navigation.NavigateTo(paymentRedirectUrl, forceLoad: true);
         }
     }
 
