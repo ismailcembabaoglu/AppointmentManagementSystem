@@ -531,6 +531,12 @@ else
         monthlyRevenue = 0;
         foreach (var appointment in completedAppointments)
         {
+            if (appointment.Services != null && appointment.Services.Any())
+            {
+                monthlyRevenue += appointment.Services.Sum(s => s.Price);
+                continue;
+            }
+
             var service = services.FirstOrDefault(s => s.Id == appointment.ServiceId);
             if (service?.Price.HasValue == true)
             {

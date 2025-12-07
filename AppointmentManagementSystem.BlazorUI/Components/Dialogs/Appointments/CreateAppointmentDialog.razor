@@ -793,12 +793,12 @@
             // Combine date and time
             var appointmentDateTime = selectedDate.Value.Date.Add(selectedTimeSlot.Value);
 
-            // Create appointment with first service (in real app, handle multiple services)
             var appointmentDto = new CreateAppointmentDto
             {
                 CustomerId = CustomerId,
                 BusinessId = PreselectedBusinessId.Value,
                 ServiceId = selectedServices.First(),
+                ServiceIds = selectedServices.ToList(),
                 EmployeeId = selectedEmployeeId,
                 AppointmentDate = appointmentDateTime,
                 StartTime = selectedTimeSlot.Value,

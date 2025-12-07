@@ -3,6 +3,7 @@ using AppointmentManagementSystem.Application.Features.Businesses.Queries;
 using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
 {
@@ -31,7 +32,9 @@ namespace AppointmentManagementSystem.Application.Features.Businesses.Handlers
                     Rating = a.Rating!.Value,
                     Review = a.Review,
                     RatingDate = a.RatingDate ?? a.UpdatedAt,
-                    ServiceName = a.Service != null ? a.Service.Name : ""
+                    ServiceName = a.AppointmentServices.Any()
+                        ? string.Join(", ", a.AppointmentServices.Select(s => s.ServiceName))
+                        : a.Service != null ? a.Service.Name : ""
                 })
                 .ToList();
 

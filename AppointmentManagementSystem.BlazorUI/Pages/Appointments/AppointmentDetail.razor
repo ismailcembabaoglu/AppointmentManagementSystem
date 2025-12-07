@@ -4,6 +4,7 @@
 @using AppointmentManagementSystem.BlazorUI.Services.ApiServices
 @using AppointmentManagementSystem.BlazorUI.Components.Dialogs
 @using Radzen
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IAppointmentApiService AppointmentApiService
 @inject NotificationService NotificationService
@@ -142,14 +143,31 @@
 
                                     <!-- Service Info -->
                                     <div>
-                                        <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">HİZMET</RadzenText>
-                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Center">
+                                        <RadzenText TextStyle="TextStyle.Overline" Style="color: var(--rz-text-secondary-color); margin: 0 0 8px 0;">HİZMETLER</RadzenText>
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="12px" AlignItems="AlignItems.Start">
                                             <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--rz-info-lighter); display: flex; align-items: center; justify-content: center;">
                                                 <RadzenIcon Icon="build" Style="color: var(--rz-info); font-size: 20px;" />
                                             </div>
-                                            <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
-                                                @appointment.ServiceName
-                                            </RadzenText>
+                                            <RadzenStack Orientation="Orientation.Vertical" Gap="4px" Style="flex:1;">
+                                                @if (appointment.Services != null && appointment.Services.Any())
+                                                {
+                                                    @foreach (var service in appointment.Services)
+                                                    {
+                                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                            @service.ServiceName (@service.DurationMinutes dk - @service.Price.ToString("C"))
+                                                        </RadzenText>
+                                                    }
+                                                    <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color); margin-top: 4px;">
+                                                        Toplam: @appointment.TotalDurationMinutes dk, @appointment.TotalPrice.ToString("C")
+                                                    </RadzenText>
+                                                }
+                                                else
+                                                {
+                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600; margin: 0;">
+                                                        @appointment.ServiceName
+                                                    </RadzenText>
+                                                }
+                                            </RadzenStack>
                                         </RadzenStack>
                                     </div>
 
@@ -541,7 +559,7 @@
 
     private async Task ShowPhotoDialog(string photoUrl)
     {
-        var photoDataUri = GetPhotoDataUri(photoUrl);
+              var photoDataUri = GetPhotoDataUri(photoUrl);
         await DialogService.OpenAsync("Fotoğraf",
             ds =>
             @<div style="text-align: center;">

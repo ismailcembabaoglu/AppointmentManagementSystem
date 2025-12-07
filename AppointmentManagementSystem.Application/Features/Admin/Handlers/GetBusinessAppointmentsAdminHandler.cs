@@ -1,6 +1,7 @@
 using AppointmentManagementSystem.Application.Features.Admin.Queries;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
+using System.Linq;
 
 namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
 {
@@ -44,8 +45,12 @@ namespace AppointmentManagementSystem.Application.Features.Admin.Handlers
                 CustomerName = a.Customer?.Name ?? "N/A",
                 CustomerEmail = a.Customer?.Email,
                 CustomerPhone = a.Customer?.PhoneNumber,
-                ServiceName = a.Service?.Name ?? "N/A",
-                ServicePrice = a.Service?.Price,
+                ServiceName = a.AppointmentServices.Any()
+                    ? string.Join(", ", a.AppointmentServices.Select(s => s.ServiceName))
+                    : a.Service?.Name ?? "N/A",
+                ServicePrice = a.AppointmentServices.Any()
+                    ? a.AppointmentServices.Sum(s => s.Price)
+                    : a.Service?.Price,
                 EmployeeName = a.Employee?.Name,
                 Notes = a.Notes,
                 Rating = a.Rating,

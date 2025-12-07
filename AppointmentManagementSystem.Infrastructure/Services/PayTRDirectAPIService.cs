@@ -449,13 +449,28 @@ namespace AppointmentManagementSystem.Infrastructure.Services
                     _logger.LogWarning(ex, "⚠️ Could not parse PayTR 3D response");
                 }
 
+                // PayTR Direct API 2. adım: Eğer JSON token dönmezse 3D form HTML olarak gelir.
+                // Bu durumda HTML içeriğini data URL'e çevirip frontend'e yönlendirme linki olarak döndürüyoruz.
+                if (string.IsNullOrEmpty(paymentUrl) && response.IsSuccessStatusCode)
+                {
+                    var trimmed = responseContent.TrimStart();
+                    if (trimmed.StartsWith("<", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseContent));
+                        paymentUrl = $"data:text/html;base64,{base64Html}";
+                        _logger.LogInformation("📄 PayTR returned 3D HTML form. Generated data URL for redirect.");
+                    }
+                }
+
+                var success = response.IsSuccessStatusCode && !string.IsNullOrEmpty(paymentUrl);
+
                 return new PayTRDirectPaymentResponse
                 {
-                    Success = response.IsSuccessStatusCode,
-                    Status = response.IsSuccessStatusCode ? "success" : "failed",
+                    Success = success,
+                    Status = success ? "success" : "failed",
                     MerchantOid = merchantOid,
                     PaymentUrl = paymentUrl,
-                    ErrorMessage = response.IsSuccessStatusCode ? null : responseContent
+                    ErrorMessage = success ? null : responseContent
                 };
             }
             catch (Exception ex)

@@ -1,29 +1,25 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace AppointmentManagementSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddBusinessMapEmbedCode : Migration
+    public partial class InitialBaseline : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "MapEmbedCode",
-                table: "Businesses",
-                type: "nvarchar(4000)",
-                maxLength: 4000,
-                nullable: true);
+           
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "MapEmbedCode",
-                table: "Businesses");
+           
         }
     }
 }

@@ -28,7 +28,7 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                 var safeDescription = string.IsNullOrWhiteSpace(request.Description)
                     ? "Kart Doğrulama Ücreti"
                     : request.Description.Trim();
-                var safeAmount = request.Amount < 1m ? 1m : request.Amount;
+                const decimal safeAmount = 1m;
                 var safeIp = string.IsNullOrWhiteSpace(request.UserIp) ? "127.0.0.1" : request.UserIp;
 
                 // Generate merchant_oid without special characters (PayTR requires alphanumeric)

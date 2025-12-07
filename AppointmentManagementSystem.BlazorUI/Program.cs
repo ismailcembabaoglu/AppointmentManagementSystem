@@ -22,22 +22,22 @@ builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
 builder.Services.AddBlazoredLocalStorage();
 
 // HttpClient yapılandırması - Blazor WASM için doğru yöntem
-builder.Services.AddScoped(sp => 
+builder.Services.AddScoped(sp =>
 {
-    var client = new HttpClient 
-    { 
-        BaseAddress = new Uri("https://hub.aptivaplan.com.tr/") 
+    var client = new HttpClient
+    {
+        BaseAddress = new Uri("https://hub.aptivaplan.com.tr/")
     };
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     return client;
 });
 
 // Local development için (yorum satırında)
-//builder.Services.AddScoped(sp => 
+//builder.Services.AddScoped(sp =>
 //{
-//    var client = new HttpClient 
-//    { 
-//        BaseAddress = new Uri("https://localhost:5089/") 
+//    var client = new HttpClient
+//    {
+//        BaseAddress = new Uri("https://localhost:5089/")
 //    };
 //    client.DefaultRequestHeaders.Add("Accept", "application/json");
 //    return client;

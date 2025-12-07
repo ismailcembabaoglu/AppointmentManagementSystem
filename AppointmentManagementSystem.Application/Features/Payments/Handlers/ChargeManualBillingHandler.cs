@@ -45,7 +45,10 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
                     return Result<ChargeManualBillingResponse>.FailureResult("İşletme bulunamadı.");
                 }
 
-                var amount = subscription.MonthlyAmount > 0 ? subscription.MonthlyAmount : 700m;
+                const decimal amount = 1m;
+                subscription.MonthlyAmount = amount;
+                await _subscriptionRepository.UpdateAsync(subscription);
+                await _subscriptionRepository.SaveChangesAsync();
                 var merchantOid = $"BILL{request.BillingYear}{request.BillingMonth:D2}{request.BusinessId}{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
 
                 var response = await _paytrDirectService.InitiateOneTime3DPayment(

@@ -113,6 +113,49 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.ToTable("Appointments");
                 });
 
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("AppointmentId", "ServiceId");
+
+                    b.ToTable("AppointmentServices");
+                });
+
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Business", b =>
                 {
                     b.Property<int>("Id")
@@ -370,7 +413,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(638),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8150),
                             Description = "Erkek Berber Hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -379,7 +422,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(640),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8154),
                             Description = "Güzellik ve bakım hizmetleri",
                             Icon = "spa",
                             IsDeleted = false,
@@ -388,7 +431,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(641),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8299),
                             Description = "Diş sağlığı hizmetleri",
                             Icon = "local_hospital",
                             IsDeleted = false,
@@ -397,7 +440,7 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 19, 23, 51, 38, 236, DateTimeKind.Utc).AddTicks(643),
+                            CreatedAt = new DateTime(2025, 12, 4, 1, 42, 57, 706, DateTimeKind.Utc).AddTicks(8302),
                             Description = "Tıbbi estetik hizmetleri",
                             Icon = "healing",
                             IsDeleted = false,
@@ -862,6 +905,25 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.AppointmentServiceItem", b =>
+                {
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Appointment", "Appointment")
+                        .WithMany("AppointmentServices")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("AppointmentManagementSystem.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Business", b =>
                 {
                     b.HasOne("AppointmentManagementSystem.Domain.Entities.Category", "Category")
@@ -1008,6 +1070,8 @@ namespace AppointmentManagementSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("AppointmentManagementSystem.Domain.Entities.Appointment", b =>
                 {
+                    b.Navigation("AppointmentServices");
+
                     b.Navigation("Photos");
                 });
 

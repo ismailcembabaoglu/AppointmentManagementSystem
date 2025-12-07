@@ -23,6 +23,7 @@ namespace AppointmentManagementSystem.Infrastructure.Data
 
         // Appointments
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<AppointmentServiceItem> AppointmentServices { get; set; }
 
         // Photos
         public DbSet<BusinessPhoto> BusinessPhotos { get; set; }
@@ -157,6 +158,25 @@ namespace AppointmentManagementSystem.Infrastructure.Data
                       .WithMany(s => s.Appointments)
                       .HasForeignKey(a => a.ServiceId)
                       .OnDelete(DeleteBehavior.NoAction); // DEĞİŞTİ
+            });
+
+            modelBuilder.Entity<AppointmentServiceItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ServiceName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+
+                entity.HasOne(a => a.Appointment)
+                      .WithMany(a => a.AppointmentServices)
+                      .HasForeignKey(a => a.AppointmentId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(a => a.Service)
+                      .WithMany()
+                      .HasForeignKey(a => a.ServiceId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasIndex(a => new { a.AppointmentId, a.ServiceId });
             });
 
             // Photo inheritance configuration
