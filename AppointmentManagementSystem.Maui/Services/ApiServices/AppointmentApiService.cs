@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
+using Blazored.LocalStorage;
 
 namespace AppointmentManagementSystem.Maui.Services.ApiServices
 {
     public class AppointmentApiService : BaseApiService, IAppointmentApiService
     {
-        public AppointmentApiService(HttpClient httpClient) : base(httpClient)
+        public AppointmentApiService(HttpClient httpClient, ILocalStorageService localStorage) : base(httpClient, localStorage)
         {
         }
 

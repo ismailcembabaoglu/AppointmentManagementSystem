@@ -16,8 +16,10 @@ namespace AppointmentManagementSystem.BlazorUI.Services.ApiServices
         {
             try
             {
-                await AddAuthorizationHeader();
-                var response = await _httpClient.PostAsJsonAsync($"api/photos/business/{businessId}", photoDto);
+                var request = await CreateRequestWithAuth(HttpMethod.Post, $"api/photos/business/{businessId}");
+                request.Content = JsonContent.Create(photoDto);
+                var response = await _httpClient.SendAsync(request);
+                //var response = await _httpClient.PostAsJsonAsync($"api/photos/business/{businessId}", photoDto);
                 return await HandleApiResponse<PhotoDto>(response);
             }
             catch (Exception ex)
