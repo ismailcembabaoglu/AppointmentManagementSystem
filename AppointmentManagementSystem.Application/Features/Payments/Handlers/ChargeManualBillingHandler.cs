@@ -2,6 +2,7 @@ using System;
 using AppointmentManagementSystem.Application.Features.Payments.Commands;
 using AppointmentManagementSystem.Application.Interfaces;
 using AppointmentManagementSystem.Application.Shared;
+using AppointmentManagementSystem.Domain.Entities;
 using AppointmentManagementSystem.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -33,16 +34,40 @@ namespace AppointmentManagementSystem.Application.Features.Payments.Handlers
             {
                 _logger.LogInformation($"=== Manual Billing (Direct API) Started for Business {request.BusinessId} ===");
 
-                var subscription = await _subscriptionRepository.GetByBusinessIdAsync(request.BusinessId);
-                if (subscription == null)
-                {
-                    return Result<ChargeManualBillingResponse>.FailureResult("Abonelik bulunamadı.");
-                }
-
                 var business = await _businessRepository.GetByIdAsync(request.BusinessId);
                 if (business == null)
                 {
                     return Result<ChargeManualBillingResponse>.FailureResult("İşletme bulunamadı.");
+                }
+
+                var subscription = await _subscriptionRepository.GetByBusinessIdAsync(request.BusinessId);
+                if (subscription == null)
+                {
+                    var now = DateTime.Now;
+                    subscription = new BusinessSubscription
+                    {
+                        BusinessId = request.BusinessId,
+                        MonthlyAmount = 1m,
+                        Currency = "TRY",
+                        Status = SubscriptionStatus.Active,
+                        SubscriptionStatus = SubscriptionStatus.Active,
+                        StartDate = now,
+                        SubscriptionStartDate = now,
+                        NextBillingDate = now.AddDays(30),
+                        AutoRenewal = true,
+                        IsActive = true,
+                        CreatedAt = now
+                    };
+
+                    await _subscriptionRepository.AddAsync(subscription);
+                    await _subscriptionRepository.SaveChangesAsync();
+
+                    _logger.LogInformation($"🆕 Created subscription for Business {request.BusinessId} to continue manual billing.");
+                }
+
+                if (!subscription.NextBillingDate.HasValue)
+                {
+                    subscription.NextBillingDate = DateTime.Now.AddDays(30);
                 }
 
                 const decimal amount = 1m;
